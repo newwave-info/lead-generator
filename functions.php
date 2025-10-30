@@ -329,6 +329,87 @@ if (!defined('ABSPATH')) {
 // URL base della tua istanza N8N (MODIFICA QUI)
 define('PSIP_N8N_BASE_URL', 'https://automation.perspect.it');
 
+if (!function_exists('psip_get_default_agent_map')) {
+    /**
+     * Configurazione di fallback per agenti registrati via codice.
+     *
+     * @return array<string,array<string,string>>
+     */
+    function psip_get_default_agent_map() {
+        return [
+            'eaa-accessibility' => [
+                'name'        => 'EAA Accessibility',
+                'description' => 'European Accessibility Act & WCAG 2.1 Level AA compliance audit',
+                'webhook'     => '/webhook/eaa-accessibility-agent',
+                'icon'        => 'dashicons-universal-access',
+                'color'       => '#574ae2',
+            ],
+        ];
+    }
+}
+
+add_action('init', 'psip_ensure_default_agents');
+
+/**
+ * Registra (se mancanti) gli agenti di default, inclusi metadati ACF.
+ */
+function psip_ensure_default_agents() {
+    if (!taxonomy_exists('agent_type')) {
+        return;
+    }
+
+    $defaults = psip_get_default_agent_map();
+
+    foreach ($defaults as $slug => $config) {
+        $existing = get_term_by('slug', $slug, 'agent_type');
+        if ($existing instanceof WP_Term) {
+            $term_id = $existing->term_id;
+            // Aggiorna descrizione se vuota.
+            if (isset($config['description']) && $existing->description === '') {
+                wp_update_term($term_id, 'agent_type', [
+                    'description' => $config['description'],
+                ]);
+            }
+        } else {
+            $insert = wp_insert_term(
+                $config['name'] ?? $slug,
+                'agent_type',
+                [
+                    'description' => $config['description'] ?? '',
+                    'slug'        => $slug,
+                ]
+            );
+
+            if (is_wp_error($insert) || empty($insert['term_id'])) {
+                continue;
+            }
+
+            $term_id = (int) $insert['term_id'];
+        }
+
+        if (empty($term_id)) {
+            continue;
+        }
+
+        $meta_updates = [
+            'webhook' => $config['webhook'] ?? '',
+            'icon'    => $config['icon'] ?? '',
+            'color'   => $config['color'] ?? '',
+        ];
+
+        foreach ($meta_updates as $meta_key => $value) {
+            if ($value === '') {
+                continue;
+            }
+
+            $current = get_term_meta($term_id, $meta_key, true);
+            if ($current === '' || $current === null) {
+                update_term_meta($term_id, $meta_key, $value);
+            }
+        }
+    }
+}
+
 /**
  * Recupera dinamicamente gli agenti dalla tassonomia agent_type
  */
@@ -340,6 +421,8 @@ function psip_get_agents() {
     }
 
     $agents = [];
+
+    $defaults = psip_get_default_agent_map();
 
     $terms = get_terms([
         'taxonomy'      => 'agent_type',
@@ -353,16 +436,142 @@ function psip_get_agents() {
     }
 
     foreach ($terms as $term) {
+        $default = $defaults[$term->slug] ?? [];
         $agents[$term->slug] = [
-            'name' => $term->name,
-            'webhook' => get_field('webhook', 'agent_type_' . $term->term_id) ?: '',
-            'icon' => get_field('icon', 'agent_type_' . $term->term_id) ?: 'dashicons-admin-generic',
-            'color' => get_field('color', 'agent_type_' . $term->term_id) ?: '#000000',
-            'description' => $term->description ?: '',
+            'name'        => $term->name ?: ($default['name'] ?? $term->slug),
+            'webhook'     => get_field('webhook', 'agent_type_' . $term->term_id) ?: ($default['webhook'] ?? ''),
+            'icon'        => get_field('icon', 'agent_type_' . $term->term_id) ?: ($default['icon'] ?? 'dashicons-admin-generic'),
+            'color'       => get_field('color', 'agent_type_' . $term->term_id) ?: ($default['color'] ?? '#000000'),
+            'description' => $term->description ?: ($default['description'] ?? ''),
         ];
     }
 
     return $agents;
+}
+
+if (!function_exists('psip_parse_datetime_value')) {
+    /**
+     * Converte un valore generico (stringa, timestamp, DateTime) in timestamp Unix.
+     *
+     * @param mixed $value
+     * @return int|null
+     */
+    function psip_parse_datetime_value($value) {
+        if ($value instanceof DateTimeInterface) {
+            return $value->getTimestamp();
+        }
+
+        if (is_numeric($value)) {
+            $numeric = (int) $value;
+            if ($numeric > 0) {
+                return $numeric;
+            }
+        }
+
+        if (is_string($value)) {
+            $trimmed = trim($value);
+            if ($trimmed === '') {
+                return null;
+            }
+
+            $timestamp = strtotime($trimmed);
+            if ($timestamp !== false) {
+                return $timestamp;
+            }
+        }
+
+        if (is_array($value)) {
+            foreach ($value as $item) {
+                $timestamp = psip_parse_datetime_value($item);
+                if ($timestamp !== null) {
+                    return $timestamp;
+                }
+            }
+        }
+
+        return null;
+    }
+}
+
+if (!function_exists('psip_get_analysis_last_run')) {
+    /**
+     * Restituisce informazioni normalizzate sull'ultima esecuzione di un'analisi.
+     *
+     * @param int $analysis_id
+     * @return array{timestamp:int|null, display:string, relative:string, source:string}
+     */
+    function psip_get_analysis_last_run($analysis_id) {
+        $candidate_keys = [
+            'analysis_date',
+            'execution_timestamp',
+            'analysis_timestamp',
+            'enrichment_timestamp',
+            '_analysis_last_run',
+        ];
+
+        $timestamp = null;
+        $source = '';
+
+        foreach ($candidate_keys as $meta_key) {
+            $raw_value = get_post_meta($analysis_id, $meta_key, true);
+            if ($raw_value === '' || $raw_value === null) {
+                continue;
+            }
+
+            $timestamp = psip_parse_datetime_value($raw_value);
+            if ($timestamp !== null) {
+                $source = $meta_key;
+                break;
+            }
+        }
+
+        if ($timestamp === null) {
+            $timestamp = get_post_meta($analysis_id, '_last_run_timestamp', true);
+            if ($timestamp) {
+                $parsed = psip_parse_datetime_value($timestamp);
+                if ($parsed !== null) {
+                    $timestamp = $parsed;
+                    $source = '_last_run_timestamp';
+                } else {
+                    $timestamp = null;
+                }
+            } else {
+                $timestamp = null;
+            }
+        }
+
+        if ($timestamp === null) {
+            $modified = get_post_modified_time('U', true, $analysis_id);
+            if ($modified) {
+                $timestamp = (int) $modified;
+                $source = 'post_modified';
+            }
+        }
+
+        if ($timestamp === null) {
+            $created = get_post_time('U', true, $analysis_id);
+            if ($created) {
+                $timestamp = (int) $created;
+                $source = 'post_date';
+            }
+        }
+
+        $display = $timestamp ? wp_date('d/m/Y H:i', $timestamp) : '';
+        $relative = '';
+        if ($timestamp) {
+            $diff = human_time_diff($timestamp, current_time('timestamp'));
+            if (!empty($diff)) {
+                $relative = sprintf(__('circa %s fa', 'psip'), $diff);
+            }
+        }
+
+        return [
+            'timestamp' => $timestamp,
+            'display'   => $display,
+            'relative'  => $relative,
+            'source'    => $source,
+        ];
+    }
 }
 
 
@@ -400,197 +609,396 @@ function psip_agent_launcher_metabox_html($post) {
     ?>
     <div id="psip-agent-launcher">
         <style>
-            .psip-agent-btn {
-                width: 100%;
-                padding: 12px;
-                margin: 8px 0;
-                border: none;
-                border-radius: 6px;
-                cursor: pointer;
+            #psip-agent-launcher {
                 font-size: 13px;
-                font-weight: 600;
-                color: white;
+                color: #1d2327;
+            }
+
+            #psip-agent-launcher .psip-agent-header {
                 display: flex;
-                align-items: center;
                 justify-content: space-between;
-                transition: all 0.3s ease;
-                position: relative;
-            }
-
-            .psip-agent-btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            }
-
-            .psip-agent-btn:disabled {
-                opacity: 0.5;
-                cursor: not-allowed;
-            }
-
-            .psip-agent-btn .dashicons {
-                font-size: 18px;
-                width: 18px;
-                height: 18px;
-            }
-
-            .psip-agent-status {
-                padding: 8px 12px;
-                margin: 4px 0;
-                border-radius: 4px;
-                font-size: 12px;
-                background: #f0f0f1;
-            }
-
-            .psip-agent-status.completed {
-                background: #d4edda;
-                color: #155724;
-            }
-
-            .psip-agent-status.running {
-                background: #fff3cd;
-                color: #856404;
-            }
-
-            .psip-loading {
-                display: none;
-                text-align: center;
+                align-items: flex-start;
+                gap: 12px;
                 padding: 10px;
-                color: #666;
+                border-radius: 8px;
+                background: #f6f7f7;
+                margin-bottom: 10px;
             }
 
-            .psip-loading.active {
+            .psip-agent-header__title {
+                font-weight: 600;
+                font-size: 14px;
+                display: block;
+                margin-bottom: 2px;
+            }
+
+            .psip-agent-header__subtitle {
+                color: #697380;
                 display: block;
             }
 
-            .psip-result {
-                margin-top: 10px;
-                padding: 10px;
-                border-radius: 4px;
+            .psip-agent-header__meta {
+                text-align: right;
                 font-size: 12px;
+                color: #697380;
             }
 
-            .psip-result.success {
-                background: #d4edda;
-                color: #155724;
-                border-left: 4px solid #28a745;
+            .psip-agent-header__badge {
+                display: inline-block;
+                background: #2271b1;
+                color: #fff;
+                padding: 3px 8px;
+                border-radius: 999px;
+                font-weight: 600;
+                font-size: 11px;
+                margin-bottom: 4px;
             }
 
-            .psip-result.error {
-                background: #f8d7da;
-                color: #721c24;
-                border-left: 4px solid #dc3545;
+            .psip-agent-grid {
+                display: grid;
+                gap: 8px;
             }
 
-            .psip-info {
+            .psip-agent-card {
+                background: #fff;
+                border: 1px solid #dcdcde;
+                border-radius: 8px;
                 padding: 10px;
-                background: #e7f3ff;
-                border-left: 4px solid #2196F3;
-                margin-bottom: 15px;
+                box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .psip-agent-card::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                border-radius: inherit;
+                pointer-events: none;
+                opacity: 0;
+                transition: opacity 0.2s ease;
+            }
+
+            .psip-agent-card:hover::before {
+                opacity: 0.08;
+                background: currentColor;
+            }
+
+            .psip-agent-card__head {
+                display: flex;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .psip-agent-card__icon {
+                width: 30px;
+                height: 30px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 6px;
+                background: #2271b1;
+                color: #fff;
+                font-size: 16px;
+            }
+
+            .psip-agent-card__titles {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .psip-agent-card__name {
+                font-weight: 600;
+                display: block;
+            }
+
+            .psip-agent-card__description {
+                font-size: 11px;
+                line-height: 1.2;
+                color: #50575e;
+                display: block;
+                margin-top: 1px;
+            }
+
+            .psip-agent-card__badge {
+                font-size: 11px;
+                font-weight: 600;
+                padding: 3px 8px;
+                border-radius: 999px;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+            }
+
+            .psip-agent-card__badge.is-success {
+                background: #e7f7ef;
+                color: #087443;
+            }
+
+            .psip-agent-card__badge.is-pending {
+                background: #fff4ce;
+                color: #8a6700;
+            }
+
+            .psip-agent-card__meta {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px 12px;
+            }
+
+            .psip-agent-card__meta-item {
+                padding: 0;
+            }
+
+            .psip-agent-card__meta-item .label {
+                display: block;
+                font-size: 10px;
+                text-transform: uppercase;
+                color: #6c7781;
+                letter-spacing: 0.05em;
+                margin-bottom: 2px;
+            }
+
+            .psip-agent-card__meta-item .value {
+                font-weight: 600;
                 font-size: 12px;
+                display: inline-flex;
+                word-break: break-word;
+            }
+
+            .psip-agent-card__meta-item .hint {
+                display: block;
+                font-size: 10px;
+                color: #6c7781;
+                margin-top: 1px;
+            }
+
+            .psip-agent-card__actions {
+                display: flex;
+                gap: 6px;
+                flex-wrap: wrap;
+                margin-top: 2px;
+            }
+
+            .psip-agent-card__actions .button {
+                font-size: 12px;
+                padding: 4px 12px;
+                line-height: 1.4;
+                height: auto;
+            }
+
+            .psip-agent-card__button.is-busy {
+                opacity: 0.85;
+                position: relative;
+                pointer-events: none;
+            }
+
+            .psip-agent-card__view {
+                background: #f6f7f7;
+                border-color: #dcdcde;
+                color: #1d2327;
+            }
+
+            .psip-agent-card__view:hover {
+                background: #e6e7e8;
+                color: #1d2327;
+            }
+
+            .psip-agent-feedback {
+                margin-bottom: 12px;
+            }
+
+            .psip-agent-feedback__message {
+                padding: 10px 12px;
+                border-radius: 6px;
+                font-size: 12px;
+                border-left: 4px solid;
+            }
+
+            .psip-agent-feedback__message.is-success {
+                background: #e7f7ef;
+                color: #0a4b2e;
+                border-color: #33a36f;
+            }
+
+            .psip-agent-feedback__message.is-error {
+                background: #fdeaea;
+                color: #8a1f1f;
+                border-color: #d63638;
+            }
+
+            .psip-agent-loading {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-top: 8px;
+                font-size: 12px;
+                color: #697380;
             }
         </style>
 
-        <div class="psip-info">
-            <strong>🎯 Company ID:</strong> <?php echo $company_id; ?><br>
-            <strong>📊 Analyses:</strong> <?php echo count($existing_analyses); ?> completed
+        <div class="psip-agent-header">
+            <div>
+                <span class="psip-agent-header__title"><?php esc_html_e('Analisi verticali AI', 'psip'); ?></span>
+                <span class="psip-agent-header__subtitle"><?php esc_html_e('Lancia o aggiorna gli agenti di analisi per questa azienda.', 'psip'); ?></span>
+            </div>
+            <div class="psip-agent-header__meta">
+                <span class="psip-agent-header__badge"><?php echo esc_html(count($existing_analyses)); ?> <?php esc_html_e('analisi', 'psip'); ?></span><br>
+                <span class="psip-agent-header__company">ID #<?php echo esc_html($company_id); ?></span>
+            </div>
         </div>
 
-        <div id="psip-results"></div>
+        <div id="psip-results" class="psip-agent-feedback" aria-live="polite"></div>
 
-        <?php
-        $agents = psip_get_agents();
-        foreach ($agents as $agent_id => $agent_config): ?>
-            <?php 
-            $has_analysis = isset($existing_analyses[$agent_id]);
-            $last_analysis = $has_analysis ? $existing_analyses[$agent_id] : null;
-            ?>
+        <?php $agents = psip_get_agents(); ?>
 
-            <button 
-            class="psip-agent-btn" 
-            style="background-color: <?php echo $agent_config['color']; ?>;"
-            onclick="psipLaunchAgent('<?php echo $agent_id; ?>', <?php echo $company_id; ?>)"
-            id="psip-btn-<?php echo $agent_id; ?>"
-            title="<?php echo $agent_config['description']; ?>"
-            >
-            <span>
-                <span class="dashicons <?php echo $agent_config['icon']; ?>"></span>
-                <?php echo $agent_config['name']; ?>
-            </span>
-            <span class="psip-btn-status">
-                <?php echo $has_analysis ? '✓ Run' : 'Launch'; ?>
-            </span>
-        </button>
+        <div class="psip-agent-grid">
+            <?php foreach ($agents as $agent_id => $agent_config): ?>
+                <?php
+                $analysis_info = $existing_analyses[$agent_id] ?? null;
+                $has_analysis = $analysis_info !== null;
+                $last_run_display = $analysis_info['last_run']['display'] ?? '';
+                $last_run_relative = $analysis_info['last_run']['relative'] ?? '';
+                $quality_score = $analysis_info['quality_score'] ?? '';
+                $badge_class = $has_analysis ? 'is-success' : 'is-pending';
+                $badge_label = $has_analysis ? __('Completata', 'psip') : __('Da avviare', 'psip');
+                ?>
+                <div class="psip-agent-card<?php echo $has_analysis ? ' has-analysis' : ' no-analysis'; ?>">
+                    <div class="psip-agent-card__head">
+                        <div class="psip-agent-card__icon" style="background: <?php echo esc_attr($agent_config['color']); ?>;">
+                            <span class="dashicons <?php echo esc_attr($agent_config['icon']); ?>"></span>
+                        </div>
+                        <div class="psip-agent-card__titles">
+                            <span class="psip-agent-card__name"><?php echo esc_html($agent_config['name']); ?></span>
+                            <?php if (!empty($agent_config['description'])): ?>
+                                <span class="psip-agent-card__description"><?php echo esc_html($agent_config['description']); ?></span>
+                            <?php endif; ?>
+                        </div>
+                        <span class="psip-agent-card__badge <?php echo esc_attr($badge_class); ?>">
+                            <?php echo esc_html($badge_label); ?>
+                        </span>
+                    </div>
 
-        <?php if ($has_analysis): ?>
-            <div class="psip-agent-status completed">
-                ✓ Last run: <?php echo get_post_meta($last_analysis, 'execution_timestamp', true); ?>
-                <!-- | Score: <?php //echo number_format(get_post_meta($last_analysis, 'confidence_score', true), 2); ?> -->
-            </div>
-        <?php endif; ?>
+                    <div class="psip-agent-card__meta">
+                        <div class="psip-agent-card__meta-item">
+                            <span class="label"><?php esc_html_e('Ultima esecuzione', 'psip'); ?></span>
+                            <span class="value">
+                                <?php echo ($has_analysis && $last_run_display) ? esc_html($last_run_display) : esc_html__('Mai eseguita', 'psip'); ?>
+                            </span>
+                            <?php if ($has_analysis && $last_run_relative): ?>
+                                <span class="hint"><?php echo esc_html($last_run_relative); ?></span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="psip-agent-card__meta-item">
+                            <span class="label"><?php esc_html_e('Indice qualità', 'psip'); ?></span>
+                            <span class="value"><?php echo ($has_analysis && $quality_score !== '') ? esc_html($quality_score) : '—'; ?></span>
+                        </div>
+                    </div>
 
-    <?php endforeach; ?>
+                    <div class="psip-agent-card__actions">
+                        <button
+                            type="button"
+                            class="button button-primary psip-agent-card__button"
+                            data-agent="<?php echo esc_attr($agent_id); ?>"
+                            data-company="<?php echo esc_attr($company_id); ?>"
+                        >
+                            <?php echo $has_analysis ? esc_html__('Riesegui analisi', 'psip') : esc_html__('Avvia analisi', 'psip'); ?>
+                        </button>
 
-    <div class="psip-loading" id="psip-loading">
-        <span class="spinner is-active" style="float: none;"></span>
-        <p>Running AI agent...</p>
+                        <?php if ($has_analysis && !empty($analysis_info['view_link'])): ?>
+                            <a
+                                class="button psip-agent-card__view"
+                                href="<?php echo esc_url($analysis_info['view_link']); ?>"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <?php esc_html_e('Apri report', 'psip'); ?>
+                            </a>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+
+        <div class="psip-agent-loading" id="psip-agent-loading" hidden>
+            <span class="spinner is-active" style="float: none;"></span>
+            <span><?php esc_html_e('Analisi in avvio...', 'psip'); ?></span>
+        </div>
     </div>
-</div>
 
-<script>
-    function psipLaunchAgent(agentId, companyId) {
-        // Disable button
-        const btn = document.getElementById('psip-btn-' + agentId);
-        btn.disabled = true;
+    <script>
+        (function($) {
+            const $launcher = $('#psip-agent-launcher');
+            const $feedback = $('#psip-results');
+            const $loading = $('#psip-agent-loading');
+            const nonce = '<?php echo wp_create_nonce("psip_launch_agent"); ?>';
 
-        // Show loading
-        document.getElementById('psip-loading').classList.add('active');
+            $launcher.on('click', '.psip-agent-card__button', function() {
+                const $button = $(this);
 
-        // Clear previous results
-        document.getElementById('psip-results').innerHTML = '';
-
-        // AJAX call to WordPress
-        jQuery.ajax({
-            url: ajaxurl,
-            type: 'POST',
-            data: {
-                action: 'psip_launch_agent',
-                agent_id: agentId,
-                company_id: companyId,
-                nonce: '<?php echo wp_create_nonce("psip_launch_agent"); ?>'
-            },
-            success: function(response) {
-                // Hide loading
-                document.getElementById('psip-loading').classList.remove('active');
-
-                // Re-enable button
-                btn.disabled = false;
-
-                // Show result
-                const resultDiv = document.createElement('div');
-                resultDiv.className = 'psip-result ' + (response.success ? 'success' : 'error');
-                resultDiv.innerHTML = response.data.message;
-                document.getElementById('psip-results').appendChild(resultDiv);
-
-                // Reload page after 2 seconds if success
-                if (response.success) {
-                    setTimeout(function() {
-                        location.reload();
-                    }, 2000);
+                if ($button.prop('disabled')) {
+                    return;
                 }
-            },
-            error: function(xhr, status, error) {
-                document.getElementById('psip-loading').classList.remove('active');
-                btn.disabled = false;
 
-                const resultDiv = document.createElement('div');
-                resultDiv.className = 'psip-result error';
-                resultDiv.innerHTML = '❌ Connection error: ' + error;
-                document.getElementById('psip-results').appendChild(resultDiv);
-            }
-        });
-    }
-</script>
-<?php
+                const agentId = $button.data('agent');
+                const companyId = $button.data('company');
+                const originalLabel = $button.text();
+
+                $button.prop('disabled', true).addClass('is-busy').text('⏳ <?php echo esc_js(__('Avvio in corso…', 'psip')); ?>');
+                $loading.prop('hidden', false);
+                $feedback.empty();
+
+                $.ajax({
+                    url: ajaxurl,
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        action: 'psip_launch_agent',
+                        agent_id: agentId,
+                        company_id: companyId,
+                        nonce: nonce
+                    }
+                }).done(function(response) {
+                    const isSuccess = response && response.success;
+                    const message = response && response.data && response.data.message
+                        ? response.data.message
+                        : '<?php echo esc_js(__('Risposta sconosciuta dal server.', 'psip')); ?>';
+
+                    const $message = $('<div/>', {
+                        'class': 'psip-agent-feedback__message ' + (isSuccess ? 'is-success' : 'is-error'),
+                        'text': message
+                    });
+
+                    $feedback.empty().append($message);
+
+                    if (isSuccess) {
+                        setTimeout(function() {
+                            window.location.reload();
+                        }, 1800);
+                    }
+                }).fail(function(xhr) {
+                    let message = '<?php echo esc_js(__('Connessione non riuscita. Riprova.', 'psip')); ?>';
+
+                    if (xhr && xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message) {
+                        message = xhr.responseJSON.data.message;
+                    }
+
+                    const $message = $('<div/>', {
+                        'class': 'psip-agent-feedback__message is-error',
+                        'text': message
+                    });
+
+                    $feedback.empty().append($message);
+                }).always(function() {
+                    $button.prop('disabled', false).removeClass('is-busy').text(originalLabel);
+                    $loading.prop('hidden', true);
+                });
+            });
+        })(jQuery);
+    </script>
+    <?php
 }
 
 // ============================================================================
@@ -672,7 +1080,18 @@ function psip_get_company_analyses($company_id) {
 
         if ($terms && !is_wp_error($terms)) {
             $agent_slug = $terms[0]->slug;
-            $result[$agent_slug] = $analysis->ID;
+            $quality_raw = function_exists('get_field') ? get_field('voto_qualita_analisi', $analysis->ID) : '';
+            $quality_score = psip_theme_normalize_scalar($quality_raw);
+
+            $result[$agent_slug] = [
+                'id' => $analysis->ID,
+                'title' => get_the_title($analysis->ID),
+                'status' => get_post_status($analysis->ID),
+                'last_run' => psip_get_analysis_last_run($analysis->ID),
+                'quality_score' => $quality_score,
+                'view_link' => get_permalink($analysis->ID),
+                'edit_link' => get_edit_post_link($analysis->ID, ''),
+            ];
         }
     }
 
@@ -1049,10 +1468,8 @@ function psip_get_all_company_analyses($request) {
         $count_opportunities = get_field('numero_opportunita', $analysis->ID);
         $count_quick_actions = get_field('numero_azioni_rapide', $analysis->ID);
 
-        $execution_timestamp = get_post_meta($analysis->ID, 'execution_timestamp', true);
-        if (!$execution_timestamp) {
-            $execution_timestamp = get_the_date('Y-m-d H:i', $analysis->ID);
-        }
+        $last_run = psip_get_analysis_last_run($analysis->ID);
+        $execution_timestamp = $last_run['display'];
 
         $results['analyses'][$agent_type] = [
             'agent_type' => $agent_type,
@@ -1208,49 +1625,292 @@ function psip_add_company_enrichment_metabox() {
     );
 }
 
+if (!function_exists('psip_company_enrichment_value_is_populated')) {
+    /**
+     * Determina se un valore va conteggiato come presente per la completezza dati.
+     */
+    function psip_company_enrichment_value_is_populated($value, $allow_zero = false, $count_false = false) {
+        if (is_bool($value)) {
+            return $value || ($count_false && $value === false);
+        }
+
+        $normalized = trim(psip_theme_normalize_scalar($value));
+
+        if ($normalized === '') {
+            return false;
+        }
+
+        $normalized_lower = strtolower($normalized);
+        if (in_array($normalized_lower, ['unknown', 'non disponibile'], true)) {
+            return false;
+        }
+
+        if ($normalized_lower === 'false') {
+            return $count_false;
+        }
+
+        if ($normalized === '0') {
+            return $allow_zero || $count_false;
+        }
+
+        return true;
+    }
+}
+
+if (!function_exists('psip_company_enrichment_social_json_has_value')) {
+    /**
+     * Controlla se il JSON dei social contiene almeno un link valido.
+     *
+     * @param mixed $raw_values
+     */
+    function psip_company_enrichment_social_json_has_value($raw_values) {
+        foreach ((array) $raw_values as $value) {
+            if (empty($value)) {
+                continue;
+            }
+
+            $json_string = is_array($value) ? wp_json_encode($value) : $value;
+            if (!is_string($json_string) || trim($json_string) === '') {
+                continue;
+            }
+
+            $decoded = json_decode($json_string, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                foreach ($decoded as $link) {
+                    if (psip_company_enrichment_value_is_populated($link)) {
+                        return true;
+                    }
+                }
+            } elseif (psip_company_enrichment_value_is_populated($json_string)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
+
 function psip_render_company_enrichment_metabox($post) {
-    // Leggi campi ACF per calcolare completezza
-    $partita_iva = get_field('partita_iva', $post->ID);
-    $address = get_field('address', $post->ID);
-    $phone = get_field('phone', $post->ID);
-    $email = get_field('email_azienda', $post->ID);
-    $sector_specific = get_field('sector_specific', $post->ID);
-    $employee_count = get_field('employee_count_est', $post->ID);
-    $growth_stage = get_field('growth_stage', $post->ID);
-    $budget_tier = get_field('budget_tier', $post->ID);
-    $website = get_field('website', $post->ID);
+    $post_id = $post->ID;
 
-    $estimated_annual_revenue = get_field('estimated_annual_revenue', $post->ID);
-
-    $estimated_ebitda_percentage = get_field('estimated_ebitda_percentage', $post->ID);
-    $estimated_marketing_budget = get_field('estimated_marketing_budget', $post->ID);
-    $business_type = get_field('business_type', $post->ID);
-    $budget_qualified = get_field('budget_qualified', $post->ID);
-
-    // Calcola completezza
-    $fields_to_check = [
-        $partita_iva,
-        $address,
-        $phone,
-        $email,
-        $sector_specific,
-        $employee_count,
-        $growth_stage,
-        $budget_tier,
-        $budget_qualified,
-        $business_type,
-        $estimated_marketing_budget,
-        $estimated_ebitda_percentage,
-        $estimated_annual_revenue
+    // Mappa dei campi gestiti dal workflow Company Enrichment di n8n.
+    $field_groups = [
+        'partita_iva' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'partita_iva'],
+            ],
+        ],
+        'address' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'address'],
+            ],
+        ],
+        'provincia' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'provincia'],
+            ],
+        ],
+        'phone' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'phone'],
+            ],
+        ],
+        'email' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'email_azienda'],
+            ],
+        ],
+        'website' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'website'],
+            ],
+        ],
+        'domain' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'domain'],
+            ],
+        ],
+        'sector_specific' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'sector_specific'],
+            ],
+        ],
+        'business_type' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'business_type'],
+            ],
+        ],
+        'employee_count_est' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'employee_count_est'],
+            ],
+        ],
+        'growth_stage' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'growth_stage'],
+            ],
+        ],
+        'estimated_annual_revenue' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'estimated_annual_revenue'],
+            ],
+        ],
+        'estimated_ebitda_percentage' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'estimated_ebitda_percentage'],
+            ],
+        ],
+        'estimated_marketing_budget' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'estimated_marketing_budget'],
+            ],
+        ],
+        'budget_tier' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'budget_tier'],
+            ],
+            'allow_zero' => true,
+        ],
+        'budget_qualified' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'budget_qualified'],
+            ],
+            'count_false' => true,
+        ],
+        'linkedin_url' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'linkedin_url'],
+            ],
+        ],
+        'facebook_url' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'facebook_url'],
+            ],
+        ],
+        'instagram_url' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'instagram_url'],
+            ],
+        ],
+        'x_url' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'x_url'],
+            ],
+        ],
+        'youtube_url' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'youtube_url'],
+            ],
+        ],
+        'tiktok_url' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'tiktok_url'],
+            ],
+        ],
+        'social_links_json' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'social_json'],
+            ],
+            'custom' => 'social_json',
+        ],
+        'screen_home' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'screen_home'],
+            ],
+        ],
+        'analysis_date' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'analysis_date'],
+                ['type' => 'meta', 'key' => 'enrichment_timestamp'],
+            ],
+        ],
+        'confidence' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'confidence'],
+                ['type' => 'meta', 'key' => 'enrichment_confidence'],
+            ],
+        ],
+        'enrichment_sources' => [
+            'sources' => [
+                ['type' => 'meta', 'key' => 'enrichment_sources'],
+            ],
+        ],
+        'enrichment_notes' => [
+            'sources' => [
+                ['type' => 'meta', 'key' => 'enrichment_notes'],
+            ],
+        ],
+        'enrichment_citations' => [
+            'sources' => [
+                ['type' => 'meta', 'key' => 'enrichment_citations'],
+            ],
+        ],
     ];
-    
+
+    $fields_to_check = [];
+
+    foreach ($field_groups as $group_key => $config) {
+        $group_values = [];
+        $group_considered = false;
+
+        foreach ($config['sources'] as $source) {
+            if ($source['type'] === 'acf') {
+                $acf_key = $source['key'];
+                $field_exists = true;
+
+                if (function_exists('get_field_object')) {
+                    $field_object = get_field_object($acf_key, $post_id, false, false);
+                    $field_exists = $field_object !== false;
+                }
+
+                if (!$field_exists && !metadata_exists('post', $post_id, $acf_key)) {
+                    continue;
+                }
+
+                $group_considered = true;
+                $group_values[] = get_field($acf_key, $post_id);
+            } elseif ($source['type'] === 'meta') {
+                $group_considered = true;
+                $group_values[] = get_post_meta($post_id, $source['key'], true);
+            }
+        }
+
+        if (!$group_considered) {
+            continue;
+        }
+
+        $fields_to_check[$group_key] = [
+            'values' => $group_values,
+            'allow_zero' => !empty($config['allow_zero']),
+            'count_false' => !empty($config['count_false']),
+            'custom' => $config['custom'] ?? '',
+        ];
+    }
+
+    $total_fields = count($fields_to_check);
     $populated_fields = 0;
-    foreach ($fields_to_check as $field_value) {
-        if (!empty($field_value) && $field_value !== 'unknown') {
+
+    foreach ($fields_to_check as $group_key => $data) {
+        $has_value = false;
+
+        if ($data['custom'] === 'social_json') {
+            $has_value = psip_company_enrichment_social_json_has_value($data['values']);
+        } else {
+            foreach ($data['values'] as $group_value) {
+                if (psip_company_enrichment_value_is_populated($group_value, $data['allow_zero'], $data['count_false'])) {
+                    $has_value = true;
+                    break;
+                }
+            }
+        }
+
+        if ($has_value) {
             $populated_fields++;
         }
     }
-    $completeness = round(($populated_fields / count($fields_to_check)) * 100);
+
+    $completeness = $total_fields > 0 ? round(($populated_fields / $total_fields) * 100) : 0;
+    $website = get_field('website', $post->ID);
     
     ?>
     <div class="psip-enrichment-section">
