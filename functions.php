@@ -1,4 +1,67 @@
 <?php
+if (!function_exists('psip_theme_normalize_scalar')) {
+    /**
+     * Converte valori ACF (array, oggetti, bool) in stringhe pronte per il template.
+     */
+    function psip_theme_normalize_scalar($value) {
+        if (is_array($value)) {
+            if (isset($value['label']) && is_scalar($value['label'])) {
+                return trim((string) $value['label']);
+            }
+            if (isset($value['value']) && is_scalar($value['value'])) {
+                return trim((string) $value['value']);
+            }
+
+            $flattened = [];
+            foreach ($value as $item) {
+                if (is_scalar($item)) {
+                    $flattened[] = trim((string) $item);
+                } elseif (is_array($item)) {
+                    if (isset($item['label']) && is_scalar($item['label'])) {
+                        $flattened[] = trim((string) $item['label']);
+                    } elseif (isset($item['value']) && is_scalar($item['value'])) {
+                        $flattened[] = trim((string) $item['value']);
+                    }
+                }
+            }
+
+            return implode(', ', array_filter($flattened, static function ($entry) {
+                return $entry !== '';
+            }));
+        }
+
+        if (is_bool($value)) {
+            return $value ? '1' : '0';
+        }
+
+        if (is_object($value)) {
+            if ($value instanceof WP_Post) {
+                return $value->post_title;
+            }
+
+            if ($value instanceof WP_Term) {
+                return $value->name;
+            }
+
+            if ($value instanceof DateTimeInterface) {
+                return $value->format('Y-m-d H:i:s');
+            }
+
+            if (method_exists($value, '__toString')) {
+                return trim((string) $value);
+            }
+
+            return '';
+        }
+
+        if ($value === null) {
+            return '';
+        }
+
+        return trim((string) $value);
+    }
+}
+
 //custom theme option
 include_once(get_template_directory() .'/newwave/theme/front-end.php');
 include_once(get_template_directory() .'/newwave/theme/back-end.php');
@@ -941,18 +1004,19 @@ function psip_get_all_company_analyses($request) {
     
     $analyses = array_values($all_found);
     
-    // Build response con field names corretti ✅
+    // Build response utilizzando esclusivamente i campi ACF attivi
     $results = [
         'company_id' => $company_id,
         'company_name' => $company->post_title,
         'company_meta' => [
-            'domain' => get_field('domain', $company_id),
-            'sector' => get_field('sector_specific', $company_id),
-            'business_type' => get_field('business_type', $company_id),
-            'estimated_revenue' => get_field('estimated_annual_revenue', $company_id),
-            'estimated_employees' => get_field('employee_count_est', $company_id),
-            'growth_stage' => get_field('growth_stage', $company_id),
-            'budget_tier' => get_field('estimated_marketing_budget', $company_id)
+            'domain' => psip_theme_normalize_scalar(get_field('domain', $company_id)),
+            'sector' => psip_theme_normalize_scalar(get_field('sector_specific', $company_id)),
+            'business_type' => psip_theme_normalize_scalar(get_field('business_type', $company_id)),
+            'estimated_revenue' => psip_theme_normalize_scalar(get_field('estimated_annual_revenue', $company_id)),
+            'estimated_employees' => psip_theme_normalize_scalar(get_field('employee_count_est', $company_id)),
+            'growth_stage' => psip_theme_normalize_scalar(get_field('growth_stage', $company_id)),
+            'budget_tier' => psip_theme_normalize_scalar(get_field('budget_tier', $company_id)),
+            'estimated_marketing_budget' => psip_theme_normalize_scalar(get_field('estimated_marketing_budget', $company_id)),
         ],
         'analyses' => [],
         'analyses_count' => 0
@@ -966,25 +1030,47 @@ function psip_get_all_company_analyses($request) {
             continue;
         }
         $agent_type = $terms[0]->slug;
-        $analysis_json_raw = get_post_meta($analysis->ID, 'analysis_result_json', true);
 
-        $analysis_json = !empty($analysis_json_raw) ? json_decode($analysis_json_raw, true) : null;
-        
-        $recommendations_json_raw = get_post_meta($analysis->ID, 'recommendations_json', true);
-        $recommendations_json = !empty($recommendations_json_raw) ? json_decode($recommendations_json_raw, true) : null;
-        
+        $quality_score_raw = get_field('voto_qualita_analisi', $analysis->ID);
+        $quality_score = ($quality_score_raw !== null && $quality_score_raw !== '' && is_numeric($quality_score_raw))
+            ? (int) $quality_score_raw
+            : null;
+
+        $summary              = psip_theme_normalize_scalar(get_field('riassunto', $analysis->ID));
+        $strengths            = psip_theme_normalize_scalar(get_field('punti_di_forza', $analysis->ID));
+        $weaknesses           = psip_theme_normalize_scalar(get_field('punti_di_debolezza', $analysis->ID));
+        $opportunities_text   = psip_theme_normalize_scalar(get_field('opportunita', $analysis->ID));
+        $quick_actions_text   = psip_theme_normalize_scalar(get_field('azioni_rapide', $analysis->ID));
+        $deep_research_raw    = get_field('analisy_perplexity_deep_research', $analysis->ID);
+        $deep_research        = $deep_research_raw ? wp_kses_post($deep_research_raw) : '';
+
+        $count_strengths = get_field('numero_punti_di_forza', $analysis->ID);
+        $count_weaknesses = get_field('numero_punti_di_debolezza', $analysis->ID);
+        $count_opportunities = get_field('numero_opportunita', $analysis->ID);
+        $count_quick_actions = get_field('numero_azioni_rapide', $analysis->ID);
+
+        $execution_timestamp = get_post_meta($analysis->ID, 'execution_timestamp', true);
+        if (!$execution_timestamp) {
+            $execution_timestamp = get_the_date('Y-m-d H:i', $analysis->ID);
+        }
+
         $results['analyses'][$agent_type] = [
             'agent_type' => $agent_type,
             'analysis_id' => $analysis->ID,
-            'execution_timestamp' => get_post_meta($analysis->ID, 'execution_timestamp', true),
-            'confidence_score' => floatval(get_post_meta($analysis->ID, 'confidence_score', true)),
-            'quality_score' => floatval(get_post_meta($analysis->ID, 'quality_score', true)),
-            'insights_summary' => get_post_meta($analysis->ID, 'insights_summary', true),
-            'opportunities_identified' => get_post_meta($analysis->ID, 'opportunities_identified', true),
-            'gaps_weaknesses' => get_post_meta($analysis->ID, 'gaps_weaknesses', true),
-            'agent_specific_metrics' => json_decode(get_post_meta($analysis->ID, 'agent_specific_metrics', true), true),
-            'analysis_data' => $analysis_json,
-            'recommendations' => $recommendations_json
+            'execution_timestamp' => $execution_timestamp,
+            'quality_score' => $quality_score,
+            'summary' => $summary,
+            'strengths' => $strengths,
+            'weaknesses' => $weaknesses,
+            'opportunities' => $opportunities_text,
+            'quick_actions' => $quick_actions_text,
+            'deep_research' => $deep_research,
+            'counts' => [
+                'strengths' => ($count_strengths !== null && $count_strengths !== '' && is_numeric($count_strengths)) ? (int) $count_strengths : null,
+                'weaknesses' => ($count_weaknesses !== null && $count_weaknesses !== '' && is_numeric($count_weaknesses)) ? (int) $count_weaknesses : null,
+                'opportunities' => ($count_opportunities !== null && $count_opportunities !== '' && is_numeric($count_opportunities)) ? (int) $count_opportunities : null,
+                'quick_actions' => ($count_quick_actions !== null && $count_quick_actions !== '' && is_numeric($count_quick_actions)) ? (int) $count_quick_actions : null,
+            ],
         ];
     }
     
@@ -1230,7 +1316,3 @@ function psip_render_company_enrichment_metabox($post) {
     </script>
     <?php
 }
-
-
-
-
