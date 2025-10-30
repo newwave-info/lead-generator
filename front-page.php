@@ -54,43 +54,87 @@
 
                     <?php while ( $query->have_posts() ) : $query->the_post();
                         $post_id                    = get_the_ID();
-                        $status                     = get_field('status');
-                        $growth_stage               = get_field('growth_stage');
-                        $estimated_marketing_budget = get_field('estimated_marketing_budget');
-                        $confidence                 = get_field('confidence');
-                        $budget_tier                = get_field_object('budget_tier');
-                        $analysis_date              = get_field('analysis_date');
-                        $campaign_name              = get_field('campaign_name');
-                        $query_used                 = get_field('query_used');
-                        $business_type              = get_field('sector_specific');
-                        $province                   = get_field('provincia'); ?>
+                        $status                     = psip_theme_normalize_scalar( get_field('status') );
+                        $growth_stage               = psip_theme_normalize_scalar( get_field('growth_stage') );
+                        $estimated_marketing_budget = psip_theme_normalize_scalar( get_field('estimated_marketing_budget') );
+                        $confidence                 = psip_theme_normalize_scalar( get_field('confidence') );
+                        $analysis_date_raw          = get_field('analysis_date');
+                        $analysis_date              = psip_theme_normalize_scalar( $analysis_date_raw );
+                        $campaign_name              = psip_theme_normalize_scalar( get_field('campaign_name') );
+                        $query_used                 = psip_theme_normalize_scalar( get_field('query_used') );
+                        $business_type              = psip_theme_normalize_scalar( get_field('sector_specific') );
+                        $province                   = psip_theme_normalize_scalar( get_field('provincia') );
+                        $website                    = psip_theme_normalize_scalar( get_field('website') );
+
+                        $budget_tier_field = get_field_object('budget_tier');
+                        $budget_tier_value = 0;
+                        $budget_tier_label = '';
+                        if ($budget_tier_field) {
+                            $raw_value = $budget_tier_field['value'];
+                            if (is_array($raw_value)) {
+                                $raw_value = reset($raw_value);
+                            }
+                            $normalized_value = psip_theme_normalize_scalar($raw_value);
+                            if ($normalized_value !== '' && is_numeric($normalized_value)) {
+                                $budget_tier_value = (int) $normalized_value;
+                            }
+
+                            if (isset($budget_tier_field['choices'][$normalized_value])) {
+                                $budget_tier_label = $budget_tier_field['choices'][$normalized_value];
+                            } elseif (isset($budget_tier_field['choices'][(string) $budget_tier_value])) {
+                                $budget_tier_label = $budget_tier_field['choices'][(string) $budget_tier_value];
+                            }
+                        }
+
+                        $analysis_date_display = '';
+                        if ($analysis_date !== '') {
+                            $dt = DateTime::createFromFormat('d/m/Y g:i a', $analysis_date);
+                            $analysis_date_display = $dt ? $dt->format('Y-m-d H:i') : $analysis_date;
+                        }
+
+                        $status_display = $status !== '' ? $status : '-';
+                        $confidence_display = $confidence !== '' ? $confidence : '—';
+                        $status_tooltip = sprintf(
+                            '%s | Confidence score: %s',
+                            $status_display,
+                            $confidence_display
+                        ); ?>
                         <tr>
                             <td>
                                 <a href="<?php the_permalink(); ?>" class="company-name"><?php the_title(); ?></a>
-                                <a href="<?php echo esc_url( get_field('website') ); ?>" class="no-dt company-web" target="_blank"></a>
+                                <?php if ($website !== '') : ?>
+                                    <a href="<?php echo esc_url( $website ); ?>" class="no-dt company-web" target="_blank" rel="noopener"></a>
+                                <?php endif; ?>
                             </td>
-                            <td><?php if ( $business_type ) : ?><div class="company-type"><?php echo esc_html( $business_type ); ?></div><?php endif; ?></td>
-                            <td><?php echo $province ?: '' ; ?></td>
+                            <td><?php if ( $business_type !== '' ) : ?><div class="company-type"><?php echo esc_html( $business_type ); ?></div><?php endif; ?></td>
+                            <td><?php echo $province !== '' ? esc_html($province) : ''; ?></td>
                             <td>
-                                <?php if ($analysis_date) :
-                                $dt = DateTime::createFromFormat('d/m/Y g:i a', $analysis_date);
-                                $analysis_date_ymd = $dt ? esc_html($dt->format('Y-m-d H:i')) : esc_html($analysis_date);
-                                ?>
-                                    <div class="company-analysis-date"><?php echo $analysis_date_ymd; ?></div>
+                                <?php if ($analysis_date_display !== '') : ?>
+                                    <div class="company-analysis-date"><?php echo esc_html($analysis_date_display); ?></div>
                                 <?php endif; ?>
                                 <a href="javascript:void(0)" class="no-dt company-enrichment" onclick="alert('Coming soon!')"></a>
                             </td>
-                            <td><?php echo $estimated_marketing_budget ?: ''; ?></td>
-                            <?php
-                            $budget_tier_value = (int)$budget_tier['value'];
-                            $budget_tier_label = $budget_tier['choices'][ $budget_tier_value ]; ?>
-                            <td data-bs-toggle="tooltip" title="<?php echo $budget_tier_label; ?>" class="text-center"><?php echo str_repeat('<span class="money">$</span>', $budget_tier_value); ?></td>
-                            <td data-bs-toggle="tooltip" data-bs-html="true" title="<?php echo $status ?: '-'; ?><div class='small'><?php echo 'Confidence score: <span class=\'badge\'>'.$confidence.'</span>'; ?></div>" class="text-center"><?php echo $status ? ( $status==='QUALIFIED' ? '<span class=\'dashicons dashicons-yes-alt\'></span>' : '<span class=\'dashicons dashicons-no\'></span>' ) : ''; ?></td>
+                            <td><?php echo $estimated_marketing_budget !== '' ? esc_html($estimated_marketing_budget) : ''; ?></td>
+                            <td data-bs-toggle="tooltip" title="<?php echo esc_attr($budget_tier_label); ?>" class="text-center">
+                                <?php echo $budget_tier_value > 0 ? str_repeat('<span class="money">$</span>', $budget_tier_value) : ''; ?>
+                            </td>
+                            <td
+                                data-bs-toggle="tooltip"
+                                title="<?php echo esc_attr($status_tooltip); ?>"
+                                class="text-center">
+                                <?php
+                                if ($status_display !== '-') {
+                                    echo $status_display === 'QUALIFIED'
+                                        ? '<span class="dashicons dashicons-yes-alt"></span>'
+                                        : '<span class="dashicons dashicons-no"></span>';
+                                }
+                                ?>
+                            </td>
                             <?php foreach ($agent_types as $slug => $agent_config) : ?>
                                 <?php echo perspect_get_score_cell($analisi_map, $post_id, $slug); ?>
                             <?php endforeach; ?>
-                            <td><?php echo $campaign_name ?: ''; ?></td>
-                            <td><?php echo $query_used ?: ''; ?></td>
+                            <td><?php echo $campaign_name !== '' ? esc_html($campaign_name) : ''; ?></td>
+                            <td><?php echo $query_used !== '' ? esc_html($query_used) : ''; ?></td>
                         </tr>
                     <?php endwhile; ?>
                 </tbody>
