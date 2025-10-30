@@ -81,8 +81,10 @@ if (!function_exists('psip_theme_format_markdown_bold')) {
             foreach ($agents as $slug => $agent_config) :
                 $tab_id = 'tab-' . esc_attr($slug);
                 $accordion_id = 'accordion-' . esc_attr($slug);
-                $has_analysis = isset($analisi_for_company[$slug]);
-                $analysis_id = $has_analysis ? $analisi_for_company[$slug] : null;
+                $analysis_info = $analisi_for_company[$slug] ?? null;
+                $has_analysis = $analysis_info !== null;
+                $analysis_id = $analysis_info['id'] ?? null;
+                $analysis_last_run = $analysis_info['last_run']['display'] ?? '';
 
                 $quality_score_raw = $has_analysis ? get_field('voto_qualita_analisi', $analysis_id) : '';
                 $quality_score_normalized = psip_theme_normalize_scalar($quality_score_raw);
@@ -116,7 +118,7 @@ if (!function_exists('psip_theme_format_markdown_bold')) {
 
                         <div class="row gy-2 mb-2 align-items-center">
                             <div class="col-auto" data-bs-toggle="tooltip" title="Data esecuzione">
-                                <span class="badge text-bg-light"><?php echo $has_analysis ? get_the_time('Y-m-d H:i', $analysis_id) : esc_html($placeholder_text); ?></span>
+                                <span class="badge text-bg-light"><?php echo $has_analysis && $analysis_last_run ? esc_html($analysis_last_run) : esc_html($placeholder_text); ?></span>
                             </div>
                         </div>
                         <div class="row gy-2 mb-2 align-items-center">

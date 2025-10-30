@@ -417,11 +417,13 @@ while ( have_posts() ) : the_post();
                                     </thead>
                                     <tbody>
                                         <?php foreach ($agents as $slug => $agent_config) :
-                                            $has_analysis = isset($analisi_for_company[$slug]);
-                                            $analysis_id = $has_analysis ? $analisi_for_company[$slug] : null;
+                                            $analysis_info = $analisi_for_company[$slug] ?? null;
+                                            $has_analysis = $analysis_info !== null;
+                                            $analysis_id = $analysis_info['id'] ?? null;
+                                            $last_run_display = $analysis_info['last_run']['display'] ?? '';
+                                            $last_run_relative = $analysis_info['last_run']['relative'] ?? '';
 
                                             $score_value = $has_analysis ? psip_theme_normalize_scalar( get_field('voto_qualita_analisi', $analysis_id) ) : '';
-                                            $when = $has_analysis ? get_the_date( 'Y-m-d H:i' , $analysis_id) : null;
                                             $insights = $has_analysis ? psip_theme_normalize_scalar( get_field('riassunto', $analysis_id) ) : null;
                                             $score_numeric = $score_value !== '' && is_numeric($score_value) ? (float) $score_value : null;
                                             $bg_color = $score_numeric !== null ? get_heatmap_color($score_numeric) : 'transparent';
@@ -438,7 +440,9 @@ while ( have_posts() ) : the_post();
                                                 <td data-bs-toggle="tooltip" title="<?php echo esc_attr($agent_config['name'] . ': ' . $metric['label']); ?>" class="agent-score" style="background-color:<?php echo $bg_color; ?>"><?php echo $display_value; ?></td>
                                             <?php endforeach; ?>
 
-                                            <td><?php echo ($when !== null && $when !== '') ? esc_html((string) $when) : ''; ?></td>
+                                            <td title="<?php echo $last_run_relative ? esc_attr($last_run_relative) : ''; ?>">
+                                                <?php echo ($last_run_display !== '') ? esc_html($last_run_display) : ''; ?>
+                                            </td>
                                             <td>
                                                 <?php if ($has_analysis) : ?>
                                                     <a href="javascript:void(0)" class="analysis-link" data-text="✓ Run" onclick="alert('Coming soon!')"></a>
