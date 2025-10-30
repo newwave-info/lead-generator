@@ -38,6 +38,40 @@ while ( have_posts() ) : the_post();
     $discovery_date             = get_field('discovery_date', $post_id); // d/m/Y
     $discovery_time             = get_field('discovery_time', $post_id); // g:i a
 
+    $scalar_fields = [
+        'status',
+        'growth_stage',
+        'estimated_marketing_budget',
+        'analysis_date',
+        'partita_iva',
+        'address',
+        'phone',
+        'website',
+        'domain',
+        'business_type',
+        'sector_specific',
+        'employee_count_est',
+        'estimated_annual_revenue',
+        'estimated_ebitda_percentage',
+        'confidence',
+        'budget_tier',
+        'campaign_name',
+        'data_completeness',
+        'source',
+        'query_used',
+        'discovery_id',
+        'run_id',
+        'place_id',
+        'rating',
+        'reviews',
+        'discovery_date',
+        'discovery_time',
+    ];
+
+    foreach ($scalar_fields as $field_key) {
+        $$field_key = psip_theme_normalize_scalar($$field_key);
+    }
+
 ?>
 <main id="single_company" role="main">
 
@@ -324,11 +358,12 @@ while ( have_posts() ) : the_post();
 
                         $analisi_query = new WP_Query($args);
 
-                        // Recupera core_promise se l'analisi esiste
-                        $core_promise = null;
+                        // Recupera riassunto se l'analisi esiste
+                        $analysis_summary = null;
                         if ($analisi_query->have_posts()) {
                             $analisi_query->the_post();
-                            $core_promise = get_field('core_promise') ?: 'Campo non compilato.';
+                            $summary_value = get_field('riassunto');
+                            $analysis_summary = psip_theme_normalize_scalar($summary_value) ?: 'Campo non compilato.';
                             wp_reset_postdata();
                         }
                         ?>
@@ -337,8 +372,8 @@ while ( have_posts() ) : the_post();
                                 <h2 class="mb-2"><?php echo esc_html($term_name); ?></h2>
                                 <div>
                                     <?php
-                                    if ($core_promise) {
-                                        echo nl2br(esc_html($core_promise));
+                                    if ($analysis_summary) {
+                                        echo nl2br(esc_html($analysis_summary));
                                     } else {
                                         echo 'Analisi non ancora effettuata.';
                                     }
@@ -354,13 +389,12 @@ while ( have_posts() ) : the_post();
                     $agents = psip_get_agents();
                     $analisi_for_company = psip_get_company_analyses($post_id);
 
-                    // Mappa delle metriche con icone e nomi campi ACF
+                    // Mappa delle metriche con icone e nomi campi ACF aggiornati
                     $metrics_map = [
-                        ['label' => 'Opportunità',   'icon' => 'dashicons-thumbs-up',    'field' => 'numero_oppurtunita'],
-                        ['label' => 'Quick Wins',    'icon' => 'dashicons-star-filled',  'field' => 'quick_wins'],
-                        ['label' => 'Punti di forza','icon' => 'dashicons-awards',       'field' => 'punti_di_forza'],
-                        ['label' => 'Debolezze',     'icon' => 'dashicons-warning',      'field' => 'debolezze'],
-                        ['label' => 'Gap rilevati',  'icon' => 'dashicons-thumbs-down',  'field' => 'gap_rilevati'],
+                        ['label' => 'Punti di forza',     'icon' => 'dashicons-awards',      'field' => 'numero_punti_di_forza'],
+                        ['label' => 'Punti di debolezza', 'icon' => 'dashicons-warning',     'field' => 'numero_punti_di_debolezza'],
+                        ['label' => 'Opportunità',        'icon' => 'dashicons-thumbs-up',   'field' => 'numero_opportunita'],
+                        ['label' => 'Azioni rapide',      'icon' => 'dashicons-star-filled', 'field' => 'numero_azioni_rapide'],
                     ];
                     ?>
 
@@ -386,20 +420,21 @@ while ( have_posts() ) : the_post();
                                             $has_analysis = isset($analisi_for_company[$slug]);
                                             $analysis_id = $has_analysis ? $analisi_for_company[$slug] : null;
 
-                                            $score = $has_analysis ? get_field('confidence_score', $analysis_id) : null;
+                                            $score_value = $has_analysis ? psip_theme_normalize_scalar( get_field('voto_qualita_analisi', $analysis_id) ) : '';
                                             $when = $has_analysis ? get_the_date( 'Y-m-d H:i' , $analysis_id) : null;
-                                            $insights = $has_analysis ? get_field('core_promise', $analysis_id) : null;
-                                            $bg_color = $score !== null && $score !== '' ? get_heatmap_color($score) : 'transparent';
+                                            $insights = $has_analysis ? psip_theme_normalize_scalar( get_field('riassunto', $analysis_id) ) : null;
+                                            $score_numeric = $score_value !== '' && is_numeric($score_value) ? (float) $score_value : null;
+                                            $bg_color = $score_numeric !== null ? get_heatmap_color($score_numeric) : 'transparent';
                                         ?>
                                         <tr>
                                             <td>
                                                 <a href="#analysis-tabs" class="analysis-name"><span class="dashicons <?php echo esc_attr($agent_config['icon']); ?>"></span> <?php echo esc_html($agent_config['name']); ?></a>
                                             </td>
-                                            <td class="agent-score" style="background-color:<?php echo $bg_color; ?>" data-bs-toggle="tooltip" title="Confidence score"><?php echo ($score !== null && $score !== '') ? esc_html((string) $score) : ''; ?></td>
+                                            <td class="agent-score" style="background-color:<?php echo $bg_color; ?>" data-bs-toggle="tooltip" title="Quality score"><?php echo ($score_numeric !== null) ? esc_html((string) $score_numeric) : ''; ?></td>
 
                                             <?php foreach ($metrics_map as $metric) :
-                                                $value = $has_analysis ? get_field($metric['field'], $analysis_id) : null;
-                                                $display_value = ($value !== null && $value !== '') ? esc_html((string) $value) : ''; ?>
+                                                $value = $has_analysis ? psip_theme_normalize_scalar( get_field($metric['field'], $analysis_id) ) : '';
+                                                $display_value = $value !== '' ? esc_html($value) : ''; ?>
                                                 <td data-bs-toggle="tooltip" title="<?php echo esc_attr($agent_config['name'] . ': ' . $metric['label']); ?>" class="agent-score" style="background-color:<?php echo $bg_color; ?>"><?php echo $display_value; ?></td>
                                             <?php endforeach; ?>
 

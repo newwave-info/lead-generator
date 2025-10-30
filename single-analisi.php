@@ -1,57 +1,17 @@
 <?php get_header();
 
-// Array: 'field_key' => ['label' => 'Etichetta', 'name' => 'field_name', 'type' => 'tipo']
-$campi_analisi = [
-    'field_68f14770ae94f' => [
-        'label' => 'Riassunto',
-        'name' => 'core_promise',
-        'type' => 'textarea'
-    ],
-    'field_insights_summary' => [
-        'label' => 'Sintesi Insights',
-        'name' => 'insights_summary',
-        'type' => 'textarea'
-    ],
-    'field_quality_score' => [
-        'label' => 'Quality Score',
-        'name' => 'quality_score',
-        'type' => 'number'
-    ],
-    'field_confidence_score' => [
-        'label' => 'Confidence Score',
-        'name' => 'confidence_score',
-        'type' => 'number'
-    ],
-    'field_68f14878ae954' => [
-        'label' => 'Core promise',
-        'name' => 'riassunto_esecutivo',
-        'type' => 'textarea'
-    ],
-    'field_gaps_weaknesses' => [
-        'label' => 'Gap e Debolezze',
-        'name' => 'gaps_weaknesses',
-        'type' => 'wysiwyg'
-    ],
-    'field_68f14f5bd883d' => [
-        'label' => 'Debolezze',
-        'name' => 'debolezze_html',
-        'type' => 'wysiwyg'
-    ],
-    'field_68f14f4ad883c' => [
-        'label' => 'Punti di forza',
-        'name' => 'punti_di_forza_html',
-        'type' => 'wysiwyg'
-    ],
-    'field_opportunities_identified' => [
-        'label' => 'Opportunità Identificate',
-        'name' => 'opportunities_identified',
-        'type' => 'wysiwyg'
-    ],
-    'field_68f148bbae955' => [
-        'label' => 'Azioni rapide',
-        'name' => 'azioni_rapide',
-        'type' => 'wysiwyg'
-    ],
+$analysis_fields = [
+    ['label' => 'Riassunto',             'name' => 'riassunto',                       'type' => 'textarea'],
+    ['label' => 'Punti di forza',        'name' => 'punti_di_forza',                  'type' => 'textarea'],
+    ['label' => 'Punti di debolezza',    'name' => 'punti_di_debolezza',              'type' => 'textarea'],
+    ['label' => 'Opportunità',           'name' => 'opportunita',                     'type' => 'textarea'],
+    ['label' => 'Azioni rapide',         'name' => 'azioni_rapide',                   'type' => 'textarea'],
+    ['label' => 'Analisi approfondita',  'name' => 'analisy_perplexity_deep_research','type' => 'wysiwyg'],
+    ['label' => 'Tot. punti di forza',   'name' => 'numero_punti_di_forza',           'type' => 'number'],
+    ['label' => 'Tot. punti di debolezza','name' => 'numero_punti_di_debolezza',      'type' => 'number'],
+    ['label' => 'Tot. opportunità',      'name' => 'numero_opportunita',              'type' => 'number'],
+    ['label' => 'Tot. azioni rapide',    'name' => 'numero_azioni_rapide',            'type' => 'number'],
+    ['label' => 'Voto qualità analisi',  'name' => 'voto_qualita_analisi',            'type' => 'number'],
 ]; ?>
 
 <main id="single_company" role="main">
@@ -69,30 +29,30 @@ $campi_analisi = [
     <section id="company_content">
         <div class="container-fluid">
 
-            <?php foreach ($campi_analisi as $field_key => $campo):
-                $valore = get_field($campo['name']);
+            <?php foreach ($analysis_fields as $field):
+                $value = get_field($field['name']);
 
-                if (!$valore) continue;
+                if ($value === null || $value === '' || $value === []) {
+                    continue;
+                }
 
-                switch ($campo['type']) {
-                    case 'post_object':
-                        $output = get_the_title($valore);
-                        break;
+                switch ($field['type']) {
                     case 'wysiwyg':
-                        $output = $valore;
+                        $output = wp_kses_post($value);
                         break;
                     case 'number':
-                        $output = number_format($valore, 0, ',', '.');
+                        $output = is_numeric($value)
+                            ? esc_html(number_format((float) $value, 0, ',', '.'))
+                            : esc_html((string) $value);
                         break;
                     case 'textarea':
                     default:
-                        $output = nl2br(esc_html($valore));
+                        $output = wp_kses_post(wpautop((string) $value));
                         break;
-                }
-                ?>
+                } ?>
                 <div class="box">
                     <div class="text">
-                        <h2 class="title"><?php echo esc_html($campo['label']); ?></h2><?php echo $output; ?>
+                        <h2 class="title"><?php echo esc_html($field['label']); ?></h2><?php echo $output; ?>
                     </div>
                 </div>
                 <hr class="my-4">

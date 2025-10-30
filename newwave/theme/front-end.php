@@ -72,17 +72,24 @@ function perspect_preload_analisi_by_aziende(array $azienda_ids = []): array {
         if (!isset($indexed[$parent_id][$agent_type])) {
             $execution_timestamp = get_the_date('Y-m-d H:i', $post->ID);
 
+            $quality_score = get_field('voto_qualita_analisi', $post->ID);
+            $strengths     = get_field('numero_punti_di_forza', $post->ID);
+            $weaknesses    = get_field('numero_punti_di_debolezza', $post->ID);
+            $opportunities = get_field('numero_opportunita', $post->ID);
+            $quick_actions = get_field('numero_azioni_rapide', $post->ID);
+            $summary_raw   = get_field('riassunto', $post->ID);
+            $summary       = function_exists('psip_theme_normalize_scalar') ? psip_theme_normalize_scalar($summary_raw) : $summary_raw;
+
             $indexed[$parent_id][$agent_type] = [
-                'id'                => $post->ID,
-                'title'             => get_the_title($post),
-                'confidence_score'  => get_field('confidence_score', $post),
-                'quality_score'     => get_field('quality_score', $post),
-                'when'              => $execution_timestamp,
-                'opportunita'       => get_field('numero_oppurtunita', $post),
-                'quick_wins'        => get_field('quick_wins', $post),
-                'punti_di_forza'    => get_field('punti_di_forza', $post),
-                'debolezze'         => get_field('debolezze', $post),
-                'gap_rilevati'      => get_field('gap_rilevati', $post),
+                'id'              => $post->ID,
+                'title'           => get_the_title($post),
+                'quality_score'   => is_numeric($quality_score) ? (float) $quality_score : null,
+                'summary'         => $summary,
+                'when'            => $execution_timestamp,
+                'strengths'       => is_numeric($strengths) ? (int) $strengths : null,
+                'weaknesses'      => is_numeric($weaknesses) ? (int) $weaknesses : null,
+                'opportunities'   => is_numeric($opportunities) ? (int) $opportunities : null,
+                'quick_actions'   => is_numeric($quick_actions) ? (int) $quick_actions : null,
             ];
         }
 
@@ -98,34 +105,40 @@ function perspect_preload_analisi_by_aziende(array $azienda_ids = []): array {
 function perspect_build_tooltip_html(array $data): string {
     $title = esc_html($data['title']);
     $when = esc_html($data['when']);
-    $confidence_score = esc_html($data['confidence_score']);
-    $quality_score = esc_html($data['quality_score']);
+    $quality_score = isset($data['quality_score']) && $data['quality_score'] !== null
+        ? esc_html((string) $data['quality_score'])
+        : '—';
+    $summary = isset($data['summary']) && $data['summary'] !== ''
+        ? esc_html((string) $data['summary'])
+        : '';
 
     $rows = [
-        ['label' => 'Opportunità',   'icon' => '<span class="dashicons dashicons-thumbs-up"></span>',    'val' => $data['opportunita'] ?? 0],
-        ['label' => 'Quick Wins',    'icon' => '<span class="dashicons dashicons-star-filled"></span>',          'val' => $data['quick_wins'] ?? 0],
-        ['label' => 'Punti di forza','icon' => '<span class="dashicons dashicons-awards"></span>',       'val' => $data['punti_di_forza'] ?? 0],
-        ['label' => 'Debolezze',     'icon' => '<span class="dashicons dashicons-warning"></span>',      'val' => $data['debolezze'] ?? 0],
-        ['label' => 'Gap rilevati',  'icon' => '<span class="dashicons dashicons-thumbs-down"></span>',  'val' => $data['gap_rilevati'] ?? 0],
+        ['label' => 'Opportunità',        'icon' => '<span class="dashicons dashicons-thumbs-up"></span>',   'val' => $data['opportunities'] ?? null],
+        ['label' => 'Punti di debolezza', 'icon' => '<span class="dashicons dashicons-warning"></span>',     'val' => $data['weaknesses'] ?? null],
     ];
 
     $rows_html = '';
     foreach ($rows as $r) {
-        $val = esc_html((string) (isset($r['val']) ? $r['val'] : 0));
+        $val_raw = isset($r['val']) && $r['val'] !== null ? $r['val'] : '—';
+        $val = esc_html((string) $val_raw);
         $rows_html .= '<div class="d-flex align-items-center justify-content-between gap-2">'
                     .    '<span class="me-2">'.$r['icon'].' '.esc_html($r['label']).'</span>'
                     .    '<strong class="ms-2">'.$val.'</strong>'
                     . '</div>';
     }
 
+    $summary_html = $summary !== ''
+        ? '<hr><div class="small">'.$summary.'</div>'
+        : '';
+
     return '<div>'
          .    '<div class="fw-semibold">'.$title.'</div>'
          .    '<div class="small">'.$when.'</div>'
          .    '<hr>'
          .    $rows_html
+         .    $summary_html
          .    '<hr>'
          .    '<div class="small">Quality score: <span class="badge">'.$quality_score.'</span></div>'
-         .    '<div class="small">Confidence score: <span class="badge">'.$confidence_score.'</span></div>'
          . '</div>';
 }
 
@@ -140,24 +153,27 @@ function perspect_get_score_cell(array $analisi_map, int $azienda_id, string $ag
 
     $data = $analisi_map[$azienda_id][$agent_type];
 
-    $bgcolor = get_heatmap_color((int) $data['confidence_score']);
+    $score_for_heatmap = isset($data['quality_score']) && $data['quality_score'] !== null
+        ? (float) $data['quality_score']
+        : 0;
+    $bgcolor = get_heatmap_color($score_for_heatmap);
 
     // Tooltip: per sicurezza uso apici esterni e converto gli apici singoli interni
     $tooltip_html = perspect_build_tooltip_html($data);
     $tooltip_attr = str_replace("'", '&#039;', $tooltip_html); // evita rotture dell'attributo
 
     // Contenuto visibile nella cella: solo primo e ultimo valore, come richiesto
-    $vis_oppo = esc_html((string) ($data['opportunita'] ?? '—'));
-    $vis_gap  = esc_html((string) ($data['gap_rilevati'] ?? '—'));
+    $vis_opportunities = esc_html((string) ($data['opportunities'] ?? '—'));
+    $vis_weaknesses  = esc_html((string) ($data['weaknesses'] ?? '—'));
 
     $html  = '<td class="agent-score"'
           .       ' style="background-color:'.$bgcolor.'"'
           .       ' data-bs-toggle="popover" data-bs-html="true"'
           //.       ' data-bs-title="Titolo"'
           .       ' data-bs-content=\''.$tooltip_attr.'\'>';
-    $html .=     '<span class="dashicons dashicons-thumbs-up"></span> '.$vis_oppo;
+    $html .=     '<span class="dashicons dashicons-thumbs-up"></span> '.$vis_opportunities;
     $html .=     ' <br>';
-    $html .=     '<span class="dashicons dashicons-thumbs-down"></span> '.$vis_gap;
+    $html .=     '<span class="dashicons dashicons-warning"></span> '.$vis_weaknesses;
     $html .= '</td>';
 
     return $html;
@@ -259,4 +275,3 @@ add_action('pre_get_posts', 'theme_modify_query');
 //         echo '</ul></nav></section></section></section>';
 //     }
 // }
-
