@@ -1,0 +1,582 @@
+{
+  "name": "Lead Generator | Company Enrichment",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "company-enrichment",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        928,
+        464
+      ],
+      "id": "bc879ff4-3081-43fc-a963-207cbfd168b9",
+      "name": "Company Enrichment Trigger",
+      "webhookId": "0749010b-5a94-42cf-b959-20a178772693"
+    },
+    {
+      "parameters": {
+        "url": "=https://lead.perspect.it/wp-json/wp/v2/azienda/{{ $json.body.company_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "publish"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1152,
+        464
+      ],
+      "id": "39504123-b9b7-427e-8925-8071d35e3e9b",
+      "name": "Read Company WP",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "3aI2CNmgXh2YqkjZ",
+          "name": "Lead 18kPRo WP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://lead.perspect.it/wp-json/wp/v2/azienda/{{ $('Read Company WP').item.json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "acf[address]",
+              "value": "={{ $json.address }}"
+            },
+            {
+              "name": "acf[partita_iva]",
+              "value": "={{ $json.partita_iva }}"
+            },
+            {
+              "name": "acf[phone]",
+              "value": "={{ $json.phone }}"
+            },
+            {
+              "name": "acf[email_azienda]",
+              "value": "={{ $json.email }}"
+            },
+            {
+              "name": "acf[domain]",
+              "value": "={{ $json.domain }}"
+            },
+            {
+              "name": "acf[sector_specific]",
+              "value": "={{ $json.sector_specific }}"
+            },
+            {
+              "name": "acf[business_type]",
+              "value": "={{ $json.business_type }}"
+            },
+            {
+              "name": "meta[enrichment_confidence]",
+              "value": "={{ $json.confidence_score }}"
+            },
+            {
+              "name": "acf[social_json]",
+              "value": "={{ $json.social_links_json }}"
+            },
+            {
+              "name": "acf[linkedin_url]",
+              "value": "={{ $json.linkedin_url }}"
+            },
+            {
+              "name": "acf[youtube_url]",
+              "value": "={{ $json.youtube_url }}"
+            },
+            {
+              "name": "acf[facebook_url]",
+              "value": "={{ $json.facebook_url }}"
+            },
+            {
+              "name": "acf[instagram_url]",
+              "value": "={{ $json.instagram_url }}"
+            },
+            {
+              "name": "acf[provincia]",
+              "value": "={{ $json.province }}"
+            },
+            {
+              "name": "acf[budget_tier]",
+              "value": "={{ $json.budget_tier }}"
+            },
+            {
+              "name": "acf[confidence]",
+              "value": "={{ $json.confidence_score }}"
+            },
+            {
+              "name": "acf[estimated_annual_revenue]",
+              "value": "={{ $json.estimated_annual_revenue }}"
+            },
+            {
+              "name": "acf[estimated_ebitda_percentage]",
+              "value": "={{ $json.estimated_ebitda_percentage }}"
+            },
+            {
+              "name": "acf[estimated_marketing_budget]",
+              "value": "={{ $json.estimated_marketing_budget }}"
+            },
+            {
+              "name": "acf[employee_count_est]",
+              "value": "={{ $json.employee_count }}"
+            },
+            {
+              "name": "acf[growth_stage]",
+              "value": "={{ $json.growth_stage }}"
+            },
+            {
+              "name": "acf[analysis_date]",
+              "value": "={{ $json.enrichment_timestamp }}"
+            },
+            {
+              "name": "acf[analisy_perplexity_deep_research]",
+              "value": "={{ $('Rimozione thinking').item.json.output }}"
+            },
+            {
+              "name": "acf[status]",
+              "value": "={{ $json.enrichment_status }}"
+            },
+            {
+              "name": "acf[key_factor_analisi]",
+              "value": "={{ $json.key_insights }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2400,
+        464
+      ],
+      "id": "d7834baa-1434-44ed-b736-b8c510ed9e95",
+      "name": "Update Company WP",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "3aI2CNmgXh2YqkjZ",
+          "name": "Lead 18kPRo WP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://api.microlink.io/",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "={{ $json.acf.website }}"
+            },
+            {
+              "name": "screenshot",
+              "value": "true"
+            },
+            {
+              "name": "fullPage",
+              "value": "true"
+            },
+            {
+              "name": "embed",
+              "value": "=screenshot.url"
+            },
+            {
+              "name": "meta",
+              "value": "false"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        928,
+        128
+      ],
+      "id": "2fd8d5d2-4f7b-47ea-af1b-bc874c70c618",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://lead.perspect.it/wp-json/wp/v2/media",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Disposition",
+              "value": "=attachment; filename=\"{{ $json.slug }}-{{ $json.id }}.png\""
+            },
+            {
+              "name": "Content-Type",
+              "value": "image/png"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1152,
+        128
+      ],
+      "id": "0987bc23-a20e-415c-98aa-aec937ddd1a6",
+      "name": "HTTP Request1",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "3aI2CNmgXh2YqkjZ",
+          "name": "Lead 18kPRo WP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://lead.perspect.it/wp-json/wp/v2/media/{{ $json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "post",
+              "value": "={{ $('Read Company WP').item.json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1376,
+        128
+      ],
+      "id": "fd635bd0-9db1-424d-8eb7-6968cb142ace",
+      "name": "HTTP Request2",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "3aI2CNmgXh2YqkjZ",
+          "name": "Lead 18kPRo WP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://lead.perspect.it/wp-json/wp/v2/azienda/{{ $('Read Company WP').item.json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "acf[screen_home]",
+              "value": "={{ $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1600,
+        128
+      ],
+      "id": "af497dec-6ba8-4572-a4ae-0fddb6684f2c",
+      "name": "HTTP Request3",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "3aI2CNmgXh2YqkjZ",
+          "name": "Lead 18kPRo WP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "sonar-deep-research",
+        "messages": {
+          "message": [
+            {
+              "content": "=Sei un esperto analista di business intelligence specializzato in PMI italiane.\n\nIl tuo compito è condurre una ricerca approfondita e completa su un'azienda italiana, raccogliendo TUTTE le informazioni disponibili pubblicamente che potrebbero essere rilevanti per:\n- Qualificazione commerciale B2B\n- Analisi di potenziale cliente\n- Decisioni strategiche di vendita\n\n## Fonti da consultare\n1. Sito web aziendale (tutte le sezioni: about, contatti, servizi, team, news)\n2. Profili social media (LinkedIn company, Facebook, Instagram, YouTube, TikTok, X/Twitter)\n3. Registro Imprese / Camere di Commercio\n4. Database aziendali pubblici (Reportaziende, Infocamere, ecc.)\n5. News e articoli di stampa\n6. Bilanci e documentazione pubblica\n7. Marketplace e portali B2B\n\n## Informazioni da ricercare\n\n### Anagrafica aziendale\n- Ragione sociale completa e corretta\n- Partita IVA (11 cifre)\n- Indirizzo sede legale completo (via, numero civico, CAP, città, provincia)\n- Telefono e email di contatto\n- Sito web e dominio principale\n- Anno di fondazione\n- Profili social aziendali\n\n### Business e mercato\n- Settore specifico di attività (es. \"Torneria meccanica di precisione\")\n- Categoria/tipo di business\n- Prodotti/servizi principali offerti\n- Mercati serviti (locale, nazionale, internazionale)\n- Clienti tipici e segmenti target\n- Competitor principali\n- Posizionamento di mercato\n\n### Dimensione e performance\n- Numero dipendenti (se disponibile range o stima)\n- Fatturato annuale (anche stimato o range)\n- EBITDA % (se disponibile o media di settore)\n- Fase di crescita (startup, growth, established)\n- Storia di crescita recente\n\n### Presenza digitale\n- URL profilo LinkedIn company (non persone)\n- URL pagina Facebook aziendale\n- URL profilo Instagram\n- URL canale YouTube\n- URL profilo TikTok\n- URL profilo X/Twitter\n- Qualità e aggiornamento presenza online\n\n### Contesto commerciale\n- Budget marketing stimabile (da dipendenti + fatturato)\n- Investimenti in comunicazione visibili\n- Certificazioni e riconoscimenti\n- Partnership rilevanti\n- Eventi e fiere di settore\n\n## Formato della risposta\n\nScrivi un report analitico strutturato in italiano, organizzato per sezioni tematiche.\n\nPer ogni informazione trovata, indica:\n- Il dato specifico\n- La fonte da cui proviene\n- Il livello di affidabilità (confermato, probabile, stimato)\n\nSe un dato NON è disponibile, indicalo esplicitamente scrivendo \"Non disponibile\" o \"Dato non reperito\".\n\nConcludi con una valutazione sintetica del livello di completezza delle informazioni raccolte (es. \"Dati completi 85%\" oppure \"Informazioni limitate 40%\").\n\nScrivi in modo professionale, preciso e dettagliato. Il report sarà poi analizzato da un sistema AI per estrarre dati strutturati.\n",
+              "role": "system"
+            },
+            {
+              "content": "=Conduci una ricerca completa e approfondita su questa azienda italiana:\n\n**Azienda**: {{ $('Read Company WP').item.json.title.rendered }}\n**Sito Web**: {{ $('Read Company WP').item.json.acf.website }}\n**P. IVA**: {{ $('Read Company WP').item.json.acf.partita_iva }}\n\nAnalizza tutte le fonti disponibili e prepara un report dettagliato che includa TUTTE le informazioni rilevanti per una qualificazione commerciale B2B.\n\nConcentrati in particolare su:\n- Dati anagrafici completi e verificati\n- Presenza digitale e social media (URL specifici delle pagine aziendali)\n- Dimensione aziendale (dipendenti, fatturato)\n- Settore e attività specifica\n- Potenziale commerciale e budget stimato\n\nRispondi in italiano. Sii il più preciso e dettagliato possibile.\n"
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexity",
+      "typeVersion": 1,
+      "position": [
+        1376,
+        464
+      ],
+      "id": "e7f13290-5a23-412d-a85a-4be814df4482",
+      "name": "Message a model",
+      "credentials": {
+        "perplexityApi": {
+          "id": "psfl4DHOQ6FBn7sx",
+          "name": "Perplexity account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse JSON da GPT output\nconst raw = $input.first().json.output;\nconst data = JSON.parse(raw);\n\n// Restituisci campi essenziali + key insights\nreturn {\n  json: {\n    company_name_full: data.company_name_full,\n    partita_iva: data.partita_iva,\n    address: data.address,\n    city: data.city,\n    postal_code: data.postal_code,\n    province: data.province,\n    phone: data.phone,\n    email: data.email,\n    domain: data.domain,\n    sector_specific: data.sector_specific,\n    business_type: data.business_type,\n    employee_count: data.employee_count,\n    growth_stage: data.growth_stage,\n    estimated_annual_revenue: data.estimated_annual_revenue,\n    estimated_ebitda_percentage: data.estimated_ebitda_percentage,\n    estimated_marketing_budget: data.estimated_marketing_budget,\n    budget_tier: data.budget_tier,\n    confidence_score: data.confidence_score,\n    \n    // Social\n    linkedin_url: data.social_links.linkedin || '',\n    facebook_url: data.social_links.facebook || '',\n    instagram_url: data.social_links.instagram || '',\n    x_url: data.social_links.x || '',\n    youtube_url: data.social_links.youtube || '',\n    tiktok_url: data.social_links.tiktok || '',\n    social_links_json: JSON.stringify(data.social_links),\n    \n    // Key Insights (NUOVO)\n    key_insights: data.key_insights || '',\n    \n    // Metadata\n    enrichment_timestamp: new Date().toISOString(),\n    enrichment_status: 'completed'\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2176,
+        464
+      ],
+      "id": "dae46260-b661-4443-91d5-2fafc9964b3d",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Rimuove tutto il contenuto prima e incluso il tag </think>\nconst output = $input.first().json.choices[0].message.content;\nconst cleanedText = output.replace(/[\\s\\S]*?<\\/think>\\s*/g, '').trim();\n\nreturn {\n  output: cleanedText\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        464
+      ],
+      "id": "707c21be-a2cf-40cb-8971-316ac732b66e",
+      "name": "Rimozione thinking"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Estrai i dati strutturati e i key insights commerciali dal seguente report di ricerca:\n\n---\n{{ $json.output }}\n---\n\nRestituisci SOLO questo JSON:\n\n{\n  \"company_name_full\": \"Ragione sociale completa\",\n  \"partita_iva\": \"11 cifre senza IT\",\n  \"address\": \"Via/Piazza + numero\",\n  \"city\": \"Comune\",\n  \"postal_code\": \"CAP 5 cifre\",\n  \"province\": \"Nome per intero\",\n  \"phone\": \"...\",\n  \"email\": \"info@...\",\n  \"domain\": \"dominio.tld\",\n  \"sector_specific\": \"Settore specifico dettagliato\",\n  \"business_type\": \"categoria attività\",\n  \"employee_count\": \"range (es. 10-50)\",\n  \"growth_stage\": \"Startup|Growth|Established|Non definito\",\n  \"estimated_annual_revenue\": \"€XXX - €XXX (formato es. 1.5M - 3M)\",\n  \"estimated_ebitda_percentage\": numero,\n  \"estimated_marketing_budget\": \"€XXX - €XXX\",\n  \"budget_tier\": 0,\n  \"social_links\": {\n    \"linkedin\": \"URL company page\",\n    \"facebook\": \"URL business page\",\n    \"instagram\": \"URL profilo\",\n    \"x\": \"URL profilo\",\n    \"youtube\": \"URL canale\",\n    \"tiktok\": \"URL profilo\"\n  },\n  \"confidence_score\": 85,\n  \"key_insights\": \"Sintesi concisa (max 1000 caratteri) dei fattori chiave per qualificazione commerciale: punti di forza, posizionamento, trend crescita, opportunità/rischi, network strategici, track record. Focus su elementi azionabili per sales team.\"\n}\n",
+        "options": {
+          "systemMessage": "Sei un sistema di estrazione dati specializzato in business intelligence B2B per PMI italiane.\n\nRiceverai un report di ricerca approfondito su un'azienda italiana e dovrai:\n1. Estrarre i dati anagrafici strutturati in JSON\n2. Identificare e sintetizzare i KEY INSIGHTS commerciali più rilevanti\n\n## PARTE 1: Estrazione Dati Strutturati\n\nEstrai SOLO informazioni esplicitamente presenti nel report e formattale secondo gli standard:\n- P.IVA: solo 11 cifre numeriche, senza \"IT\"\n- Province: nome completo (es. \"Venezia\" non \"VE\")\n- Email: formato valido\n- URL social: completi e validati\n- Growth stage da numero dipendenti: <10 Startup, 10-50 Growth, 50+ Established\n- Budget tier da fatturato+dipendenti secondo classificazione fornita\n- EBITDA % da media di settore se non specificato\n- Campi mancanti: stringa vuota \"\" per testo, 0 per numeri, \"Non definito\" per growth_stage\n\n### Budget Tier Classification (0-4)\n**Tier 0 - Micro**: Fatturato < €500K O dipendenti < 5 (non qualificato)\n**Tier 1 - Small**: €500K-€1.5M, 5-10 dip, EBITDA 10-12%\n**Tier 2 - Medium**: €1.5M-€3M, 10-50 dip, EBITDA 12-15%\n**Tier 3 - Large**: €3M-€10M, 50-250 dip, EBITDA 15-18%\n**Tier 4 - Enterprise**: > €10M, 250+ dip, EBITDA 18%+\n\n### Confidence Score (0-100)\n- 90-100: Dati completi e verificati da fonti ufficiali\n- 70-89: Buona copertura con alcune informazioni stimate\n- 50-69: Dati parziali, molte stime\n- 30-49: Informazioni limitate\n- 0-29: Dati insufficienti\n\n## PARTE 2: Key Insights Commerciali\n\nIdentifica ed estrai nel campo \"key_insights\" (max 800 caratteri) gli elementi più rilevanti per:\n- Qualificazione commerciale B2B\n- Valutazione del potenziale cliente\n- Identificazione di opportunità di business\n\n### Elementi da evidenziare:\n✅ **Punti di forza distintivi** (es. leadership di mercato, partnership strategiche, investimenti recenti)\n✅ **Posizionamento competitivo** (es. nicchia specializzata, clienti di rilievo)\n✅ **Segnali di crescita** (es. trend fatturato positivo, nuove sedi, espansione team)\n✅ **Fattori di rischio/opportunità** (es. dipendenza da singolo settore, carenze digitali, certificazioni mancanti)\n✅ **Network e relazioni** (es. appartenenza a network, collaborazioni con big player)\n✅ **Track record rilevante** (es. operazioni significative concluse, clienti prestigiosi)\n\n### Formato Key Insights:\nScrivi un testo conciso, professionale, focalizzato su elementi **azionabili** per il sales team.\nUsa bullet points se necessario. Max 800 caratteri.\n\nEsempio:\n\"Studio consolidato con 20+ anni di attività nel Veneto. Crescita fatturato +11.7% (2023: €2.3M). 258 clienti PMI gestiti con focus su M&A e operazioni straordinarie. Partnership strategica con PwC TLS per deal complessi. Track record verificato: acquisizione Bottecchia Cicli, supporto a VeNetWork (67 imprenditori). Nuova sede 1.300 mq con fotovoltaico (investimento significativo = stabilità). Presenza digitale limitata (no social attivi = opportunità). Budget marketing stimato €40-80K. Team 15 dipendenti + 8 collaboratori esterni. OPPORTUNITÀ: ampliamento servizi digitali, espansione oltre Veneto.\"\n\nRestituisci ESCLUSIVAMENTE il JSON richiesto, senza testo aggiuntivo.\nInizia con { e termina con }.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1824,
+        464
+      ],
+      "id": "61ec3ed4-0148-4a82-aafe-1899e82799ed",
+      "name": "Agente di sintesi"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-5-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1904,
+        688
+      ],
+      "id": "ccf2f160-601d-415b-8572-4fa02307df16",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "YKH8CfczdzNM1zeT",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Company Enrichment Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read Company WP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Company WP": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Company WP": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Rimozione thinking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Update Company WP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rimozione thinking": {
+      "main": [
+        [
+          {
+            "node": "Agente di sintesi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente di sintesi",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente di sintesi": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6897491c-f6ee-4c4b-90c0-ae75221eda63",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fe117d56aad4346ee596609bb8c3079d6edd34e383a675201472f524674346cc"
+  },
+  "id": "XrJOYGjHIe3uDlPO",
+  "tags": []
+}
