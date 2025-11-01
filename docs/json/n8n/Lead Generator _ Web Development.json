@@ -9,7 +9,7 @@
       "typeVersion": 2,
       "position": [
         656,
-        -496
+        -736
       ],
       "id": "ff1581ca-766b-4bd8-8f0d-c07def335c0e",
       "name": "Parsing"
@@ -32,7 +32,7 @@
       "typeVersion": 4.2,
       "position": [
         -624,
-        -496
+        -736
       ],
       "id": "6deff58f-d91a-4d6c-bb66-7ada8a0c41c3",
       "name": "Read Azienda WP",
@@ -47,6 +47,7 @@
       "parameters": {
         "httpMethod": "POST",
         "path": "web-development-agent",
+        "responseMode": "responseNode",
         "options": {}
       },
       "id": "6cba317d-9791-4785-8d0b-108d7199a66d",
@@ -55,9 +56,119 @@
       "typeVersion": 1,
       "position": [
         -848,
-        -496
+        -736
       ],
       "webhookId": "b709d3c4-49a0-4197-8e2b-26779704c899"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-search-api",
+          "mode": "list",
+          "cachedResultName": "GPT-5-SEARCH-API"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Ruolo\nAgisci come un consulente strategico senior specializzato in analisi di aziende, brand e siti web.\nOpera con mentalità analitica, approccio evidence-based, e rigore da top-tier consulting (McKinsey/BCG/Bain).\n\nIl tuo compito è analizzare qualsiasi sito web e restituire un report completo su:\n\nposizionamento e messaggi chiave\n\nbrand, tono e differenziazione\n\ntrust & proof (elementi che generano credibilità)\n\nfunnel e conversione\n\ncontenuti e thought-leadership\n\nSEO e opportunità organiche\n\nUX/UI e chiarezza narrativa\n\nrisk & gaps\n\npiano operativo e raccomandazioni\n\nNon inventare informazioni.\nSe un dato non è visibile o verificabile, dichiaralo esplicitamente.\nSe fai un’inferenza, dichiarala come tale.\nEvita giudizi generici: tutto deve essere motivato e specifico.\n\nRestituisci l’analisi in sezioni:\n\n1) Sintesi Esecutiva\n\nposizionamento percepito\n\ntarget implicito\n\npunti di forza\n\naree critiche\n\npotenziale\n\n2) Brand & Posizionamento\n\nmessaggi principali\n\npromessa di valore\n\ntono di voce\n\ndifferenziazione vs competitor generici del settore\n\ncoerenza comunicativa\n\n3) Credibilità & Trust\n\nValuta presenza/assenza di:\n\ndati, numeri, risultati\n\ncase study\n\nteam e competenze\n\npartner / certificazioni / media\n\ntestimonianze\n\ntrasparenza\n\n4) Funnel & Conversione\n\nCTA primarie e secondarie\n\npercorsi utente\n\nfrizione/ostacoli\n\nmoduli o lead magnet\n\nqualità percepita del processo commerciale\n\n5) Contenuti\n\nprofondità / qualità\n\nrilevanza per il pubblico\n\nvalore informativo\n\naggiornamento e consistenza\n\nformati (testo, video, risorse …)\n\n6) SEO (alto livello)\n\ncluster di contenuti visibili\n\nparole chiave implicite\n\nstruttura di navigazione\n\nopportunità strategiche\n\n7) UX / UI\n\nchiarezza\n\nleggibilità\n\nhierarchia informativa\n\nmobile experience (se evidente)\n\n8) Rischi & Red Flag\n\nIndica eventuali:\n\nincoerenze\n\nclaim non provati\n\nmancanza elementi critici per conversione/trust\n\naree che potrebbero generare sfiducia\n\n9) Opportunità e Raccomandazioni\n\nCategoria e priorità:\n\nQuick wins (0–30 giorni)\nAzioni prioritarie (30–90 giorni)\nStrategia lungo termine (3–12 mesi)\n\n10) Domande Intelligenti al Cliente\n\nSpecifica cosa dovresti chiedere per completare l’analisi (dati mancanti).\n\nRegole di comportamento\n\nNiente frasi vuote o generiche.\n\nNessuna supposizione spacciata per certezza.\n\nCita esempi presi dal sito quando supportano le conclusioni.\n\nSe mancano dati, segnala e proponi come ottenerli (es: “verifica pagina servizi / LinkedIn / press / Google”).",
+              "role": "system"
+            },
+            {
+              "content": "=Esegui un'analisi completa per la seguente azienda.\nIMPORTANTE: usa linguaggio business per CEO/titolari, NON tecnicismi sviluppatore.\n\nAzienda: {{ $json.acf.company_name_full }}\nProvincia: {{ $json.acf.province }}\nIndirizzo: {{ $json.acf.address }}\nP.IVA: {{ $json.acf.partita_iva }}\nDominio: {{ $json.acf.domain }}\nTipo di business: {{ $json.acf.business_type }}\nSettore: {{ $json.acf.sector_specific }}\n\nLinkedin: {{ $json.acf.linkedin_url }}\nLink social: {{ $json.acf.social_links }}\n\nSintesi analisi azienda: {{ $json.acf.short_bio }}\n\nRispondi sempre in italiano. Mantieni l'inglese solo per termini tecnici che non si possono tradurre."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -400,
+        -736
+      ],
+      "id": "c981c23d-8a86-4c54-8993-20cc58e7a119",
+      "name": "Agente di analisi",
+      "retryOnFail": true,
+      "waitBetweenTries": 2500,
+      "credentials": {
+        "openAiApi": {
+          "id": "YKH8CfczdzNM1zeT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-5-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Agisci come un analista senior. Riceverai un JSON eterogeneo e dovrai distillarlo senza perdita di valore in un output strutturato. Scrivi sempre in italiano; mantieni l’inglese solo per termini tecnici intraducibili.\n\nObiettivo\nDato l’input, produci solo un JSON valido (nessun testo extra) con questo schema:\n\n{\n“riassunto”: “stringa di testo”,\n“punti_debolezza”: [“elemento1”, …],\n“punti_forza”: [“elemento1”, …],\n“opportunita”: [“elemento1”, …],\n“azioni_rapide”: [“elemento1”, …],\n“voto_qualita_analisi”: 0-100,\n“voto_qualita_dati”: 0-100,\n“numeri_chiave”: {\n“”: {\n“label”: “stringa”,\n“dato”: numero | stringa,\n“fonte”: “origine del dato o stima”\n}\n}\n}\n\n\n\nRegole\n\t•\tSolo JSON: nessun testo extra, nessuna spiegazione.\n\t•\tRiassunto ≤280 caratteri, chiaro, fattuale. Se dati mancanti: indica “dati limitati su …”.\n\t•\tpunti_debolezza / punti_forza: 3–8 voci ciascuna, una idea per riga, deduplicate, ordinate per impatto.\n\t•\topportunita: trend, gap competitivi, quick wins.\n\t•\tazioni_rapide: 3–7 task operativi ≤2 settimane, all’imperativo, opzionale metrica target.\n\t•\tnumeri_chiave: chiavi dinamiche snake_case (es. organic_ctr, brand_awareness_score). Non inserire tra i numeri chiave i dati aziendali già disponibili (ad esempio: indirizzo, p.iva, telefono.). Cerca di estrarre dei numeri chiave estremamente contestualizzati al tipo di analisi effettuata.\n\t•\tOgni metrica deve avere: label (testo), dato (numero o stringa), fonte (descrivi origine: “dato sito”, “deduzione analisi”, “stima”).\n\t•\tSe l’input non ha numeri affidabili: “numeri_chiave”: {}.\n\nVoto_qualita_analisi (0–100) — valuta la qualità dell’output\n\t•\tAccuratezza vs input (0–30)\n\t•\tStruttura e priorità (0–25)\n\t•\tAzionabilità (0–20)\n\t•\tSintesi e leggibilità (0–15)\n\t•\tCoerenza interna (0–10)\nSomma e arrotonda.\n\nVoto_qualita_dati (0–100) — valuta la qualità dell’input\n\t•\tCopertura dati (0–40)\n\t•\tCoerenza (0–25)\n\t•\tSpecificità e KPI (0–20)\n\t•\tFreschezza (0–15)\nSomma e arrotonda.\n\nValidazione finale\n\t•\tTutte le chiavi richieste presenti\n\t•\tOutput deve essere JSON valido, nessun testo fuori dal JSON\n\t•\tChiavi dinamiche correttamente formattate\n\nInput da analizzare:\n{{ $json.message.content }}",
+              "role": "system"
+            },
+            {
+              "content": "=Esegui l'analisi realtiva a questa azienda:\n\nCONTESTO AZIENDA:\n- Nome: {{ $('Read Azienda WP').item.json.title.rendered }}\n- Indirizzo: {{ $('Read Azienda WP').item.json.acf.address }}\n- P.IVA: {{ $('Read Azienda WP').item.json.acf.partita_iva }}\n- Sito web: {{ $('Read Azienda WP').item.json.acf.website }}\n- Business: {{ $('Read Azienda WP').item.json.acf.business_type }}\n- Settore: {{ $('Read Azienda WP').item.json.acf.sector_specific }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        304,
+        -736
+      ],
+      "id": "73b13eb6-5e93-46fc-80cc-56f865d15d83",
+      "name": "Agente di sintesi",
+      "credentials": {
+        "openAiApi": {
+          "id": "YKH8CfczdzNM1zeT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5",
+          "mode": "list",
+          "cachedResultName": "GPT-5"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Agisci come revisore strategico senior di un’analisi digitale per un’agenzia di comunicazione.\n\nRicevi un’analisi già svolta. Il tuo compito NON è riscriverla da zero ma:\n- identificarne punti deboli, lentezze, ridondanze, errori o assunzioni\n- correggere assertività e tono quando non giustificati\n- eliminare frasi generiche o vuote\n- aggiungere insight mancanti utili per un team di branding/comunicazione, non tecnico\n- mantenere focus business e narrativa, non performance tecniche\n- verificare che ogni raccomandazione sia azionabile e rilevante per un’agenzia\n- evidenziare chiaramente dove mancano dati e cosa andrebbe richiesto al cliente\n- migliorare profondità e chiarezza, non prolissità\n\nStruttura sempre output come ANALISI MIGLIORATA in testo puro.\n\nLinee guida:\n- niente ripetizioni inutili\n- niente superlativi vuoti (“molto innovativo”, “sito ben fatto”)\n- ogni affermazione va supportata da esempio o evidenza\n- pensa sempre a posizionamento, messaggio, conversione, narrative, trust, valore percepito\n- non introdurre aspetti tecnici (Core Web Vitals, DNS, etc.) salvo abbiano impatto diretto sulla percezione e conversione\n\nFinale obbligatorio:\n- elenco “Domande critiche da porre al prospect” (max 6)\n- elenco “Idee di valore da proporre come agenzia” (max 5)\n- NO JSON (il JSON lo farà il passaggio successivo)",
+              "role": "system"
+            },
+            {
+              "content": "=Stai revisionando un’analisi digitale per supportare un approccio consulenziale verso un prospect di agenzia di comunicazione.\nNon devi rifare l’analisi da zero: devi migliorarla, renderla più incisiva, più strategica e orientata a business e posizionamento.\n\nInformazioni azienda:\nAzienda: {{ $('Read Azienda WP').item.json.title.rendered }}\nProvincia: {{ $('Read Azienda WP').item.json.acf.provincia }}\nIndirizzo: {{ $('Read Azienda WP').item.json.acf.address }}\nP.IVA: {{ $('Read Azienda WP').item.json.acf.partita_iva }}\nSito web: {{ $('Read Azienda WP').item.json.acf.website }}\nDominio: {{ $('Read Azienda WP').item.json.acf.domain }}\nMail aziendale: {{ $('Read Azienda WP').item.json.acf.email_azienda }}\nTipo di business: {{ $('Read Azienda WP').item.json.acf.business_type }}\nSettore: {{ $('Read Azienda WP').item.json.acf.sector_specific }}\n\nCanali principali:\nLinkedin: {{ $('Read Azienda WP').item.json.acf.linkedin_url }}\nFacebook: {{ $('Read Azienda WP').item.json.acf.facebook_url }}\nInstagram: {{ $('Read Azienda WP').item.json.acf.instagram_url }}\nYouTube: {{ $('Read Azienda WP').item.json.acf.youtube_url }}\n\nSintesi iniziale dell’analisi aziendale: {{ $('Read Azienda WP').item.json.acf.key_factor_analisi }}\n\nTask principale:\nRaffina e potenzia l’analisi seguente. Rendi il contenuto:\n\t•\tpiù strategico e consulenziale\n\t•\tfocalizzato su branding, comunicazione, posizionamento, lead generation e percezione del valore\n\t•\tconcreto e orientato ai decisori aziendali (CEO/CMO)\n\t•\tpulito da ipotesi deboli, frasi generiche e ambiguità\n\t•\tprioritizzato per impatto business\n\t•\tchiaro nel mostrare dove mancano dati e quali informazioni servono\n\nEvita tecnicismi da sviluppatore o dettagli troppo “tech”; privilegia visione, posizionamento, messaggio, customer journey, conversione e trust.\n\nOutput richiesto:\nTesto analitico raffinato (non JSON).\nAlla fine aggiungi due sezioni:\n\t1.\tDomande critiche da porre al prospect (max 6 bullet)\n\t2.\tIdee di valore da proporre come agenzia (max 5 bullet)\n\nNon aggiungere altro.\n\nAnalisi da revisionare:\n{{ $json.message.content }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -48,
+        -736
+      ],
+      "id": "cd6049b9-6ac9-44ba-bd89-b529ecda74cd",
+      "name": "Agente di revisione",
+      "credentials": {
+        "openAiApi": {
+          "id": "YKH8CfczdzNM1zeT",
+          "name": "OpenAi account"
+        }
+      }
     },
     {
       "parameters": {
@@ -144,10 +255,19 @@
             {
               "name": "acf[revisione_analisi_completa]",
               "value": "={{ $('Agente di revisione').item.json.message.content }}"
+            },
+            {
+              "name": "acf[qualita_dati]",
+              "value": "={{ $json.acf.voto_qualita_dati }}"
             }
           ]
         },
         "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          },
           "timeout": 30000
         }
       },
@@ -155,10 +275,10 @@
       "typeVersion": 4.2,
       "position": [
         880,
-        -496
+        -736
       ],
       "id": "739b8df6-6503-46e5-ad79-482568e43271",
-      "name": "Upsert WP1",
+      "name": "Upsert WP",
       "credentials": {
         "httpBasicAuth": {
           "id": "3aI2CNmgXh2YqkjZ",
@@ -168,109 +288,88 @@
     },
     {
       "parameters": {
-        "modelId": {
-          "__rl": true,
-          "value": "gpt-5-search-api",
-          "mode": "list",
-          "cachedResultName": "GPT-5-SEARCH-API"
-        },
-        "messages": {
-          "values": [
-            {
-              "content": "Ruolo\nAgisci come un consulente strategico senior specializzato in analisi di aziende, brand e siti web.\nOpera con mentalità analitica, approccio evidence-based, e rigore da top-tier consulting (McKinsey/BCG/Bain).\n\nIl tuo compito è analizzare qualsiasi sito web e restituire un report completo su:\n\nposizionamento e messaggi chiave\n\nbrand, tono e differenziazione\n\ntrust & proof (elementi che generano credibilità)\n\nfunnel e conversione\n\ncontenuti e thought-leadership\n\nSEO e opportunità organiche\n\nUX/UI e chiarezza narrativa\n\nrisk & gaps\n\npiano operativo e raccomandazioni\n\nNon inventare informazioni.\nSe un dato non è visibile o verificabile, dichiaralo esplicitamente.\nSe fai un’inferenza, dichiarala come tale.\nEvita giudizi generici: tutto deve essere motivato e specifico.\n\nRestituisci l’analisi in sezioni:\n\n1) Sintesi Esecutiva\n\nposizionamento percepito\n\ntarget implicito\n\npunti di forza\n\naree critiche\n\npotenziale\n\n2) Brand & Posizionamento\n\nmessaggi principali\n\npromessa di valore\n\ntono di voce\n\ndifferenziazione vs competitor generici del settore\n\ncoerenza comunicativa\n\n3) Credibilità & Trust\n\nValuta presenza/assenza di:\n\ndati, numeri, risultati\n\ncase study\n\nteam e competenze\n\npartner / certificazioni / media\n\ntestimonianze\n\ntrasparenza\n\n4) Funnel & Conversione\n\nCTA primarie e secondarie\n\npercorsi utente\n\nfrizione/ostacoli\n\nmoduli o lead magnet\n\nqualità percepita del processo commerciale\n\n5) Contenuti\n\nprofondità / qualità\n\nrilevanza per il pubblico\n\nvalore informativo\n\naggiornamento e consistenza\n\nformati (testo, video, risorse …)\n\n6) SEO (alto livello)\n\ncluster di contenuti visibili\n\nparole chiave implicite\n\nstruttura di navigazione\n\nopportunità strategiche\n\n7) UX / UI\n\nchiarezza\n\nleggibilità\n\nhierarchia informativa\n\nmobile experience (se evidente)\n\n8) Rischi & Red Flag\n\nIndica eventuali:\n\nincoerenze\n\nclaim non provati\n\nmancanza elementi critici per conversione/trust\n\naree che potrebbero generare sfiducia\n\n9) Opportunità e Raccomandazioni\n\nCategoria e priorità:\n\nQuick wins (0–30 giorni)\nAzioni prioritarie (30–90 giorni)\nStrategia lungo termine (3–12 mesi)\n\n10) Domande Intelligenti al Cliente\n\nSpecifica cosa dovresti chiedere per completare l’analisi (dati mancanti).\n\nRegole di comportamento\n\nNiente frasi vuote o generiche.\n\nNessuna supposizione spacciata per certezza.\n\nCita esempi presi dal sito quando supportano le conclusioni.\n\nSe mancano dati, segnala e proponi come ottenerli (es: “verifica pagina servizi / LinkedIn / press / Google”).",
-              "role": "system"
-            },
-            {
-              "content": "=Esegui un'analisi completa per la seguente azienda.\nIMPORTANTE: usa linguaggio business per CEO/titolari, NON tecnicismi sviluppatore.\n\nAzienda: {{ $json.title.rendered }}\nProvincia: {{ $json.acf.provincia }}\nIndirizzo: {{ $json.acf.address }}\nP.IVA: {{ $json.acf.partita_iva }}\nSito web: {{ $json.acf.website }}\nDominio: {{ $json.acf.domain }}\nMail aziendale: {{ $json.acf.email_azienda }}\nTipo di business: {{ $json.acf.business_type }}\nSettore: {{ $json.acf.sector_specific }}\n\nLinkedin: {{ $json.acf.linkedin_url }}\nFacebook: {{ $json.acf.facebook_url }}\nInstagram: {{ $json.acf.instagram_url }}\nYouTube: {{ $json.acf.youtube_url }}\nSintesi analisi azienda: {{ $json.acf.key_factor_analisi }}\n\nRispondi sempre in italiano. Mantieni l'inglese solo per termini tecnici che non si possono tradurre."
-            }
-          ]
-        },
-        "options": {}
+        "jsCode": "const statusCode = $json.statusCode ?? 0;\nconst ok = statusCode >= 200 && statusCode < 300;\nconst body = $json.body ?? {};\nconst analysisId = body?.id ?? null;\nconst analysisLink = body?.link ?? null;\nconst message = ok\n  ? (body?.message || 'OK')\n  : (body?.message || body?.data?.message || 'Errore upsert');\n\nreturn [{\n  json: {\n    upsert_ok: ok,\n    upsert_status_code: statusCode,\n    upsert_message: message,\n    analysis_id: analysisId,\n    analysis_link: analysisLink,\n    upsert_raw: body,\n    upsert_at_iso: new Date().toISOString()\n  }\n}];"
       },
-      "type": "@n8n/n8n-nodes-langchain.openAi",
-      "typeVersion": 1.8,
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
-        -400,
-        -496
+        1104,
+        -736
       ],
-      "id": "c981c23d-8a86-4c54-8993-20cc58e7a119",
-      "name": "Agente di analisi",
-      "credentials": {
-        "openAiApi": {
-          "id": "YKH8CfczdzNM1zeT",
-          "name": "OpenAi account"
-        }
-      }
+      "id": "9e728551-9aee-417c-9883-5f8890b592a2",
+      "name": "Compose Upsert Result"
     },
     {
       "parameters": {
-        "modelId": {
-          "__rl": true,
-          "value": "gpt-5-mini",
-          "mode": "list",
-          "cachedResultName": "GPT-5-MINI"
-        },
-        "messages": {
-          "values": [
-            {
-              "content": "=Agisci come un analista senior. Riceverai un JSON eterogeneo e dovrai distillarlo senza perdita di valore in un output strutturato. Scrivi sempre in italiano; mantieni l’inglese solo per termini tecnici intraducibili.\n\nObiettivo\nDato l’input, produci solo un JSON valido (nessun testo extra) con questo schema:\n\n{\n“riassunto”: “stringa di testo”,\n“punti_debolezza”: [“elemento1”, …],\n“punti_forza”: [“elemento1”, …],\n“opportunita”: [“elemento1”, …],\n“azioni_rapide”: [“elemento1”, …],\n“voto_qualita_analisi”: 0-100,\n“voto_qualita_dati”: 0-100,\n“numeri_chiave”: {\n“”: {\n“label”: “stringa”,\n“dato”: numero | stringa,\n“fonte”: “origine del dato o stima”\n}\n}\n}\n\n\n\nRegole\n\t•\tSolo JSON: nessun testo extra, nessuna spiegazione.\n\t•\tRiassunto ≤280 caratteri, chiaro, fattuale. Se dati mancanti: indica “dati limitati su …”.\n\t•\tpunti_debolezza / punti_forza: 3–8 voci ciascuna, una idea per riga, deduplicate, ordinate per impatto.\n\t•\topportunita: trend, gap competitivi, quick wins.\n\t•\tazioni_rapide: 3–7 task operativi ≤2 settimane, all’imperativo, opzionale metrica target.\n\t•\tnumeri_chiave: chiavi dinamiche snake_case (es. organic_ctr, brand_awareness_score). Non inserire tra i numeri chiave i dati aziendali già disponibili (ad esempio: indirizzo, p.iva, telefono.). Cerca di estrarre dei numeri chiave estremamente contestualizzati al tipo di analisi effettuata.\n\t•\tOgni metrica deve avere: label (testo), dato (numero o stringa), fonte (descrivi origine: “dato sito”, “deduzione analisi”, “stima”).\n\t•\tSe l’input non ha numeri affidabili: “numeri_chiave”: {}.\n\nVoto_qualita_analisi (0–100) — valuta la qualità dell’output\n\t•\tAccuratezza vs input (0–30)\n\t•\tStruttura e priorità (0–25)\n\t•\tAzionabilità (0–20)\n\t•\tSintesi e leggibilità (0–15)\n\t•\tCoerenza interna (0–10)\nSomma e arrotonda.\n\nVoto_qualita_dati (0–100) — valuta la qualità dell’input\n\t•\tCopertura dati (0–40)\n\t•\tCoerenza (0–25)\n\t•\tSpecificità e KPI (0–20)\n\t•\tFreschezza (0–15)\nSomma e arrotonda.\n\nValidazione finale\n\t•\tTutte le chiavi richieste presenti\n\t•\tOutput deve essere JSON valido, nessun testo fuori dal JSON\n\t•\tChiavi dinamiche correttamente formattate\n\nInput da analizzare:\n{{ $json.message.content }}",
-              "role": "system"
-            },
-            {
-              "content": "=Esegui l'analisi realtiva a questa azienda:\n\nCONTESTO AZIENDA:\n- Nome: {{ $('Read Azienda WP').item.json.title.rendered }}\n- Indirizzo: {{ $('Read Azienda WP').item.json.acf.address }}\n- P.IVA: {{ $('Read Azienda WP').item.json.acf.partita_iva }}\n- Sito web: {{ $('Read Azienda WP').item.json.acf.website }}\n- Business: {{ $('Read Azienda WP').item.json.acf.business_type }}\n- Settore: {{ $('Read Azienda WP').item.json.acf.sector_specific }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "@n8n/n8n-nodes-langchain.openAi",
-      "typeVersion": 1.8,
-      "position": [
-        304,
-        -496
-      ],
-      "id": "73b13eb6-5e93-46fc-80cc-56f865d15d83",
-      "name": "Agente di sintesi",
-      "credentials": {
-        "openAiApi": {
-          "id": "YKH8CfczdzNM1zeT",
-          "name": "OpenAi account"
+        "respondWith": "json",
+        "responseBody": "={\n  \"ok\": {{ $json.upsert_ok }},\n  \"status\": {{ $json.upsert_status_code }},\n  \"message\": \"{{ $json.upsert_message }}\"\n}",
+        "options": {
+          "responseCode": "={{ $json.upsert_status_code || 200 }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
         }
-      }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        1328,
+        -640
+      ],
+      "id": "e2a3f703-bd2c-46ea-bb4f-05792eabbfb9",
+      "name": "Return Status"
     },
     {
       "parameters": {
-        "modelId": {
-          "__rl": true,
-          "value": "gpt-5",
-          "mode": "list",
-          "cachedResultName": "GPT-5"
-        },
-        "messages": {
-          "values": [
+        "method": "POST",
+        "url": "=https://lead.perspect.it/wp-json/wp/v2/azienda/{{ $('Read Azienda WP').item.json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
             {
-              "content": "=Agisci come revisore strategico senior di un’analisi digitale per un’agenzia di comunicazione.\n\nRicevi un’analisi già svolta. Il tuo compito NON è riscriverla da zero ma:\n- identificarne punti deboli, lentezze, ridondanze, errori o assunzioni\n- correggere assertività e tono quando non giustificati\n- eliminare frasi generiche o vuote\n- aggiungere insight mancanti utili per un team di branding/comunicazione, non tecnico\n- mantenere focus business e narrativa, non performance tecniche\n- verificare che ogni raccomandazione sia azionabile e rilevante per un’agenzia\n- evidenziare chiaramente dove mancano dati e cosa andrebbe richiesto al cliente\n- migliorare profondità e chiarezza, non prolissità\n\nStruttura sempre output come ANALISI MIGLIORATA in testo puro.\n\nLinee guida:\n- niente ripetizioni inutili\n- niente superlativi vuoti (“molto innovativo”, “sito ben fatto”)\n- ogni affermazione va supportata da esempio o evidenza\n- pensa sempre a posizionamento, messaggio, conversione, narrative, trust, valore percepito\n- non introdurre aspetti tecnici (Core Web Vitals, DNS, etc.) salvo abbiano impatto diretto sulla percezione e conversione\n\nFinale obbligatorio:\n- elenco “Domande critiche da porre al prospect” (max 6)\n- elenco “Idee di valore da proporre come agenzia” (max 5)\n- NO JSON (il JSON lo farà il passaggio successivo)",
-              "role": "system"
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "acf[analysis_last_status_code]",
+              "value": "={{ $json.upsert_status_code }}"
             },
             {
-              "content": "=Stai revisionando un’analisi digitale per supportare un approccio consulenziale verso un prospect di agenzia di comunicazione.\nNon devi rifare l’analisi da zero: devi migliorarla, renderla più incisiva, più strategica e orientata a business e posizionamento.\n\nInformazioni azienda:\nAzienda: {{ $('Read Azienda WP').item.json.title.rendered }}\nProvincia: {{ $('Read Azienda WP').item.json.acf.provincia }}\nIndirizzo: {{ $('Read Azienda WP').item.json.acf.address }}\nP.IVA: {{ $('Read Azienda WP').item.json.acf.partita_iva }}\nSito web: {{ $('Read Azienda WP').item.json.acf.website }}\nDominio: {{ $('Read Azienda WP').item.json.acf.domain }}\nMail aziendale: {{ $('Read Azienda WP').item.json.acf.email_azienda }}\nTipo di business: {{ $('Read Azienda WP').item.json.acf.business_type }}\nSettore: {{ $('Read Azienda WP').item.json.acf.sector_specific }}\n\nCanali principali:\nLinkedin: {{ $('Read Azienda WP').item.json.acf.linkedin_url }}\nFacebook: {{ $('Read Azienda WP').item.json.acf.facebook_url }}\nInstagram: {{ $('Read Azienda WP').item.json.acf.instagram_url }}\nYouTube: {{ $('Read Azienda WP').item.json.acf.youtube_url }}\n\nSintesi iniziale dell’analisi aziendale: {{ $('Read Azienda WP').item.json.acf.key_factor_analisi }}\n\nTask principale:\nRaffina e potenzia l’analisi seguente. Rendi il contenuto:\n\t•\tpiù strategico e consulenziale\n\t•\tfocalizzato su branding, comunicazione, posizionamento, lead generation e percezione del valore\n\t•\tconcreto e orientato ai decisori aziendali (CEO/CMO)\n\t•\tpulito da ipotesi deboli, frasi generiche e ambiguità\n\t•\tprioritizzato per impatto business\n\t•\tchiaro nel mostrare dove mancano dati e quali informazioni servono\n\nEvita tecnicismi da sviluppatore o dettagli troppo “tech”; privilegia visione, posizionamento, messaggio, customer journey, conversione e trust.\n\nOutput richiesto:\nTesto analitico raffinato (non JSON).\nAlla fine aggiungi due sezioni:\n\t1.\tDomande critiche da porre al prospect (max 6 bullet)\n\t2.\tIdee di valore da proporre come agenzia (max 5 bullet)\n\nNon aggiungere altro.\n\nAnalisi da revisionare:\n{{ $json.message.content }}"
+              "name": "acf[analysis_last_message]",
+              "value": "={{ $json.upsert_message }}"
+            },
+            {
+              "name": "acf[analysis_last_at]",
+              "value": "={{ $json.upsert_at_iso }}"
             }
           ]
         },
         "options": {}
       },
-      "type": "@n8n/n8n-nodes-langchain.openAi",
-      "typeVersion": 1.8,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [
-        -48,
-        -496
+        1328,
+        -832
       ],
-      "id": "cd6049b9-6ac9-44ba-bd89-b529ecda74cd",
-      "name": "Agente di revisione",
+      "id": "9e3da71d-931d-4ed8-91e3-8c625254b1dc",
+      "name": "Log Upsert Result WP",
       "credentials": {
-        "openAiApi": {
-          "id": "YKH8CfczdzNM1zeT",
-          "name": "OpenAi account"
+        "httpBasicAuth": {
+          "id": "3aI2CNmgXh2YqkjZ",
+          "name": "Lead 18kPRo WP"
         }
       }
     }
@@ -281,7 +380,7 @@
       "main": [
         [
           {
-            "node": "Upsert WP1",
+            "node": "Upsert WP",
             "type": "main",
             "index": 0
           }
@@ -342,13 +441,40 @@
           }
         ]
       ]
+    },
+    "Compose Upsert Result": {
+      "main": [
+        [
+          {
+            "node": "Log Upsert Result WP",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Return Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert WP": {
+      "main": [
+        [
+          {
+            "node": "Compose Upsert Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "0616eefe-577d-4978-bfec-38f0e25d493b",
+  "versionId": "06f05880-ced9-4c9a-870a-2d60aacbcc3b",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "fe117d56aad4346ee596609bb8c3079d6edd34e383a675201472f524674346cc"

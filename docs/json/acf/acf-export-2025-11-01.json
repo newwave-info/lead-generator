@@ -312,6 +312,90 @@
                 "rows": "",
                 "placeholder": "",
                 "new_lines": ""
+            },
+            {
+                "key": "field_69062911dea11",
+                "label": "Status code analisi",
+                "name": "analysis_last_status_code",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "maxlength": "",
+                "allow_in_bindings": 0,
+                "placeholder": "",
+                "prepend": "",
+                "append": ""
+            },
+            {
+                "key": "field_69062922dea12",
+                "label": "Messaggio status analisi",
+                "name": "analysis_last_message",
+                "aria-label": "",
+                "type": "textarea",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "maxlength": "",
+                "allow_in_bindings": 0,
+                "rows": "",
+                "placeholder": "",
+                "new_lines": ""
+            },
+            {
+                "key": "field_69062939dea13",
+                "label": "Data ultima analisi",
+                "name": "analysis_last_at",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "maxlength": "",
+                "allow_in_bindings": 0,
+                "placeholder": "",
+                "prepend": "",
+                "append": ""
+            },
+            {
+                "key": "field_69062f37d97b6",
+                "label": "Qualità dati",
+                "name": "qualita_dati",
+                "aria-label": "",
+                "type": "text",
+                "instructions": "",
+                "required": 0,
+                "conditional_logic": 0,
+                "wrapper": {
+                    "width": "",
+                    "class": "",
+                    "id": ""
+                },
+                "default_value": "",
+                "maxlength": "",
+                "allow_in_bindings": 0,
+                "placeholder": "",
+                "prepend": "",
+                "append": ""
             }
         ],
         "location": [
@@ -909,7 +993,7 @@
                 "name": "digital_maturity_score",
                 "aria-label": "",
                 "type": "number",
-                "instructions": "",
+                "instructions": "- +15 sito aggiornato <12 mesi\r\n- +10 SEO on-page coerente\r\n- +10 form\/CTA funzionanti\r\n- +10 blog o risorse attive\r\n- +10 newsletter o automation\r\n- +15 ADV attiva visibile\r\n- +10 tracking (GA \/ Tag Manager)\r\n- +10 video o case study\r\n- +10 almeno 3 social aggiornati <60 giorni",
                 "required": 0,
                 "conditional_logic": 0,
                 "wrapper": {
@@ -959,9 +1043,9 @@
                     "id": ""
                 },
                 "choices": {
-                    "0:rifiutata": "0:rifiutata",
-                    "1:rifiutata": "1:rifiutata",
-                    "2:qualificata": "2:qualificata"
+                    "da valutare": "da valutare",
+                    "rifiutata": "rifiutata",
+                    "qualificata": "qualificata"
                 },
                 "default_value": false,
                 "return_format": "value",
