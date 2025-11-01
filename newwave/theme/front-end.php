@@ -8,6 +8,23 @@ function perspect_load_dashicons(){
 }
 add_action('wp_enqueue_scripts', 'perspect_load_dashicons', 999);
 
+/**
+ * Load Lead Dashboard CSS for single-azienda pages
+ */
+function perspect_load_lead_dashboard_css() {
+    // Carica solo nelle pagine single del post type 'azienda'
+    if (is_singular('azienda')) {
+        wp_enqueue_style(
+            'lead-dashboard',
+            get_template_directory_uri() . '/common/css/lead-dashboard.css',
+            array(), // dependencies
+            '1.2.0', // version - All ACF fields + Contact widget
+            'all' // media
+        );
+    }
+}
+add_action('wp_enqueue_scripts', 'perspect_load_lead_dashboard_css', 999);
+
 
 /**
  * Ottieni heatmap per le celle
