@@ -18,7 +18,7 @@ function perspect_load_lead_dashboard_css() {
             'lead-dashboard',
             get_template_directory_uri() . '/common/css/lead-dashboard.css',
             array(), // dependencies
-            '1.2.0', // version - All ACF fields + Contact widget
+            '1.3.0', // version - Minimalist redesign
             'all' // media
         );
     }
