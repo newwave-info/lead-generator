@@ -1257,6 +1257,111 @@ function psip_ajax_launch_agent() {
 }
 
 // ============================================================================
+// AJAX HANDLER: N8N Webhook Fallback (WordPress proxy)
+// ============================================================================
+
+add_action('wp_ajax_psip_trigger_n8n_workflow', 'psip_ajax_trigger_n8n_workflow');
+
+/**
+ * Proxy server-side per invocare un webhook n8n evitando problemi di CORS lato browser.
+ *
+ * Accetta un parametro `webhook` (slug) che viene mappato su un percorso `/webhook/{slug}`,
+ * e un payload JSON opzionale.
+ */
+function psip_ajax_trigger_n8n_workflow() {
+    check_ajax_referer('psip_n8n_webhook', 'nonce');
+
+    if (!current_user_can('edit_posts')) {
+        wp_send_json_error([
+            'message' => '❌ Permessi insufficienti per eseguire il workflow.',
+        ], 403);
+    }
+
+    $webhook_raw  = isset($_POST['webhook']) ? wp_unslash($_POST['webhook']) : '';
+    $webhook_slug = sanitize_title_with_dashes($webhook_raw);
+
+    if ($webhook_slug === '') {
+        wp_send_json_error([
+            'message' => '❌ Webhook n8n non valido.',
+        ], 400);
+    }
+
+    $allowed_webhooks = apply_filters('psip_n8n_allowed_webhooks', [
+        'lead-generator-campaign' => '/webhook/lead-generator-campaign',
+        'company-enrichment'      => '/webhook/company-enrichment',
+        'web-development-agent'   => '/webhook/web-development-agent',
+    ]);
+
+    if (!isset($allowed_webhooks[$webhook_slug])) {
+        wp_send_json_error([
+            'message' => '❌ Webhook n8n non autorizzato: ' . $webhook_slug,
+        ], 403);
+    }
+
+    $payload = [];
+    if (isset($_POST['payload'])) {
+        $raw_payload = wp_unslash($_POST['payload']);
+
+        if (is_string($raw_payload) && $raw_payload !== '') {
+            $decoded = json_decode($raw_payload, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $payload = $decoded;
+            } else {
+                wp_send_json_error([
+                    'message' => '❌ Payload JSON non valido per il webhook n8n.',
+                ], 400);
+            }
+        } elseif (is_array($raw_payload)) {
+            $payload = $raw_payload;
+        }
+    }
+
+    $target_url = rtrim(PSIP_N8N_BASE_URL, '/') . $allowed_webhooks[$webhook_slug];
+
+    $response = wp_remote_post($target_url, [
+        'headers' => [
+            'Content-Type' => 'application/json',
+        ],
+        'body'    => wp_json_encode($payload),
+        'timeout' => 60,
+    ]);
+
+    if (is_wp_error($response)) {
+        wp_send_json_error([
+            'message' => '❌ Richiesta fallback non riuscita: ' . $response->get_error_message(),
+        ], 500);
+    }
+
+    $status_code = (int) wp_remote_retrieve_response_code($response);
+    $body        = wp_remote_retrieve_body($response);
+    $decoded     = null;
+
+    if ($body !== '') {
+        $parsed = json_decode($body, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            $decoded = $parsed;
+        }
+    }
+
+    if ($status_code >= 200 && $status_code < 300) {
+        wp_send_json_success([
+            'status_code' => $status_code,
+            'body'        => $decoded !== null ? $decoded : $body,
+        ]);
+    }
+
+    $error_message = '❌ n8n ha restituito un errore (' . $status_code . ')';
+    if ($body !== '') {
+        $error_message .= ' - ' . substr($body, 0, 400);
+    }
+
+    wp_send_json_error([
+        'message'     => $error_message,
+        'status_code' => $status_code,
+    ], $status_code);
+}
+
+// ============================================================================
 // UTILITY: Get Company Analyses
 // ============================================================================
 function psip_get_company_analyses($company_id) {
@@ -1751,9 +1856,15 @@ function psip_render_campaign_launcher_metabox($post) {
             data-campaign-id="<?php echo $post->ID; ?>"
             data-search-query="<?php echo esc_attr($search_query); ?>"
             data-max-results="<?php echo esc_attr($max_results); ?>"
+            data-original-label="🚀 Avvia Campagna"
             style="width: 100%; height: 50px; font-size: 16px;">
             🚀 Avvia Campagna
         </button>
+        <div class="psip-campaign-progress" style="display:none; text-align:center; margin-top:10px;">
+            <span class="spinner" style="float:none; margin:0 auto; display:inline-block;"></span>
+            <div style="margin-top:6px; font-size:11px; color:#1d4ed8;">Workflow n8n in esecuzione…</div>
+            <div class="psip-n8n-fallback-note" style="display:none; margin-top:4px; font-size:10px; color:#334155;">Fallback WordPress attivo, attendere…</div>
+        </div>
         
         <p style="font-size: 11px; color: #666; margin-top: 10px; text-align: center;">
             Google Maps Discovery + Economic Analysis automatico
@@ -1762,41 +1873,117 @@ function psip_render_campaign_launcher_metabox($post) {
     
     <script>
     jQuery(document).ready(function($) {
-        $('.psip-launch-campaign').on('click', function() {
+        const fallbackNonce = '<?php echo wp_create_nonce('psip_n8n_webhook'); ?>';
+        const ajaxUrl = window.ajaxurl || '<?php echo esc_url(admin_url('admin-ajax.php')); ?>';
+        const directWebhookBase = '<?php echo esc_url_raw(rtrim(PSIP_N8N_BASE_URL, '/')); ?>';
+
+        $('.psip-launch-campaign').each(function() {
             const btn = $(this);
-            const campaignId = btn.data('campaign-id');
-            const searchQuery = btn.data('search-query');
-            const maxResults = btn.data('max-results');
-            
-            if (!searchQuery) {
-                alert('⚠️ Imposta una Search Query prima di avviare la campagna!');
-                return;
-            }
-            
-            if (!confirm(`Avviare campagna?\n\nQuery: ${searchQuery}\nMax Results: ${maxResults}\n\nQuesto potrebbe richiedere diversi minuti.`)) {
-                return;
-            }
-            
-            btn.prop('disabled', true).html('⏳ Avvio in corso...');
-            
-            $.ajax({
-                url: '<?php echo PSIP_N8N_BASE_URL; ?>/webhook/lead-generator-campaign',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({
+            const section = btn.closest('.psip-campaign-launcher');
+            const loader = section.find('.psip-campaign-progress');
+            const spinner = loader.find('.spinner');
+            const fallbackNote = loader.find('.psip-n8n-fallback-note');
+
+            loader.hide();
+            spinner.removeClass('is-active');
+            fallbackNote.hide();
+            loader.attr('aria-hidden', 'true');
+
+            btn.on('click', function() {
+                const campaignId = btn.data('campaign-id');
+                const searchQuery = btn.data('search-query');
+                const maxResults = btn.data('max-results');
+                const originalLabel = btn.data('original-label') || btn.html();
+                btn.data('original-label', originalLabel);
+                let fallbackAttempted = false;
+                const payload = {
                     campaign_id: campaignId,
                     search_query: searchQuery,
                     max_results: maxResults
-                }),
-                success: function(response) {
-                    alert('✅ Campagna avviata con successo!\n\nRiceverai una notifica al completamento.');
-                    btn.prop('disabled', false).html('🚀 Campagna Avviata - Riesegui');
-                    location.reload();
-                },
-                error: function(xhr) {
-                    alert('❌ Errore durante l\'avvio:\n\n' + (xhr.responseJSON?.message || 'Errore sconosciuto'));
-                    btn.prop('disabled', false).html('🚀 Avvia Campagna Lead Generator');
+                };
+
+                if (!searchQuery) {
+                    alert('⚠️ Imposta una Search Query prima di avviare la campagna!');
+                    return;
                 }
+
+                if (!confirm(`Avviare campagna?\n\nQuery: ${searchQuery}\nMax Results: ${maxResults}\n\nQuesto potrebbe richiedere diversi minuti.`)) {
+                    return;
+                }
+
+                function setLoadingState(isLoading) {
+                    if (isLoading) {
+                        btn.prop('disabled', true).html('⏳ Workflow in esecuzione…');
+                        spinner.addClass('is-active');
+                        loader.show().attr('aria-hidden', 'false');
+                    } else {
+                        btn.prop('disabled', false).html(originalLabel);
+                        spinner.removeClass('is-active');
+                        loader.hide().attr('aria-hidden', 'true');
+                        fallbackNote.hide();
+                    }
+                }
+
+                function handleSuccess(message) {
+                    setLoadingState(false);
+                    alert(message || '✅ Campagna avviata con successo!\n\nRiceverai una notifica al completamento.');
+                    location.reload();
+                }
+
+                function handleFailure(message) {
+                    alert('❌ Errore durante l\'avvio:\n\n' + (message || 'Errore sconosciuto'));
+                    setLoadingState(false);
+                }
+
+                function triggerFallback() {
+                    fallbackAttempted = true;
+                    fallbackNote.show();
+
+                    $.ajax({
+                        url: ajaxUrl,
+                        method: 'POST',
+                        dataType: 'json',
+                        data: {
+                            action: 'psip_trigger_n8n_workflow',
+                            nonce: fallbackNonce,
+                            webhook: 'lead-generator-campaign',
+                            payload: JSON.stringify(payload)
+                        }
+                    }).done(function(response) {
+                        if (response && response.success) {
+                            handleSuccess();
+                        } else {
+                            const message = response && response.data && response.data.message ? response.data.message : 'Risposta fallback non valida';
+                            handleFailure(message);
+                        }
+                    }).fail(function(xhr) {
+                        const message = xhr && xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.message
+                            ? xhr.responseJSON.data.message
+                            : (xhr && xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : xhr.statusText);
+                        handleFailure(message);
+                    });
+                }
+
+                setLoadingState(true);
+
+                $.ajax({
+                    url: directWebhookBase + '/webhook/lead-generator-campaign',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(payload)
+                }).done(function() {
+                    handleSuccess();
+                }).fail(function(xhr) {
+                    if (!fallbackAttempted && xhr && xhr.status === 0) {
+                        triggerFallback();
+                        return;
+                    }
+
+                    const message = xhr && xhr.responseJSON && (xhr.responseJSON.message || (xhr.responseJSON.data && xhr.responseJSON.data.message))
+                        ? (xhr.responseJSON.message || xhr.responseJSON.data.message)
+                        : xhr.statusText;
+                    handleFailure(message);
+                });
             });
         });
     });
