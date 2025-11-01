@@ -7,89 +7,87 @@ if (have_posts()):
         the_post();
         $post_id = get_the_ID();
 
-        // Campi ACF principali
-        $status = get_field("status", $post_id);
+        // Campi ACF principali (nuovo modello Company Enrichment)
+        $company_name_full = get_field('company_name_full', $post_id);
+        $qualification_status = get_field('qualification_status', $post_id);
+        $qualification_reason = get_field('qualification_reason', $post_id);
+        $service_fit = get_field('service_fit', $post_id);
+        $priority_score = get_field('priority_score', $post_id);
+        $financial_confidence = get_field('financial_confidence', $post_id);
+        $digital_maturity_score = get_field('digital_maturity_score', $post_id);
+        $growth_stage = get_field('growth_stage', $post_id);
+        $budget_tier = get_field('budget_tier', $post_id);
+        $marketing_budget_est = get_field('marketing_budget_est', $post_id);
+        $annual_revenue = get_field('annual_revenue', $post_id);
+        $ebitda_margin_est = get_field('ebitda_margin_est', $post_id);
+        $employee_count = get_field('employee_count', $post_id);
+        $geography_scope = get_field('geography_scope', $post_id);
+        $short_bio = get_field('short_bio', $post_id);
+        $partita_iva = get_field('partita_iva', $post_id);
+        $address = get_field('address', $post_id);
+        $city = get_field('city', $post_id);
+        $province = get_field('province', $post_id);
+        $phone = get_field('phone', $post_id);
+        $email = get_field('email', $post_id);
+        $domain = get_field('domain', $post_id);
+        $business_type = get_field('business_type', $post_id);
+        $sector_specific = get_field('sector_specific', $post_id);
+        $linkedin_url = get_field('linkedin_url', $post_id);
+        $social_links = get_field('social_links', $post_id);
 
-        $key_factor_analisi = get_field("key_factor_analisi", $post_id);
-        $motivazioni_status = get_field("motivazioni_status", $post_id);
-        $analisy_perplexity_deep_research = get_field(
-            "analisy_perplexity_deep_research",
-            $post_id
-        );
+        $analisy_perplexity_deep_research = get_field('analisy_perplexity_deep_research', $post_id);
         $perplexity_analysis_markup = $analisy_perplexity_deep_research;
 
-        $growth_stage = get_field("growth_stage", $post_id);
-        $estimated_marketing_budget = get_field(
-            "estimated_marketing_budget",
-            $post_id
-        );
-        $analysis_date = get_field("analysis_date", $post_id); // formato d/m/Y g:i a
-        $partita_iva = get_field("partita_iva", $post_id);
-        $address = get_field("address", $post_id);
-        $phone = get_field("phone", $post_id);
-        $website = get_field("website", $post_id);
-        $domain = get_field("domain", $post_id);
-        $business_type = get_field("business_type", $post_id);
-        $sector_specific = get_field("sector_specific", $post_id);
-        $employee_count_est = get_field("employee_count_est", $post_id);
-
-        $estimated_annual_revenue = get_field(
-            "estimated_annual_revenue",
-            $post_id
-        );
-        $estimated_ebitda_percentage = get_field(
-            "estimated_ebitda_percentage",
-            $post_id
-        );
-        $confidence = get_field("confidence", $post_id);
-        $budget_tier = get_field("budget_tier", $post_id);
-        $budget_qualified = (bool) get_field("budget_qualified", $post_id);
-
-        $campaign_name = get_field("campaign_name", $post_id);
-        $data_completeness = get_field("data_completeness", $post_id);
-        $source = get_field("source", $post_id);
-        $query_used = get_field("query_used", $post_id);
-        $discovery_id = get_field("discovery_id", $post_id);
-        $run_id = get_field("run_id", $post_id);
-
-        $place_id = get_field("place_id", $post_id);
-        $rating = get_field("rating", $post_id);
-        $reviews = get_field("reviews", $post_id);
-        $discovery_date = get_field("discovery_date", $post_id); // d/m/Y
-        $discovery_time = get_field("discovery_time", $post_id); // g:i a
+        $enrichment_last_status_code = get_field('enrichment_last_status_code', $post_id);
+        $enrichment_last_message = get_field('enrichment_last_message', $post_id);
+        $enrichment_last_at = get_field('data_ultimo_enrichment', $post_id);
+        if ($enrichment_last_at === '') {
+            $enrichment_last_at = get_post_meta($post_id, 'enrichment_last_at', true);
+        }
 
         $scalar_fields = [
-            "status",
-            "growth_stage",
-            "estimated_marketing_budget",
-            "analysis_date",
-            "partita_iva",
-            "address",
-            "phone",
-            "website",
-            "domain",
-            "business_type",
-            "sector_specific",
-            "employee_count_est",
-            "estimated_annual_revenue",
-            "estimated_ebitda_percentage",
-            "confidence",
-            "budget_tier",
-            "campaign_name",
-            "data_completeness",
-            "source",
-            "query_used",
-            "discovery_id",
-            "run_id",
-            "place_id",
-            "rating",
-            "reviews",
-            "discovery_date",
-            "discovery_time",
+            'company_name_full',
+            'qualification_status',
+            'qualification_reason',
+            'service_fit',
+            'priority_score',
+            'financial_confidence',
+            'digital_maturity_score',
+            'growth_stage',
+            'budget_tier',
+            'marketing_budget_est',
+            'annual_revenue',
+            'ebitda_margin_est',
+            'employee_count',
+            'geography_scope',
+            'short_bio',
+            'partita_iva',
+            'address',
+            'city',
+            'province',
+            'phone',
+            'email',
+            'domain',
+            'business_type',
+            'sector_specific',
+            'linkedin_url',
+            'enrichment_last_status_code',
+            'enrichment_last_message',
         ];
 
         foreach ($scalar_fields as $field_key) {
             $$field_key = psip_theme_normalize_scalar($$field_key);
+        }
+
+        $social_links_list = [];
+        if (is_string($social_links) && $social_links !== '') {
+            $social_links_list = array_filter(array_map(
+                static function ($entry) {
+                    $entry = trim($entry);
+                    return $entry !== '' ? $entry : null;
+                },
+                preg_split('/\r\n|\r|\n/', $social_links)
+            ));
         }
 
         if ($perplexity_analysis_markup) {
@@ -107,214 +105,321 @@ if (have_posts()):
             );
         }
 
-        $industry_display = $business_type !== "" ? $business_type : "-";
-        $subindustry_display = $sector_specific !== "" ? $sector_specific : "-";
-        $headquarters_display = $address !== "" ? $address : "-";
-        $status_display = $status !== "" ? $status : "-";
-        $growth_stage_display = $growth_stage !== "" ? $growth_stage : "-";
-        $budget_display = $estimated_marketing_budget !== ""
-            ? $estimated_marketing_budget
-            : "-";
-        $confidence_display = $confidence !== "" ? $confidence : "-";
+        $industry_display = $business_type !== '' ? $business_type : '—';
+        $subindustry_display = $sector_specific !== '' ? $sector_specific : '—';
+        $headquarters_display = '—';
+        if ($city !== '' || $province !== '') {
+            $headquarters_parts = array_filter([$city !== '' ? $city : null, $province !== '' ? $province : null]);
+            $headquarters_display = implode(' · ', $headquarters_parts);
+        } elseif ($address !== '') {
+            $headquarters_display = $address;
+        }
 
-        $analysis_last_update = "-";
-        if ($analysis_date !== "") {
-            $analysis_dt = DateTime::createFromFormat(
-                "d/m/Y g:i a",
-                $analysis_date
-            );
-            if ($analysis_dt instanceof DateTimeInterface) {
-                $analysis_last_update = $analysis_dt->format("Y-m-d H:i");
+        $status_display = $qualification_status !== '' ? ucwords($qualification_status) : '—';
+        $growth_stage_display = $growth_stage !== '' ? $growth_stage : '—';
+        $geography_display = $geography_scope !== '' ? $geography_scope : '—';
+        $budget_tier_display = $budget_tier !== '' ? $budget_tier : '—';
+        $marketing_budget_display = $marketing_budget_est !== '' ? $marketing_budget_est : '—';
+        $annual_revenue_display = $annual_revenue !== '' ? $annual_revenue : '—';
+
+        $priority_score_numeric = null;
+        if ($priority_score !== '' && is_numeric($priority_score)) {
+            $priority_score_numeric = (float) $priority_score;
+        }
+        $priority_score_display = $priority_score_numeric !== null
+            ? number_format($priority_score_numeric, 0)
+            : ($priority_score !== '' ? $priority_score : '—');
+
+        $financial_confidence_numeric = null;
+        if ($financial_confidence !== '' && is_numeric($financial_confidence)) {
+            $financial_confidence_numeric = max(0, min(100, (float) $financial_confidence));
+        }
+
+        $digital_maturity_numeric = null;
+        if ($digital_maturity_score !== '' && is_numeric($digital_maturity_score)) {
+            $digital_maturity_numeric = max(0, min(100, (float) $digital_maturity_score));
+        }
+        $digital_maturity_percent = $digital_maturity_numeric !== null ? (int) round($digital_maturity_numeric) : null;
+
+        $enrichment_completeness_raw = get_post_meta($post_id, 'enrichment_completeness', true);
+        $enrichment_completeness_percent = null;
+        if ($enrichment_completeness_raw !== '') {
+            $enrichment_completeness_percent = (int) round((float) $enrichment_completeness_raw);
+        }
+
+        $enrichment_last_at_display = '—';
+        if ($enrichment_last_at !== '') {
+            $timestamp = strtotime($enrichment_last_at);
+            if ($timestamp) {
+                $enrichment_last_at_display = date_i18n('d/m/Y H:i', $timestamp);
             } else {
-                $analysis_last_update = $analysis_date;
+                $enrichment_last_at_display = $enrichment_last_at;
             }
         }
+        $enrichment_last_message_display = $enrichment_last_message !== '' ? wp_trim_words($enrichment_last_message, 18, '…') : '';
 
-        $is_verified = strtoupper($status_display) === "QUALIFIED";
-        $confidence_hint = $confidence_display !== "-"
-            ? 'Indice CRM: ' . $confidence_display
-            : "In valutazione";
+        $is_verified = strtolower($qualification_status) === 'qualificata';
+        $score_hint = __('Score 0–100', 'psip');
 
-        $confidence_percent_display = null;
-        if ($confidence_display !== "-") {
-            if (
-                preg_match(
-                    '/([0-9]+(?:[\\.,][0-9]+)?)/',
-                    $confidence_display,
-                    $confidence_matches
-                )
-            ) {
-                $confidence_numeric = (float) str_replace(
-                    ",",
-                    ".",
-                    $confidence_matches[1]
-                );
-                if ($confidence_numeric <= 1) {
-                    $confidence_numeric *= 100;
-                }
-                $confidence_percent_display = (int) round(
-                    max(0, min(100, $confidence_numeric))
-                );
-            }
-        }
-
-        $data_completeness_percent = null;
-        if ($data_completeness !== "") {
-            if (is_numeric($data_completeness)) {
-                $data_numeric = (float) $data_completeness;
-            } elseif (
-                preg_match(
-                    '/([0-9]+(?:[\\.,][0-9]+)?)/',
-                    $data_completeness,
-                    $data_matches
-                )
-            ) {
-                $data_numeric = (float) str_replace(
-                    ",",
-                    ".",
-                    $data_matches[1]
-                );
-            } else {
-                $data_numeric = null;
-            }
-
-            if (isset($data_numeric)) {
-                if ($data_numeric <= 1) {
-                    $data_numeric *= 100;
-                }
-                $data_completeness_percent = (int) round(
-                    max(0, min(100, $data_numeric))
-                );
-            }
-        }
-
-        $hero_breadcrumbs = array_filter(
-            [
-                $source !== "" ? $source : null,
-                $campaign_name !== "" ? $campaign_name : null,
-            ],
-            static function ($entry) {
-                return $entry !== null;
-            }
-        );
+        $hero_breadcrumbs = array_filter([
+            $business_type !== '' ? $business_type : null,
+            $sector_specific !== '' ? $sector_specific : null,
+            $geography_scope !== '' ? $geography_scope : null,
+        ]);
         if (empty($hero_breadcrumbs)) {
-            $hero_breadcrumbs = ["Lead Generator"];
+            $hero_breadcrumbs = ['Lead Generator'];
         }
-        $hero_breadcrumbs_text = implode(" · ", $hero_breadcrumbs);
-        $confidence_primary_display = $confidence_percent_display !== null
-            ? $confidence_percent_display . "%"
-            : ($confidence_display !== "-" ? $confidence_display : "—");
+        $hero_breadcrumbs_text = implode(' · ', $hero_breadcrumbs);
+
+        $website_url = '';
+        if ($domain !== '') {
+            $website_candidate = $domain;
+            if (strpos($website_candidate, 'http://') !== 0 && strpos($website_candidate, 'https://') !== 0) {
+                $website_candidate = 'https://' . ltrim($website_candidate, '/');
+            }
+            $website_url = $website_candidate;
+        }
+
+        $logo_domain = $domain !== '' ? preg_replace('#^https?://#i', '', $domain) : '';
+
+        $display_social_links = $social_links_list;
+        if ($linkedin_url !== '') {
+            $has_linkedin = false;
+            foreach ($display_social_links as $link_item) {
+                if (stripos($link_item, 'linkedin.com') !== false) {
+                    $has_linkedin = true;
+                    break;
+                }
+            }
+            if (!$has_linkedin) {
+                $display_social_links[] = $linkedin_url;
+            }
+        }
+
+        $deal_widgets = [
+            [
+                'label' => __('Completezza dati', 'psip'),
+                'value' => $enrichment_completeness_percent !== null ? $enrichment_completeness_percent . '%' : '—',
+                'context' => __('Campi popolati dall’enrichment', 'psip'),
+            ],
+            [
+                'label' => __('Ultimo enrichment', 'psip'),
+                'value' => $enrichment_last_at_display,
+                'context' => __('Timestamp workflow', 'psip'),
+            ],
+            [
+                'label' => __('Confidenza dati', 'psip'),
+                'value' => $financial_confidence_numeric !== null ? number_format($financial_confidence_numeric, 0) . '/100' : '—',
+                'context' => __('Valutazione qualità', 'psip'),
+            ],
+            [
+                'label' => __('Priorità', 'psip'),
+                'value' => $priority_score_numeric !== null ? number_format($priority_score_numeric, 0) . '/100' : ($priority_score_display !== '—' ? $priority_score_display : '—'),
+                'context' => __('Ranking CRM', 'psip'),
+            ],
+            [
+                'label' => __('Stato workflow', 'psip'),
+                'value' => $enrichment_last_status_code !== '' ? $enrichment_last_status_code : '—',
+                'context' => __('Esito ultima run', 'psip'),
+            ],
+        ];
+
+        if ($qualification_reason !== '') {
+            $deal_widgets[] = [
+                'label' => __('Motivazione qualifica', 'psip'),
+                'value' => $qualification_reason,
+                'context' => __('Decisione commerciale', 'psip'),
+            ];
+        }
+        if ($service_fit !== '') {
+            $deal_widgets[] = [
+                'label' => __('Service fit', 'psip'),
+                'value' => $service_fit,
+                'context' => __('Proposta consigliata', 'psip'),
+            ];
+        }
+        if ($enrichment_last_message_display !== '') {
+            $deal_widgets[] = [
+                'label' => __('Ultimo messaggio', 'psip'),
+                'value' => $enrichment_last_message_display,
+                'context' => __('Nota workflow', 'psip'),
+            ];
+        }
+
+        $profile_widgets = [
+            [
+                'label' => __('Ragione sociale', 'psip'),
+                'value' => $company_name_full !== '' ? $company_name_full : get_the_title(),
+            ],
+            [
+                'label' => __('Settore', 'psip'),
+                'value' => $industry_display,
+            ],
+            [
+                'label' => __('Specializzazione', 'psip'),
+                'value' => $subindustry_display,
+            ],
+            [
+                'label' => __('Dipendenti', 'psip'),
+                'value' => $employee_count !== '' ? $employee_count : '—',
+            ],
+            [
+                'label' => __('Copertura', 'psip'),
+                'value' => $geography_display,
+            ],
+            [
+                'label' => __('Stadio di crescita', 'psip'),
+                'value' => $growth_stage_display,
+            ],
+            [
+                'label' => __('Headquarters', 'psip'),
+                'value' => $headquarters_display,
+            ],
+        ];
+
+        $hero_summary = $short_bio !== ''
+            ? wp_trim_words($short_bio, 48, '…')
+            : __('Sintesi non disponibile', 'psip');
+
+        $hero_chip_items = array_values(array_filter([
+            [
+                'label' => __('Settore', 'psip'),
+                'value' => $industry_display,
+            ],
+            [
+                'label' => __('Specializzazione', 'psip'),
+                'value' => $subindustry_display,
+            ],
+            [
+                'label' => __('Copertura', 'psip'),
+                'value' => $geography_display,
+            ],
+            [
+                'label' => __('Stadio di crescita', 'psip'),
+                'value' => $growth_stage_display,
+            ],
+            [
+                'label' => __('Budget tier', 'psip'),
+                'value' => $budget_tier_display,
+            ],
+        ], static function ($item) {
+            return isset($item['value']) && $item['value'] !== '—' && $item['value'] !== '';
+        }));
+
+        $hero_signal_widgets = array_slice($deal_widgets, 0, 3);
+
+        $contact_widgets = [
+            [
+                'label' => __('Dominio', 'psip'),
+                'value' => $domain !== '' ? $domain : '—',
+                'url' => $website_url,
+            ],
+            [
+                'label' => __('Email', 'psip'),
+                'value' => $email !== '' ? $email : '—',
+                'url' => $email !== '' ? 'mailto:' . $email : '',
+            ],
+            [
+                'label' => __('Telefono', 'psip'),
+                'value' => $phone !== '' ? $phone : '—',
+                'url' => $phone !== '' ? 'tel:' . preg_replace('/\\s+/', '', $phone) : '',
+            ],
+            [
+                'label' => __('Sede', 'psip'),
+                'value' => $address !== '' ? $address : ($headquarters_display !== '—' ? $headquarters_display : '—'),
+                'multiline' => $address !== '',
+            ],
+            [
+                'label' => __('Partita IVA', 'psip'),
+                'value' => $partita_iva !== '' ? $partita_iva : '—',
+            ],
+        ];
         ?>
 <main id="single_company" role="main">
 
     <section id="company_hero" class="company-hero">
         <div class="company-hero__gradient"></div>
         <div class="container-fluid">
-            <div class="company-hero__content row gy-4 align-items-start">
+            <div class="company-hero__grid row gy-5 align-items-start">
                 <div class="col-12 col-lg-7">
-                    <div class="company-hero__identity d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-3">
+                    <div class="company-hero__header d-flex align-items-start gap-3">
                         <div class="company-hero__logo">
                             <img class="img-contain" src="https://api.microlink.io/?url=https%3A%2F%2F<?php echo esc_html(
-                                $domain
-                            ); ?>&palette=true&embed=logo.url" loading="lazy" />
+                                $logo_domain
+                            ); ?>&palette=true&embed=logo.url" loading="lazy" alt="" />
                         </div>
-                        <div class="company-hero__identity-text">
+                        <div class="company-hero__headline">
                             <div class="company-hero__breadcrumb small text-muted">
                                 <?php echo esc_html($hero_breadcrumbs_text); ?>
                             </div>
                             <h1 class="company-hero__title"><?php the_title(); ?></h1>
-                        </div>
-                    </div>
-                    <div class="company-hero__meta row g-3 mt-4">
-                        <div class="col-12 col-sm-4">
-                            <div class="company-hero__meta-card">
-                                <span class="company-hero__meta-label">Industry</span>
-                                <span class="company-hero__meta-value"><?php echo esc_html(
-                                    $industry_display
-                                ); ?></span>
-                            </div>
-                        </div>
-                        <div class="col-12 col-sm-4">
-                            <div class="company-hero__meta-card">
-                                <span class="company-hero__meta-label">Sub-industry</span>
-                                <span class="company-hero__meta-value"><?php echo esc_html(
-                                    $subindustry_display
-                                ); ?></span>
-                            </div>
-                        </div>
-                        <div class="col-12 col-sm-4">
-                            <div class="company-hero__meta-card">
-                                <span class="company-hero__meta-label">Headquarters</span>
-                                <span class="company-hero__meta-value"><?php echo esc_html(
-                                    $headquarters_display
-                                ); ?></span>
+                            <div class="company-hero__status">
+                                <span class="company-hero__status-pill <?php echo $is_verified
+                                    ? 'is-verified'
+                                    : 'is-pending'; ?>"><?php echo esc_html($status_display); ?></span>
+                                <?php if ($budget_tier_display !== '—'): ?>
+                                    <span class="company-hero__badge"><?php echo esc_html($budget_tier_display); ?></span>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </div>
+
+                    <div class="company-hero__summary">
+                        <p><?php echo esc_html($hero_summary); ?></p>
+                    </div>
+
+                    <?php if (!empty($hero_chip_items)): ?>
+                        <ul class="company-hero__chips">
+                            <?php foreach ($hero_chip_items as $chip): ?>
+                                <li>
+                                    <span class="company-hero__chip-value"><?php echo esc_html($chip['value']); ?></span>
+                                    <span class="company-hero__chip-label"><?php echo esc_html($chip['label']); ?></span>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    <?php endif; ?>
                 </div>
                 <div class="col-12 col-lg-5 col-xxl-4 offset-xxl-1">
-                    <div class="company-rating-card">
-                        <div class="company-rating-card__top">
-                            <span class="company-rating-card__label">Qualifica</span>
+                    <aside class="deal-summary-card">
+                        <header class="deal-summary-card__header">
+                            <span class="deal-summary-card__eyebrow"><?php esc_html_e('Deal snapshot', 'psip'); ?></span>
                             <?php if ($is_verified): ?>
-                                <span class="company-rating-card__verified">
+                                <span class="deal-summary-card__verified">
                                     <span class="dashicons dashicons-yes-alt"></span>
-                                    Verificato
+                                    <?php esc_html_e('Qualificata', 'psip'); ?>
                                 </span>
                             <?php endif; ?>
+                        </header>
+                        <div class="deal-summary-card__score">
+                            <span class="deal-summary-card__score-value"><?php echo esc_html($priority_score_display); ?></span>
+                            <span class="deal-summary-card__score-hint"><?php echo esc_html($score_hint); ?></span>
                         </div>
-                        <div class="company-rating-card__status">
-                            <span class="company-rating-card__status-pill <?php echo $is_verified
-                                ? "is-verified"
-                                : "is-pending"; ?>"><?php echo esc_html(
-    $status_display
-); ?></span>
-                        </div>
-                        <div class="company-rating-card__score">
-                            <span class="company-rating-card__score-value"><?php echo esc_html(
-                                $confidence_primary_display
-                            ); ?></span>
-                            <span class="company-rating-card__score-hint"><?php echo esc_html(
-                                $confidence_hint
-                            ); ?></span>
-                        </div>
-                        <ul class="company-rating-card__list">
-                            <li>
-                                <span>Status account</span>
-                                <strong><?php echo esc_html($status_display); ?></strong>
-                            </li>
-                            <li>
-                                <span>Stadio di crescita</span>
-                                <strong><?php echo esc_html($growth_stage_display); ?></strong>
-                            </li>
-                            <li>
-                                <span>Budget marketing</span>
-                                <strong><?php echo esc_html($budget_display); ?></strong>
-                            </li>
-                            <li>
-                                <span>Ultimo aggiornamento</span>
-                                <strong><?php echo esc_html($analysis_last_update); ?></strong>
-                            </li>
-                        </ul>
-                        <div class="company-rating-card__actions">
-                            <?php if ($website !== ""): ?>
-                                <a
-                                    class="company-rating-card__button"
-                                    href="<?php echo esc_url($website); ?>"
-                                    target="_blank"
-                                    rel="noopener"
-                                >
-                                    Visita sito
+                        <?php if (!empty($hero_signal_widgets)): ?>
+                            <div class="deal-summary-card__signals">
+                                <?php foreach ($hero_signal_widgets as $signal): ?>
+                                    <div class="deal-summary-card__signal">
+                                        <span class="deal-summary-card__signal-value"><?php echo esc_html($signal['value']); ?></span>
+                                        <span class="deal-summary-card__signal-label"><?php echo esc_html($signal['label']); ?></span>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                        <div class="deal-summary-card__actions">
+                            <?php if ($website_url !== ''): ?>
+                                <a class="deal-summary-card__button" href="<?php echo esc_url($website_url); ?>" target="_blank" rel="noopener">
+                                    <?php esc_html_e('Visita sito', 'psip'); ?>
                                 </a>
                             <?php endif; ?>
-                            <a
-                                class="company-rating-card__button company-rating-card__button--ghost"
-                                href="#company_content"
-                            >
-                                Apri dettagli
+                            <?php if ($linkedin_url !== ''): ?>
+                                <a class="deal-summary-card__button deal-summary-card__button--ghost" href="<?php echo esc_url($linkedin_url); ?>" target="_blank" rel="noopener">
+                                    LinkedIn
+                                </a>
+                            <?php endif; ?>
+                            <a class="deal-summary-card__button deal-summary-card__button--ghost" href="#company_content">
+                                <?php esc_html_e('Apri dettagli', 'psip'); ?>
                             </a>
                         </div>
-                    </div>
+                    </aside>
                 </div>
             </div>
         </div>
@@ -361,309 +466,160 @@ if (have_posts()):
                         <div class="company-sidebar__card">
                             <h2 class="company-sidebar__title">Azioni rapide</h2>
                             <div class="company-sidebar__actions">
-                                <?php if ($website): ?>
-                                    <a class="company-sidebar__button" href="<?php echo esc_url($website); ?>" target="_blank" rel="noopener">Visita sito</a>
+                                <?php if ($website_url !== ''): ?>
+                                    <a class="company-sidebar__button" href="<?php echo esc_url($website_url); ?>" target="_blank" rel="noopener">Visita sito</a>
+                                <?php endif; ?>
+                                <?php if ($linkedin_url !== ''): ?>
+                                    <a class="company-sidebar__button company-sidebar__button--ghost" href="<?php echo esc_url($linkedin_url); ?>" target="_blank" rel="noopener">LinkedIn</a>
+                                <?php endif; ?>
+                                <?php if ($email !== ''): ?>
+                                    <a class="company-sidebar__button company-sidebar__button--ghost" href="mailto:<?php echo esc_attr($email); ?>">Email</a>
                                 <?php endif; ?>
                                 <a class="company-sidebar__button company-sidebar__button--ghost" href="#table_agents">Tutte le analisi</a>
                             </div>
                         </div>
 
-                        <div class="company-sidebar__card">
-                            <h2 class="company-sidebar__title">Indicatori</h2>
-                            <dl class="company-sidebar__meta">
-                                <div>
-                                    <dt>Completezza dati</dt>
-                                    <dd><?php echo $data_completeness !== "" ? esc_html($data_completeness) . "%" : "-"; ?></dd>
-                                </div>
-                                <div>
-                                    <dt>Fonte</dt>
-                                    <dd><?php echo $source ? esc_html($source) : "-"; ?></dd>
-                                </div>
-                                <div>
-                                    <dt>Data analisi</dt>
-                                    <dd><?php echo esc_html($analysis_last_update); ?></dd>
-                                </div>
-                                <div>
-                                    <dt>Status</dt>
-                                    <dd><?php echo esc_html($status_display); ?></dd>
-                                </div>
-                                <div>
-                                    <dt>Discovery ID</dt>
-                                    <dd><?php echo $discovery_id ? esc_html($discovery_id) : "-"; ?></dd>
-                                </div>
-                                <div>
-                                    <dt>Run ID</dt>
-                                    <dd><?php echo $run_id ? esc_html($run_id) : "-"; ?></dd>
-                                </div>
-                            </dl>
-                        </div>
-
-                        <div class="company-sidebar__card company-sidebar__card--accordion">
-                            <div class="accordion company-sidebar__accordion" id="accordionDatiAzienda">
-                                <!-- Accordion Item 1: Anagrafica azienda -->
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAnagrafica" aria-expanded="false" aria-controls="collapseAnagrafica">
-                                            Anagrafica azienda
-                                        </button>
-                                    </h2>
-                                    <div id="collapseAnagrafica" class="accordion-collapse collapse">
-                                        <div class="accordion-body">
-                                            <div class="row gy-4">
-                                                <div class="col-md-6">
-                                                    <div class="small text-muted">Partita IVA</div>
-                                                    <div><?php echo $partita_iva
-                                                        ? esc_html($partita_iva)
-                                                        : "-"; ?></div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="small text-muted">Telefono</div>
-                                                    <div><?php echo $phone
-                                                        ? esc_html($phone)
-                                                        : "-"; ?></div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="small text-muted">Dominio</div>
-                                                    <div><?php echo $domain
-                                                        ? esc_html($domain)
-                                                        : "-"; ?></div>
-                                                </div>
-                                                <div class="col-12">
-                                                    <div class="small text-muted">Indirizzo</div>
-                                                    <div><?php echo $address
-                                                        ? nl2br(esc_html($address))
-                                                        : "-"; ?></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Accordion Item 2: Dati economici -->
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEconomici" aria-expanded="false" aria-controls="collapseEconomici">
-                                            Dati economici
-                                        </button>
-                                    </h2>
-                                    <div id="collapseEconomici" class="accordion-collapse collapse">
-                                        <div class="accordion-body">
-                                            <div class="row gy-4">
-                                                <div class="col-md-6">
-                                                    <div class="small text-muted">Fatturato stimato</div>
-                                                    <div><?php echo $estimated_annual_revenue
-                                                        ? esc_html($estimated_annual_revenue)
-                                                        : "-"; ?></div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="small text-muted">EBITDA % stimato</div>
-                                                    <div><?php echo $estimated_ebitda_percentage !== ""
-                                                        ? esc_html($estimated_ebitda_percentage)
-                                                        : "-"; ?></div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="small text-muted">Budget Marketing</div>
-                                                    <div><?php echo $estimated_marketing_budget
-                                                        ? esc_html($estimated_marketing_budget)
-                                                        : "-"; ?></div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="small text-muted">Tier Budget</div>
-                                                    <div><?php echo $budget_tier
-                                                        ? esc_html($budget_tier)
-                                                        : "-"; ?></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Accordion Item 3: Campagna -->
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCampagna" aria-expanded="false" aria-controls="collapseCampagna">
-                                            Campagna
-                                        </button>
-                                    </h2>
-                                    <div id="collapseCampagna" class="accordion-collapse collapse">
-                                        <div class="accordion-body">
-                                            <div class="row gy-4">
-                                                <div class="col-md-6">
-                                                    <div class="small text-muted">Nome Campagna</div>
-                                                    <div><?php echo $campaign_name
-                                                        ? esc_html($campaign_name)
-                                                        : "-"; ?></div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="small text-muted">Status campagna</div>
-                                                    <div><?php echo $status_display; ?></div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="small text-muted">Query utilizzata</div>
-                                                    <div><?php echo $query_used
-                                                        ? esc_html($query_used)
-                                                        : "-"; ?></div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="small text-muted">Discovery ID</div>
-                                                    <div><?php echo $discovery_id
-                                                        ? esc_html($discovery_id)
-                                                        : "-"; ?></div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="small text-muted">Run ID</div>
-                                                    <div><?php echo $run_id
-                                                        ? esc_html($run_id)
-                                                        : "-"; ?></div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="small text-muted">Completezza Dati</div>
-                                                    <div><?php echo $data_completeness !== ""
-                                                        ? esc_html($data_completeness) . "%"
-                                                        : "-"; ?></div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="small text-muted">Fonte</div>
-                                                    <div><?php echo $source
-                                                        ? esc_html($source)
-                                                        : "-"; ?></div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="small text-muted">Data Analisi</div>
-                                                    <div><?php echo esc_html($analysis_last_update); ?></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Accordion Item 4: Dati Google -->
-                                <div class="accordion-item">
-                                    <h2 class="accordion-header">
-                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGoogle" aria-expanded="false" aria-controls="collapseGoogle">
-                                            Dati Google
-                                        </button>
-                                    </h2>
-                                    <div id="collapseGoogle" class="accordion-collapse collapse">
-                                        <div class="accordion-body">
-                                            <div class="row gy-4">
-                                                <div class="col-md-6">
-                                                    <div class="small text-muted">Rating</div>
-                                                    <div><?php echo $rating !== ""
-                                                        ? esc_html($rating)
-                                                        : "-"; ?></div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="small text-muted">Recensioni</div>
-                                                    <div><?php echo $reviews !== ""
-                                                        ? esc_html($reviews)
-                                                        : "-"; ?></div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="small text-muted">Data Discovery</div>
-                                                    <div><?php echo $discovery_date
-                                                        ? esc_html($discovery_date)
-                                                        : "-"; ?></div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="small text-muted">Ora Discovery</div>
-                                                    <div><?php echo $discovery_time
-                                                        ? esc_html($discovery_time)
-                                                        : "-"; ?></div>
-                                                </div>
-                                                <div class="col-12">
-                                                    <div class="small text-muted">Place ID</div>
-                                                    <div><?php echo $place_id
-                                                        ? esc_html($place_id)
-                                                        : "-"; ?></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </aside>
                 </div>
 
                 <!-- Colonna sinistra: dettaglio -->
                 <div class="col-md-6 col-lg-7 col-xxl-8">
 
-                        <div class="company-insights">
-                            <div class="company-insights__card">
-                                <span class="company-insights__label">Fatturato stimato</span>
-                                <span class="company-insights__value"><?php echo $estimated_annual_revenue !== ""
-                                    ? esc_html($estimated_annual_revenue)
-                                    : "-"; ?></span>
-                                <span class="company-insights__caption">Annual revenue</span>
+                        <section class="company-kpi-board">
+                            <header class="company-kpi-board__head">
+                                <h2 class="company-kpi-board__title"><?php esc_html_e('Key Commercial KPIs', 'psip'); ?></h2>
+                                <span class="company-kpi-board__meta"><?php esc_html_e('Valori stimati dal workflow di enrichment', 'psip'); ?></span>
+                            </header>
+                            <div class="company-kpi-board__grid">
+                                <article class="company-kpi-card">
+                                    <span class="company-kpi-card__label"><?php esc_html_e('Fatturato stimato', 'psip'); ?></span>
+                                    <span class="company-kpi-card__value"><?php echo $annual_revenue_display !== '—'
+                                        ? esc_html($annual_revenue_display)
+                                        : '—'; ?></span>
+                                    <span class="company-kpi-card__hint"><?php esc_html_e('Annual revenue', 'psip'); ?></span>
+                                </article>
+                                <article class="company-kpi-card">
+                                    <span class="company-kpi-card__label"><?php esc_html_e('Budget marketing', 'psip'); ?></span>
+                                    <span class="company-kpi-card__value"><?php echo $marketing_budget_display !== '—'
+                                        ? esc_html($marketing_budget_display)
+                                        : '—'; ?></span>
+                                    <span class="company-kpi-card__hint"><?php esc_html_e('Forecasted spend', 'psip'); ?></span>
+                                </article>
+                                <article class="company-kpi-card">
+                                    <span class="company-kpi-card__label"><?php esc_html_e('Budget tier', 'psip'); ?></span>
+                                    <span class="company-kpi-card__value"><?php echo $budget_tier_display !== '—'
+                                        ? esc_html($budget_tier_display)
+                                        : '—'; ?></span>
+                                    <span class="company-kpi-card__hint"><?php esc_html_e('Allocazione stimata', 'psip'); ?></span>
+                                </article>
+                                <article class="company-kpi-card company-kpi-card--chart">
+                                    <span class="company-kpi-card__label"><?php esc_html_e('Digital maturity', 'psip'); ?></span>
+                                    <?php if ($digital_maturity_percent !== null): ?>
+                                        <div class="company-kpi-card__bar">
+                                            <span style="width: <?php echo esc_attr((string) $digital_maturity_percent); ?>%;"></span>
+                                        </div>
+                                        <span class="company-kpi-card__value company-kpi-card__value--accent">
+                                            <?php echo esc_html((string) $digital_maturity_percent); ?>%
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="company-kpi-card__value">—</span>
+                                    <?php endif; ?>
+                                    <span class="company-kpi-card__hint"><?php esc_html_e('Indice di maturità digitale', 'psip'); ?></span>
+                                </article>
                             </div>
-                            <div class="company-insights__card">
-                                <span class="company-insights__label">Dipendenti stimati</span>
-                                <span class="company-insights__value"><?php echo $employee_count_est !== ""
-                                    ? esc_html($employee_count_est)
-                                    : "-"; ?></span>
-                                <span class="company-insights__caption">Team size</span>
-                            </div>
-                            <div class="company-insights__card">
-                                <span class="company-insights__label">Budget marketing</span>
-                                <span class="company-insights__value"><?php echo $estimated_marketing_budget !== ""
-                                    ? esc_html($estimated_marketing_budget)
-                                    : "-"; ?></span>
-                                <span class="company-insights__caption">Forecasted spend</span>
-                            </div>
-                            <div class="company-insights__card company-insights__card--chart">
-                                <span class="company-insights__label">Confidence score</span>
-                                <?php if ($confidence_percent_display !== null): ?>
-                                    <div class="company-insights__bar">
-                                        <span style="width: <?php echo esc_attr(
-                                            (string) $confidence_percent_display
-                                        ); ?>%;"></span>
-                                    </div>
-                                    <span class="company-insights__stat">
-                                        <?php echo esc_html(
-                                            (string) $confidence_percent_display
-                                        ); ?>%
-                                    </span>
-                                <?php else: ?>
-                                    <span class="company-insights__value"><?php echo esc_html(
-                                        $confidence_display
-                                    ); ?></span>
-                                    <span class="company-insights__caption">Confidence rating</span>
-                                <?php endif; ?>
-                            </div>
-                            <div class="company-insights__card company-insights__card--chart">
-                                <span class="company-insights__label">Completezza dati</span>
-                                <?php if ($data_completeness_percent !== null): ?>
-                                    <div class="company-insights__bar company-insights__bar--alt">
-                                        <span style="width: <?php echo esc_attr(
-                                            (string) $data_completeness_percent
-                                        ); ?>%;"></span>
-                                    </div>
-                                    <span class="company-insights__stat">
-                                        <?php echo esc_html(
-                                            (string) $data_completeness_percent
-                                        ); ?>%
-                                    </span>
-                                <?php else: ?>
-                                    <span class="company-insights__value">
-                                        <?php echo $data_completeness !== ""
-                                            ? esc_html($data_completeness)
-                                            : "—"; ?>
-                                    </span>
-                                    <span class="company-insights__caption">Reported by source</span>
-                                <?php endif; ?>
-                            </div>
-                        </div>
+                        </section>
 
-                        <div class="mb-5">
-                            <div class="text">
-                                <h2 class="mb-2">Key factor analisi azienda</h2>
-                                <div>
-                                   <?php echo $key_factor_analisi
-                                       ? esc_html($key_factor_analisi)
-                                       : "-"; ?>
+                        <div class="company-overview">
+                            <section class="company-overview__section company-overview__section--full">
+                                <header class="company-overview__section-head">
+                                    <h2 class="company-overview__section-title"><?php esc_html_e('Profilo sintetico', 'psip'); ?></h2>
+                                </header>
+                                <div class="company-overview__section-body">
+                                    <p class="company-overview__paragraph">
+                                        <?php echo $short_bio !== ''
+                                            ? esc_html($short_bio)
+                                            : '—'; ?>
+                                    </p>
                                 </div>
-                            </div>
+                            </section>
+
+                            <section class="company-overview__section">
+                                <header class="company-overview__section-head">
+                                    <h3 class="company-overview__section-title"><?php esc_html_e('Deal readiness', 'psip'); ?></h3>
+                                    <span class="company-overview__section-meta"><?php esc_html_e('Metriche per pipeline e workflow', 'psip'); ?></span>
+                                </header>
+                                <div class="company-overview__widget-grid company-overview__widget-grid--cols-3">
+                                    <?php foreach ($deal_widgets as $widget): ?>
+                                        <div class="company-overview__widget">
+                                            <span class="company-overview__widget-label"><?php echo esc_html($widget['label']); ?></span>
+                                            <span class="company-overview__widget-value"><?php echo esc_html($widget['value']); ?></span>
+                                            <?php if (!empty($widget['context'])): ?>
+                                                <span class="company-overview__widget-context"><?php echo esc_html($widget['context']); ?></span>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </section>
+
+                            <section class="company-overview__section">
+                                <header class="company-overview__section-head">
+                                    <h3 class="company-overview__section-title"><?php esc_html_e('Company snapshot', 'psip'); ?></h3>
+                                    <span class="company-overview__section-meta"><?php esc_html_e('Dimensioni, settore e posizionamento', 'psip'); ?></span>
+                                </header>
+                                <div class="company-overview__widget-grid company-overview__widget-grid--cols-3">
+                                    <?php foreach ($profile_widgets as $widget): ?>
+                                        <div class="company-overview__widget">
+                                            <span class="company-overview__widget-label"><?php echo esc_html($widget['label']); ?></span>
+                                            <span class="company-overview__widget-value"><?php echo esc_html($widget['value']); ?></span>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            </section>
+
+                            <section class="company-overview__section company-overview__section--full">
+                                <header class="company-overview__section-head">
+                                    <h3 class="company-overview__section-title"><?php esc_html_e('Contatti & Canali', 'psip'); ?></h3>
+                                    <span class="company-overview__section-meta"><?php esc_html_e('Touchpoint per outreach', 'psip'); ?></span>
+                                </header>
+                                <div class="company-overview__widget-grid company-overview__widget-grid--cols-2">
+                                    <?php foreach ($contact_widgets as $widget): ?>
+                                        <div class="company-overview__widget">
+                                            <span class="company-overview__widget-label"><?php echo esc_html($widget['label']); ?></span>
+                                            <span class="company-overview__widget-value">
+                                                <?php
+                                                if ($widget['value'] === '—') {
+                                                    echo '—';
+                                                } elseif (!empty($widget['url'])) {
+                                                    ?>
+                                                    <a href="<?php echo esc_url($widget['url']); ?>" target="_blank" rel="noopener"><?php echo esc_html($widget['value']); ?></a>
+                                                    <?php
+                                                } elseif (!empty($widget['multiline'])) {
+                                                    echo nl2br(esc_html($widget['value']));
+                                                } else {
+                                                    echo esc_html($widget['value']);
+                                                }
+                                                ?>
+                                            </span>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                                <?php if (!empty($display_social_links)): ?>
+                                    <div class="company-overview__socials">
+                                        <span class="company-overview__socials-label"><?php esc_html_e('Social & Media', 'psip'); ?></span>
+                                        <ul class="company-overview__socials-list">
+                                            <?php foreach ($display_social_links as $link): ?>
+                                                <?php
+                                                $link_href = $link;
+                                                if (strpos($link_href, 'http://') !== 0 && strpos($link_href, 'https://') !== 0) {
+                                                    $link_href = 'https://' . ltrim($link_href, '/');
+                                                }
+                                                ?>
+                                                <li><a href="<?php echo esc_url($link_href); ?>" target="_blank" rel="noopener"><?php echo esc_html($link); ?></a></li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    </div>
+                                <?php endif; ?>
+                            </section>
                         </div>
                         
                         
