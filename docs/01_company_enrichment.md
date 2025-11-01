@@ -18,86 +18,107 @@ Rendere il dataset utilizzabile per:
 ## Struttura Top-Level
 
 ### Campo: company_name_full
+
 - Tipo: string
 - Note: Ragione sociale
 
 ### Campo: partita_iva
+
 - Tipo: string
 - Note: 11 cifre (senza IT)
 
 ### Campo: domain
+
 - Tipo: string
 - Note: dominio.tld
 
 ### Campo: address
+
 - Tipo: string
 - Note: via + numero
 
 ### Campo: city
+
 - Tipo: string
 - Note: città
 
 ### Campo: province
+
 - Tipo: string
 - Note: es. VE
 
 ### Campo: phone
+
 - Tipo: string
 - Note: preferibile fisso aziendale
 
 ### Campo: email
+
 - Tipo: string
 - Note: email istituzionale
 
 ### Campo: linkedin_url
+
 - Tipo: string
 - Note: pagina aziendale
 
 ## Company Profile
 
 ### Campo: sector_specific
+
 - Tipo: string
 - Note: es. “Produzione valvole industriali”
 
 ### Campo: business_type
+
 - Tipo: string
 - Note: Industriale / Servizi professionali / Tech / Retail / ecc.
 
 ### Campo: employee_count
+
 - Tipo: string o int
 - Note: range o numero
 
 ### Campo: growth_stage
+
 - Tipo: enum
 - Valori: Startup / Crescita / Consolidata / Corporate / Non definito
 
 ### Campo: geography_scope
+
 - Tipo: enum
 - Valori: Locale / Regionale / Nazionale / Internazionale
 
 ### Campo: short_bio
+
 - Tipo: string
 - Note: Breve descrizione o analisi dell’azienda
 
 ## Economia e Budget
 
 ### Campo: annual_revenue
+
 - Tipo: string
 - Note: €x–y o cifra singola
 
 ### Campo: ebitda_margin_est
+
 - Tipo: number
 - Note: percentuale stimata da benchmark di settore o RPE
 
 ### Campo: marketing_budget_est
+
 - Tipo: string
 - Note: €x–y o “Non reperito”
 
 ### Campo: budget_tier
+
 - Tipo: enum
 - Valori: 0 micro / 1 small / 2 medium / 3 large / 4 enterprise
+- Nota: l’API `wp/v2` accetta etichette testuali (Micro, Small, Medium, Large, Enterprise). Se il campo ACF è configurato con valori numerici 0–4, il Parsing Node converte le etichette nell’indice numerico prima dell’upsert.
 
 ### Campo: financial_confidence
+
 - Tipo: number
 - Range: 0–100
 - Note: livello di confidenza sul dato
@@ -118,10 +139,13 @@ Rendere il dataset utilizzabile per:
 ## Digital e Media
 
 ### Campo: social_links
+
 - Tipo: textarea
 - Note: una URL per riga
+- linkedin_url è un campo separato; `social_links` accetta una URL per riga. Il parser deduplica automaticamente ed estrae la LinkedIn Company Page se presente.
 
 ### Campo: digital_maturity_score
+
 - Tipo: number
 - Range: 0–100
 - Note: calcolato con rubrica a punti
@@ -141,18 +165,22 @@ Rendere il dataset utilizzabile per:
 ## Fit Perspect / Newwave
 
 ### Campo: qualification_status
+
 - Tipo: enum
-- Valori: 0:rifiutata / 1:rifiutata / 2:qualificata
+- Valori: da valutare / rifiutata / qualificata
 
 ### Campo: qualification_reason
+
 - Tipo: string
 - Note: motivazione breve
 
 ### Campo: service_fit
+
 - Tipo: string
 - Note: servizi più pertinenti
 
 ### Campo: priority_score
+
 - Tipo: number
 - Range: 0–100
 - Note: punteggio per sorting CRM
@@ -172,50 +200,60 @@ Rendere il dataset utilizzabile per:
 - content_topics_cluster
 - buyer_persona_match
 
-Se un dato non esiste
 ## Meta Enrichment & Telemetria
 
 ### Campo: enrichment_last_status_code
+
 - Tipo: number
 - Note: codice di esito (HTTP o custom) dell’ultimo workflow n8n ricevuto da WordPress.
 
 ### Campo: enrichment_last_message
+
 - Tipo: string
 - Note: descrizione testuale dell’ultimo esito (log operativi / messaggi errore).
 
-### Campo: data_ultimo_enrichment
+### Campo: enrichment_last_at
+
 - Tipo: datetime string
-- Note: timestamp ISO 8601 dell’ultimo upsert completato; alias ammesso `enrichment_last_at`.
+- Note: timestamp ISO 8601 dell’ultimo upsert completato. Alias legacy `data_ultimo_enrichment` accettato in sola lettura; standard = `enrichment_last_at`.
 
 ### Campo: enrichment_sources
+
 - Tipo: string (JSON o testo)
 - Note: elenco fonti utilizzate dall’agente (popolato da n8n).
 
 ### Campo: enrichment_notes
+
 - Tipo: string
 - Note: note contestuali dell’arricchimento automatico.
 
 ### Campo: enrichment_citations
+
 - Tipo: string
 - Note: citazioni puntuali / URL forniti dal workflow.
 
 ### Campo: enrichment_completeness
+
 - Tipo: number
 - Note: percentuale (0–100) calcolata lato WordPress sui campi core popolati.
 
 ### Campo: enrichment_field_total
+
 - Tipo: number
 - Note: numero di campi considerati dal calcolo di completezza.
 
 ### Campo: enrichment_field_populated
+
 - Tipo: number
 - Note: numero di campi effettivamente valorizzati.
 
 ### Campo: update_count
+
 - Tipo: number
 - Note: quante volte il record è stato aggiornato dal workflow di enrichment.
 
 ### Campo: last_update_date
+
 - Tipo: datetime string
 - Note: timestamp (MySQL) dell’ultima modifica applicata dall’upsert.
 
@@ -317,12 +355,19 @@ Concludi con “Completezza informazioni: XX%” (stima motivata)
 - financial_confidence: livello di confidenza 0–100
 - priority_score: sintesi opportunità 0–100
 
+#### Criteri di qualificazione (qualification_status)
+
+- Usa solo: da valutare, rifiutata, qualificata.
+- rifiutata → dati insufficienti o contraddittori (imposta anche qualification_reason: "Dati insufficienti").
+- qualificata → budget_tier ≥ Medium e carenze digitali rilevanti (motiva in qualification_reason).
+- da valutare → informazioni parziali ma coerenti; profilo potenzialmente interessante ma ancora incompleto.
+
 ### Parsing Node
 
 - Analizza e valida il JSON dell’agente 2
 - Normalizza valori e tipi
 - budget_tier → indice 0–4
-- qualification_status coerente
+- qualification_status coerente con: da valutare / rifiutata / qualificata; fallback: rifiutata + “Dati insufficienti”
 - Deduplica social
 - Trancia short_bio a 800 caratteri
 - Output acfPayload pronto per upsert
@@ -332,28 +377,14 @@ Concludi con “Completezza informazioni: XX%” (stima motivata)
 **Endpoint:**
 `POST https://lead.perspect.it/wp-json/wp/v2/azienda/{POST_ID}`
 
-**Body:**
+**Body (JSON):**
 ```json
-{
-  "discovery_id": "{{ $json.discovery_id }}",
-  "company_name": "{{ $json.acf.company_name_full }}",
-  "domain": "{{ $json.acf.domain }}",
-  "acf": {{ $json.acfPayload }},
-  "meta": {
-    "enrichment_sources": {{ $json.enrichment_sources | toJson }},
-    "enrichment_notes": {{ $json.enrichment_notes | toJson }},
-    "enrichment_citations": {{ $json.enrichment_citations | toJson }}
-  },
-  "workflow_status": {
-    "code": {{ $json.upsert_status_code }},
-    "message": "{{ $json.upsert_message }}",
-    "timestamp": "{{ $json.upsert_at_iso }}"
-  }
-}
+{ "acf": {{ $json.acfPayload }} }
 ```
 
-- `meta` è opzionale ed è pensata per ulteriori note/trace del workflow (può restare vuota).
-- `workflow_status` alimenta i campi `enrichment_last_status_code`, `enrichment_last_message` e `data_ultimo_enrichment` (l’alias `enrichment_last_at` resta accettato).
+**Note operative:**
+- Il CPT `wp/v2/azienda/{POST_ID}` accetta `acf` come contenitore dei campi ACF.
+- Campi extra come `discovery_id`, `meta`, `workflow_status` richiedono endpoint custom o meta registrati via tema/plugin.
 
 **Authentication:** stessa del nodo principale (Basic Auth o App Password)
 
@@ -374,7 +405,7 @@ Scopo: scrivere su WordPress lo stato dell’upsert (HTTP status, messaggio, tim
 **Headers:**
 `Content-Type: application/json`
 
-**Body:**
+**Body (JSON):**
 ```json
 {
   "acf": {
@@ -400,3 +431,13 @@ I tre campi ACF (enrichment_last_status_code, enrichment_last_message, enrichmen
 Company Enrichment v1.0 – Novembre 2025  
 Parte del progetto Lead Generator / Data Enrichment Suite  
 Autore: GPT-5 + n8n / WordPress ACF
+
+## Webhook & Respond
+
+- Nel nodo Webhook impostare `Respond = Using Respond to Webhook node`.
+- Nel nodo Respond to Webhook restituire:
+  ```json
+  { "ok": {{ $json.upsert_ok }}, "status": {{ $json.upsert_status_code }}, "message": "{{ $json.upsert_message }}" }
+  ```
+- Impostare `Response Code = {{ $json.upsert_status_code || 200 }}`.
+- Per il Test URL eseguire il workflow in modalità “Execute workflow” prima di chiamarlo esternamente.

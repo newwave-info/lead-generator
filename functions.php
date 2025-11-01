@@ -2169,9 +2169,14 @@ function psip_render_company_enrichment_metabox($post) {
             data-company-id="<?php echo $post->ID; ?>"
             data-company-name="<?php echo esc_attr($post->post_title); ?>"
             data-website="<?php echo esc_attr($website); ?>"
+            data-original-label="🔍 Arricchisci Dati Azienda"
             style="width: 100%; height: 45px; font-size: 15px;">
             🔍 Arricchisci Dati Azienda
         </button>
+        <div class="psip-enrichment-progress" style="display:none; text-align:center; margin-top:10px;">
+            <span class="spinner" style="float:none; margin:0 auto; display:inline-block;"></span>
+            <div style="margin-top:6px; font-size:11px; color:#1d4ed8;">Workflow n8n in esecuzione…</div>
+        </div>
         
         <p style="font-size: 11px; color: #666; margin-top: 8px; text-align: center;">
             Popola automaticamente: P.IVA, indirizzo, telefono, settore, fatturato, dipendenti + Economic Analysis
@@ -2193,12 +2198,19 @@ function psip_render_company_enrichment_metabox($post) {
             const companyId = btn.data('company-id');
             const companyName = btn.data('company-name');
             const website = btn.data('website');
+            const section = btn.closest('.psip-enrichment-section');
+            const loader = section.find('.psip-enrichment-progress');
+            const spinner = loader.find('.spinner');
+            const originalLabel = btn.data('original-label') || btn.html();
+            btn.data('original-label', originalLabel);
             
             if (!confirm(`Arricchire dati per "${companyName}"?`)) {
                 return;
             }
             
-            btn.prop('disabled', true).html('⏳ Elaborazione...');
+            btn.prop('disabled', true).html('⏳ Workflow in esecuzione…');
+            spinner.addClass('is-active');
+            loader.show();
             
             $.ajax({
                 url: '<?php echo PSIP_N8N_BASE_URL; ?>/webhook/company-enrichment',
@@ -2216,7 +2228,9 @@ function psip_render_company_enrichment_metabox($post) {
                 },
                 error: function(xhr) {
                     alert('❌ Errore: ' + (xhr.responseJSON?.message || 'Errore sconosciuto'));
-                    btn.prop('disabled', false).html('🔍 Arricchisci Dati Azienda');
+                    spinner.removeClass('is-active');
+                    loader.hide();
+                    btn.prop('disabled', false).html(originalLabel);
                 }
             });
         });
