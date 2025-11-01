@@ -62,6 +62,56 @@ if (!function_exists('psip_theme_normalize_scalar')) {
     }
 }
 
+if (!function_exists('psip_update_company_field')) {
+    /**
+     * Aggiorna un campo (ACF o meta standard) per un post azienda.
+     *
+     * - Se disponibile, utilizza l'API ACF (`update_field`) per mantenere la coerenza del formato.
+     * - In fallback aggiorna direttamente il post meta serializzando eventuali array/oggetti.
+     *
+     * @param int    $post_id    ID del post azienda.
+     * @param string $field_name Nome del campo/metakey.
+     * @param mixed  $value      Valore da salvare.
+     */
+    function psip_update_company_field($post_id, $field_name, $value) {
+        $field_name = trim((string) $field_name);
+        if ($field_name === '') {
+            return;
+        }
+
+        if ($value === null) {
+            if (function_exists('delete_field')) {
+                delete_field($field_name, $post_id);
+            } else {
+                delete_post_meta($post_id, $field_name);
+            }
+            return;
+        }
+
+        // Se viene passato un field key ACF (field_abc123) aggiorniamo direttamente.
+        if (function_exists('update_field')) {
+            if (strpos($field_name, 'field_') === 0) {
+                update_field($field_name, $value, $post_id);
+                return;
+            }
+
+            if (function_exists('get_field_object')) {
+                $field_object = get_field_object($field_name, $post_id, false, false);
+                if ($field_object !== false) {
+                    update_field($field_name, $value, $post_id);
+                    return;
+                }
+            }
+        }
+
+        if (is_array($value) || is_object($value)) {
+            $value = maybe_serialize($value);
+        }
+
+        update_post_meta($post_id, $field_name, $value);
+    }
+}
+
 //custom theme option
 include_once(get_template_directory() .'/newwave/theme/front-end.php');
 include_once(get_template_directory() .'/newwave/theme/back-end.php');
@@ -179,37 +229,157 @@ add_action('rest_api_init', function() {
 // 3. CALLBACK UPSERT
 function perspect_upsert_company($request) {
     $params = $request->get_json_params();
+    if (!is_array($params)) {
+        return new WP_Error('invalid_payload', 'Payload non valido', ['status' => 400]);
+    }
+
+    $acf_payload = [];
+    if (isset($params['acf']) && is_array($params['acf'])) {
+        $acf_payload = $params['acf'];
+        unset($params['acf']);
+    }
+
+    $meta_payload = [];
+    if (isset($params['meta']) && is_array($params['meta'])) {
+        $meta_payload = $params['meta'];
+        unset($params['meta']);
+    }
+
+    $status_sources = [];
+    $status_keys = ['workflow_status', 'status_payload', 'enrichment_status'];
+    foreach ($status_keys as $status_key) {
+        if (isset($params[$status_key]) && is_array($params[$status_key])) {
+            $status_sources[] = $params[$status_key];
+            unset($params[$status_key]);
+        }
+    }
 
     if (empty($params['discovery_id']) || empty($params['company_name'])) {
-        return new WP_Error('missing_params', 'Parametro discovery_id o company_name mancante', array('status' => 400));
+        return new WP_Error('missing_params', 'Parametro discovery_id o company_name mancante', ['status' => 400]);
     }
 
     $discovery_id = sanitize_text_field($params['discovery_id']);
     $company_name = sanitize_text_field($params['company_name']);
-    $domain = sanitize_text_field($params['domain'] ?? '');
+    $domain       = isset($params['domain']) ? sanitize_text_field($params['domain']) : '';
 
-    $meta_query = array(
-        'relation' => 'OR',
-        array(
-            'key' => 'discovery_id',
-            'value' => $discovery_id,
-            'compare' => '='
-        )
-    );
-    if ($domain) {
-        $meta_query[] = array(
-            'key' => 'domain',
-            'value' => $domain,
-            'compare' => '='
-        );
+    // Costruisce la lista completa di campi/metadati da aggiornare.
+    $meta_updates = [];
+    foreach ($params as $key => $value) {
+        if ($key === 'company_name') {
+            continue;
+        }
+        if ($key === 'discovery_id') {
+            $value = $discovery_id;
+        } elseif ($key === 'domain') {
+            $value = $domain;
+        }
+
+        $meta_updates[$key] = $value;
     }
-    
-    $args = array(
+
+    foreach ($meta_payload as $key => $value) {
+        $meta_updates[$key] = $value;
+    }
+
+    foreach ($acf_payload as $key => $value) {
+        $meta_updates[$key] = $value;
+    }
+
+    // Mappa eventuali payload di stato in campi dedicati.
+    $status_fields = [];
+    foreach ($status_sources as $source) {
+        foreach ((array) $source as $key => $value) {
+            if ($key === 'code') {
+                $status_fields['enrichment_last_status_code'] = $value;
+            } elseif ($key === 'message') {
+                $status_fields['enrichment_last_message'] = $value;
+            } elseif (in_array($key, ['timestamp', 'time', 'at', 'date'], true)) {
+                $status_fields['data_ultimo_enrichment'] = $value;
+            } elseif (is_string($key) && strpos($key, 'enrichment_last_') === 0) {
+                $status_fields[$key] = $value;
+            }
+        }
+    }
+
+    // Integra gli status passati direttamente nel payload principale.
+    foreach (['enrichment_last_status_code', 'enrichment_last_message', 'enrichment_last_at'] as $status_key) {
+        if (array_key_exists($status_key, $meta_updates)) {
+            $status_fields[$status_key] = $meta_updates[$status_key];
+            unset($meta_updates[$status_key]);
+        }
+    }
+
+    $alias_map = [
+        'enrichment_last_at' => 'data_ultimo_enrichment',
+    ];
+
+    foreach ($alias_map as $alias => $canonical) {
+        if (array_key_exists($alias, $meta_updates)) {
+            if (!array_key_exists($canonical, $meta_updates)) {
+                $meta_updates[$canonical] = $meta_updates[$alias];
+            }
+            unset($meta_updates[$alias]);
+        }
+
+        if (array_key_exists($alias, $status_fields)) {
+            if (!array_key_exists($canonical, $status_fields)) {
+                $status_fields[$canonical] = $status_fields[$alias];
+            }
+            unset($status_fields[$alias]);
+        }
+    }
+
+    $status_fields = array_filter(
+        $status_fields,
+        static function ($value) {
+            return $value !== null && $value !== '';
+        }
+    );
+
+    $meta_updates = array_filter(
+        $meta_updates,
+        static function ($value, $key) {
+            return $key !== '' && $key !== null;
+        },
+        ARRAY_FILTER_USE_BOTH
+    );
+
+    $new_confidence = null;
+    if (array_key_exists('confidence', $meta_updates)) {
+        $candidate_confidence = $meta_updates['confidence'];
+        if (is_array($candidate_confidence)) {
+            $candidate_confidence = reset($candidate_confidence);
+        }
+        if (is_numeric($candidate_confidence)) {
+            $new_confidence = (int) $candidate_confidence;
+        } elseif (is_string($candidate_confidence) && is_numeric(trim($candidate_confidence))) {
+            $new_confidence = (int) trim($candidate_confidence);
+        }
+    }
+
+    $meta_query = [
+        'relation' => 'OR',
+        [
+            'key'   => 'discovery_id',
+            'value' => $discovery_id,
+            'compare' => '=',
+        ],
+    ];
+
+    if ($domain !== '') {
+        $meta_query[] = [
+            'key'     => 'domain',
+            'value'   => $domain,
+            'compare' => '=',
+        ];
+    }
+
+    $args = [
         'post_type'      => 'azienda',
         'posts_per_page' => 1,
-        'post_status'    => array('publish','private','pending','future','inherit'),
+        'post_status'    => ['publish', 'private', 'pending', 'future', 'inherit'],
         'meta_query'     => $meta_query,
-    );
+    ];
 
     $existing_query = new WP_Query($args);
 
@@ -218,25 +388,39 @@ function perspect_upsert_company($request) {
         error_log('PSIP: Found post ID: ' . $post->ID . ' - status: ' . $post->post_status);
     }
 
+    $primary_updates = $meta_updates;
+    foreach ($status_fields as $status_key => $status_value) {
+        unset($primary_updates[$status_key]);
+    }
+
+    $updated_fields = [];
+    $updated_status_fields = [];
+
     if ($existing_query->have_posts()) {
         $existing_post = $existing_query->posts[0];
         $post_id = $existing_post->ID;
 
-        $existing_confidence = (int)get_post_meta($post_id, 'confidence', true);
-        $new_confidence = isset($params['confidence']) ? (int)$params['confidence'] : 0;
+        $should_update_fields = true;
+        if ($new_confidence !== null) {
+            $existing_confidence = (int) get_post_meta($post_id, 'confidence', true);
+            if ($existing_confidence > $new_confidence) {
+                $should_update_fields = false;
+            }
+        }
 
-        if ($new_confidence >= $existing_confidence) {
-            wp_update_post(array(
+        if ($should_update_fields) {
+            wp_update_post([
                 'ID'           => $post_id,
                 'post_title'   => $company_name,
-                'post_modified'=> current_time('mysql')
-            ));
-            foreach ($params as $key => $value) {
-                if (!in_array($key, ['post_title', 'post_status', 'ID'])) {
-                    update_post_meta($post_id, $key, $value);
-                }
+                'post_modified'=> current_time('mysql'),
+            ]);
+
+            foreach ($primary_updates as $meta_key => $meta_value) {
+                psip_update_company_field($post_id, $meta_key, $meta_value);
+                $updated_fields[] = $meta_key;
             }
-            $update_count = (int)get_post_meta($post_id, 'update_count', true);
+
+            $update_count = (int) get_post_meta($post_id, 'update_count', true);
             update_post_meta($post_id, 'update_count', $update_count + 1);
             update_post_meta($post_id, 'last_update_date', current_time('mysql'));
             $operation = 'updated';
@@ -245,24 +429,36 @@ function perspect_upsert_company($request) {
             $operation = 'skipped';
             error_log("PSIP: Skipped post ID $post_id - confidence too low");
         }
+
+        if (!empty($status_fields)) {
+            foreach ($status_fields as $status_key => $status_value) {
+                psip_update_company_field($post_id, $status_key, $status_value);
+                $updated_status_fields[] = $status_key;
+            }
+        }
     } else {
-        $post_id = wp_insert_post(array(
-            'post_title'   => $company_name,
-            'post_type'    => 'azienda',
-            'post_status'  => 'publish',
-            'post_date'    => current_time('mysql')
-        ));
-        
+        $post_id = wp_insert_post([
+            'post_title'  => $company_name,
+            'post_type'   => 'azienda',
+            'post_status' => 'publish',
+            'post_date'   => current_time('mysql'),
+        ]);
+
         if (is_wp_error($post_id)) {
             error_log('PSIP: Error creating post - ' . $post_id->get_error_message());
             return $post_id;
         }
-        
-        foreach ($params as $key => $value) {
-            if (!in_array($key, ['post_title', 'post_status'])) {
-                add_post_meta($post_id, $key, $value, true);
-            }
+
+        foreach ($meta_updates as $meta_key => $meta_value) {
+            psip_update_company_field($post_id, $meta_key, $meta_value);
+            $updated_fields[] = $meta_key;
         }
+
+        foreach ($status_fields as $status_key => $status_value) {
+            psip_update_company_field($post_id, $status_key, $status_value);
+            $updated_status_fields[] = $status_key;
+        }
+
         add_post_meta($post_id, 'creation_date', current_time('mysql'), true);
         add_post_meta($post_id, 'update_count', 0, true);
         $operation = 'created';
@@ -271,14 +467,16 @@ function perspect_upsert_company($request) {
 
     wp_reset_postdata();
 
-    return array(
-        'success'      => true,
-        'operation'    => $operation,
-        'post_id'      => $post_id,
-        'company_name' => $company_name,
-        'discovery_id' => $discovery_id,
-        'timestamp'    => current_time('mysql')
-    );
+    return [
+        'success'            => true,
+        'operation'          => $operation,
+        'post_id'            => $post_id,
+        'company_name'       => $company_name,
+        'discovery_id'       => $discovery_id,
+        'timestamp'          => current_time('mysql'),
+        'updated_fields'     => array_values(array_unique($updated_fields)),
+        'status_fields'      => array_values(array_unique($updated_status_fields)),
+    ];
 }
 
 
@@ -1695,9 +1893,24 @@ function psip_render_company_enrichment_metabox($post) {
 
     // Mappa dei campi gestiti dal workflow Company Enrichment di n8n.
     $field_groups = [
+        'company_name_full' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'company_name_full'],
+            ],
+        ],
+        'short_bio' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'short_bio'],
+            ],
+        ],
         'partita_iva' => [
             'sources' => [
                 ['type' => 'acf', 'key' => 'partita_iva'],
+            ],
+        ],
+        'domain' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'domain'],
             ],
         ],
         'address' => [
@@ -1705,9 +1918,14 @@ function psip_render_company_enrichment_metabox($post) {
                 ['type' => 'acf', 'key' => 'address'],
             ],
         ],
-        'provincia' => [
+        'city' => [
             'sources' => [
-                ['type' => 'acf', 'key' => 'provincia'],
+                ['type' => 'acf', 'key' => 'city'],
+            ],
+        ],
+        'province' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'province'],
             ],
         ],
         'phone' => [
@@ -1717,22 +1935,17 @@ function psip_render_company_enrichment_metabox($post) {
         ],
         'email' => [
             'sources' => [
-                ['type' => 'acf', 'key' => 'email_azienda'],
+                ['type' => 'acf', 'key' => 'email'],
             ],
         ],
-        'website' => [
+        'linkedin_url' => [
             'sources' => [
-                ['type' => 'acf', 'key' => 'website'],
+                ['type' => 'acf', 'key' => 'linkedin_url'],
             ],
         ],
-        'domain' => [
+        'social_links' => [
             'sources' => [
-                ['type' => 'acf', 'key' => 'domain'],
-            ],
-        ],
-        'sector_specific' => [
-            'sources' => [
-                ['type' => 'acf', 'key' => 'sector_specific'],
+                ['type' => 'acf', 'key' => 'social_links'],
             ],
         ],
         'business_type' => [
@@ -1740,9 +1953,14 @@ function psip_render_company_enrichment_metabox($post) {
                 ['type' => 'acf', 'key' => 'business_type'],
             ],
         ],
-        'employee_count_est' => [
+        'sector_specific' => [
             'sources' => [
-                ['type' => 'acf', 'key' => 'employee_count_est'],
+                ['type' => 'acf', 'key' => 'sector_specific'],
+            ],
+        ],
+        'employee_count' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'employee_count'],
             ],
         ],
         'growth_stage' => [
@@ -1750,99 +1968,82 @@ function psip_render_company_enrichment_metabox($post) {
                 ['type' => 'acf', 'key' => 'growth_stage'],
             ],
         ],
-        'estimated_annual_revenue' => [
+        'geography_scope' => [
             'sources' => [
-                ['type' => 'acf', 'key' => 'estimated_annual_revenue'],
+                ['type' => 'acf', 'key' => 'geography_scope'],
             ],
         ],
-        'estimated_ebitda_percentage' => [
+        'annual_revenue' => [
             'sources' => [
-                ['type' => 'acf', 'key' => 'estimated_ebitda_percentage'],
+                ['type' => 'acf', 'key' => 'annual_revenue'],
             ],
         ],
-        'estimated_marketing_budget' => [
+        'ebitda_margin_est' => [
             'sources' => [
-                ['type' => 'acf', 'key' => 'estimated_marketing_budget'],
+                ['type' => 'acf', 'key' => 'ebitda_margin_est'],
+            ],
+            'allow_zero' => true,
+        ],
+        'marketing_budget_est' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'marketing_budget_est'],
             ],
         ],
         'budget_tier' => [
             'sources' => [
                 ['type' => 'acf', 'key' => 'budget_tier'],
             ],
+        ],
+        'financial_confidence' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'financial_confidence'],
+            ],
             'allow_zero' => true,
         ],
-        'budget_qualified' => [
+        'digital_maturity_score' => [
             'sources' => [
-                ['type' => 'acf', 'key' => 'budget_qualified'],
+                ['type' => 'acf', 'key' => 'digital_maturity_score'],
             ],
-            'count_false' => true,
+            'allow_zero' => true,
         ],
-        'linkedin_url' => [
+        'qualification_status' => [
             'sources' => [
-                ['type' => 'acf', 'key' => 'linkedin_url'],
-            ],
-        ],
-        'facebook_url' => [
-            'sources' => [
-                ['type' => 'acf', 'key' => 'facebook_url'],
+                ['type' => 'acf', 'key' => 'qualification_status'],
             ],
         ],
-        'instagram_url' => [
+        'qualification_reason' => [
             'sources' => [
-                ['type' => 'acf', 'key' => 'instagram_url'],
+                ['type' => 'acf', 'key' => 'qualification_reason'],
             ],
         ],
-        'x_url' => [
+        'service_fit' => [
             'sources' => [
-                ['type' => 'acf', 'key' => 'x_url'],
+                ['type' => 'acf', 'key' => 'service_fit'],
             ],
         ],
-        'youtube_url' => [
+        'priority_score' => [
             'sources' => [
-                ['type' => 'acf', 'key' => 'youtube_url'],
+                ['type' => 'acf', 'key' => 'priority_score'],
+            ],
+            'allow_zero' => true,
+        ],
+        'enrichment_last_status_code' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'enrichment_last_status_code'],
+                ['type' => 'meta', 'key' => 'enrichment_last_status_code'],
+            ],
+            'allow_zero' => true,
+        ],
+        'enrichment_last_message' => [
+            'sources' => [
+                ['type' => 'acf', 'key' => 'enrichment_last_message'],
+                ['type' => 'meta', 'key' => 'enrichment_last_message'],
             ],
         ],
-        'tiktok_url' => [
+        'enrichment_last_at' => [
             'sources' => [
-                ['type' => 'acf', 'key' => 'tiktok_url'],
-            ],
-        ],
-        'social_links_json' => [
-            'sources' => [
-                ['type' => 'acf', 'key' => 'social_json'],
-            ],
-            'custom' => 'social_json',
-        ],
-        'screen_home' => [
-            'sources' => [
-                ['type' => 'acf', 'key' => 'screen_home'],
-            ],
-        ],
-        'analysis_date' => [
-            'sources' => [
-                ['type' => 'acf', 'key' => 'analysis_date'],
-                ['type' => 'meta', 'key' => 'enrichment_timestamp'],
-            ],
-        ],
-        'confidence' => [
-            'sources' => [
-                ['type' => 'acf', 'key' => 'confidence'],
-                ['type' => 'meta', 'key' => 'enrichment_confidence'],
-            ],
-        ],
-        'enrichment_sources' => [
-            'sources' => [
-                ['type' => 'meta', 'key' => 'enrichment_sources'],
-            ],
-        ],
-        'enrichment_notes' => [
-            'sources' => [
-                ['type' => 'meta', 'key' => 'enrichment_notes'],
-            ],
-        ],
-        'enrichment_citations' => [
-            'sources' => [
-                ['type' => 'meta', 'key' => 'enrichment_citations'],
+                ['type' => 'acf', 'key' => 'data_ultimo_enrichment'],
+                ['type' => 'meta', 'key' => 'enrichment_last_at'],
             ],
         ],
     ];
@@ -1910,7 +2111,46 @@ function psip_render_company_enrichment_metabox($post) {
     }
 
     $completeness = $total_fields > 0 ? round(($populated_fields / $total_fields) * 100) : 0;
+    update_post_meta($post_id, 'enrichment_completeness', $completeness);
+    update_post_meta($post_id, 'enrichment_field_total', $total_fields);
+    update_post_meta($post_id, 'enrichment_field_populated', $populated_fields);
     $website = get_field('website', $post->ID);
+    $last_status_code = psip_theme_normalize_scalar(get_field('enrichment_last_status_code', $post_id));
+    if ($last_status_code === '') {
+        $last_status_code = psip_theme_normalize_scalar(get_post_meta($post_id, 'enrichment_last_status_code', true));
+    }
+
+    $last_status_message = psip_theme_normalize_scalar(get_field('enrichment_last_message', $post_id));
+    if ($last_status_message === '') {
+        $last_status_message = psip_theme_normalize_scalar(get_post_meta($post_id, 'enrichment_last_message', true));
+    }
+
+    $last_status_at_raw = psip_theme_normalize_scalar(get_field('data_ultimo_enrichment', $post_id));
+    if ($last_status_at_raw === '') {
+        $last_status_at_raw = psip_theme_normalize_scalar(get_post_meta($post_id, 'enrichment_last_at', true));
+    }
+    $update_count = (int) get_post_meta($post_id, 'update_count', true);
+    $last_update_date_raw = get_post_meta($post_id, 'last_update_date', true);
+
+    $last_status_at_display = '—';
+    if ($last_status_at_raw !== '') {
+        $status_timestamp = strtotime($last_status_at_raw);
+        if ($status_timestamp) {
+            $last_status_at_display = date_i18n('d/m/Y H:i', $status_timestamp);
+        } else {
+            $last_status_at_display = $last_status_at_raw;
+        }
+    }
+
+    $last_update_date_display = '—';
+    if (!empty($last_update_date_raw)) {
+        $update_timestamp = strtotime($last_update_date_raw);
+        if ($update_timestamp) {
+            $last_update_date_display = date_i18n('d/m/Y H:i', $update_timestamp);
+        } else {
+            $last_update_date_display = $last_update_date_raw;
+        }
+    }
     
     ?>
     <div class="psip-enrichment-section">
@@ -1936,6 +2176,14 @@ function psip_render_company_enrichment_metabox($post) {
         <p style="font-size: 11px; color: #666; margin-top: 8px; text-align: center;">
             Popola automaticamente: P.IVA, indirizzo, telefono, settore, fatturato, dipendenti + Economic Analysis
         </p>
+        <div style="margin-top: 12px; padding: 10px 12px; background: #f8fafc; border-radius: 10px; border: 1px solid rgba(148, 163, 184, 0.35); font-size: 11.5px; color: #0b1120; line-height: 1.5;">
+            <div><strong>Ultimo stato workflow:</strong> <?php echo $last_status_code !== '' ? esc_html($last_status_code) : '—'; ?></div>
+            <?php if ($last_status_message !== ''): ?>
+                <div style="margin-top: 4px;">💬 <?php echo esc_html($last_status_message); ?></div>
+            <?php endif; ?>
+            <div style="margin-top: 4px;">Aggiornato: <?php echo esc_html($last_status_at_display); ?></div>
+            <div style="margin-top: 4px;">Ultimo upsert: <?php echo esc_html($last_update_date_display); ?> (<?php echo esc_html((string) $update_count); ?> run)</div>
+        </div>
     </div>
     
     <script>

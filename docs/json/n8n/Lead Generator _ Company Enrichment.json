@@ -1,0 +1,459 @@
+{
+  "name": "Lead Generator | Company Enrichment",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "company-enrichment",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        928,
+        528
+      ],
+      "id": "bc879ff4-3081-43fc-a963-207cbfd168b9",
+      "name": "Company Enrichment Trigger",
+      "webhookId": "0749010b-5a94-42cf-b959-20a178772693"
+    },
+    {
+      "parameters": {
+        "url": "=https://lead.perspect.it/wp-json/wp/v2/azienda/{{ $json.body.company_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "publish"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1152,
+        528
+      ],
+      "id": "39504123-b9b7-427e-8925-8071d35e3e9b",
+      "name": "Read Company WP",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "3aI2CNmgXh2YqkjZ",
+          "name": "Lead 18kPRo WP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://lead.perspect.it/wp-json/wp/v2/azienda/{{ $('Read Company WP').item.json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "acf[short_bio]",
+              "value": "={{ $json.acfPayload.short_bio }}"
+            },
+            {
+              "name": "acf[address]",
+              "value": "={{ $json.acfPayload.address }}"
+            },
+            {
+              "name": "acf[city]",
+              "value": "={{ $json.acfPayload.city }}"
+            },
+            {
+              "name": "acf[province]",
+              "value": "={{ $json.acfPayload.province }}"
+            },
+            {
+              "name": "acf[phone]",
+              "value": "={{ $json.acfPayload.phone }}"
+            },
+            {
+              "name": "acf[email]",
+              "value": "={{ $json.acfPayload.email }}"
+            },
+            {
+              "name": "acf[linkedin_url]",
+              "value": "={{ $json.acfPayload.linkedin_url }}"
+            },
+            {
+              "name": "acf[social_links]",
+              "value": "={{ $json.acfPayload.social_links }}"
+            },
+            {
+              "name": "acf[business_type]",
+              "value": "={{ $json.acfPayload.business_type }}"
+            },
+            {
+              "name": "acf[sector_specific]",
+              "value": "={{ $json.acfPayload.sector_specific }}"
+            },
+            {
+              "name": "acf[employee_count]",
+              "value": "={{ $json.acfPayload.employee_count }}"
+            },
+            {
+              "name": "acf[growth_stage]",
+              "value": "={{ $json.acfPayload.growth_stage }}"
+            },
+            {
+              "name": "acf[geography_scope]",
+              "value": "={{ $json.acfPayload.geography_scope }}"
+            },
+            {
+              "name": "acf[annual_revenue]",
+              "value": "={{ $json.acfPayload.annual_revenue }}"
+            },
+            {
+              "name": "acf[ebitda_margin_est]",
+              "value": "={{ $json.acfPayload.ebitda_margin_est }}"
+            },
+            {
+              "name": "acf[marketing_budget_est]",
+              "value": "={{ $json.acfPayload.marketing_budget_est }}"
+            },
+            {
+              "name": "acf[budget_tier]",
+              "value": "={{ $json.acfPayload.budget_tier }}"
+            },
+            {
+              "name": "acf[financial_confidence]",
+              "value": "={{ $json.acfPayload.financial_confidence }}"
+            },
+            {
+              "name": "acf[digital_maturity_score]",
+              "value": "={{ $json.acfPayload.digital_maturity_score }}"
+            },
+            {
+              "name": "acf[qualification_status]",
+              "value": "={{ $json.acfPayload.qualification_status }}"
+            },
+            {
+              "name": "acf[qualification_reason]",
+              "value": "={{ $json.acfPayload.qualification_reason }}"
+            },
+            {
+              "name": "acf[service_fit]",
+              "value": "={{ $json.acfPayload.service_fit }}"
+            },
+            {
+              "name": "acf[priority_score]",
+              "value": "={{ $json.acfPayload.priority_score }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2304,
+        528
+      ],
+      "id": "d7834baa-1434-44ed-b736-b8c510ed9e95",
+      "name": "Update Company WP",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "3aI2CNmgXh2YqkjZ",
+          "name": "Lead 18kPRo WP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-search-api",
+          "mode": "list",
+          "cachedResultName": "GPT-5-SEARCH-API"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Sei un esperto analista di business intelligence per PMI italiane, con taglio consulenziale da agenzia di comunicazione.\nIl tuo compito è condurre una ricerca approfondita e completa su un’azienda italiana, raccogliendo tutte le informazioni pubbliche utili a:\n\n• Qualificazione commerciale B2B\n• Analisi del potenziale cliente\n• Priorità e opportunità di intervento su comunicazione, brand, narrativa e funnel\n\n⸻\n\nRegole generali\n\n• Scrivi sempre in italiano; mantieni l’inglese solo per termini tecnici intraducibili.\n• Niente invenzioni: ogni informazione va supportata da una fonte (URL o indicazione precisa). Se fai un’inferenza, dichiarala come tale.\n• Se un dato non è reperibile, scrivi “Non disponibile” o “Dato non reperito” — non riempire con ipotesi.\n• Priorità di fonti:\n 1) sito aziendale (tutte le sezioni)\n 2) profili social aziendali (LinkedIn Company, Facebook Page, Instagram, YouTube, TikTok, X/Twitter)\n 3) Registro Imprese / CCIAA / Infocamere e portali pubblici\n 4) portali economico-aziendali (es. aziendeeasy.it, reportaziende.it, p.iva24.com)\n 5) stampa e notizie verificate\n 6) marketplace / portali B2B\n 7) bandi, partnership, eventi, collaborazioni\n• Usa solo contenuti pubblici.\n• Focus comunicazione: posizionamento, messaggi, trust & proof, funnel e conversione, contenuti, social presence, partnership/eventi, segnali di budget marketing/comunicazione.\n• Evita analisi tecniche di performance web (DNS, Core Web Vitals, ecc.) salvo impattino sulla percezione o sulla conversione.\n• Tono professionale, preciso, orientato a CEO/CMO. Evita frasi generiche.\n\n⸻\n\nStruttura del report (testo, non JSON)\n\t1.\tExecutive Summary\n • Chi è l’azienda, posizionamento percepito, sintesi punti di forza/debolezza, potenziale, livello di confidenza.\n\t2.\tAnagrafica verificata\n • Ragione sociale completa; P.IVA; indirizzo sede legale (via, numero, CAP, città, provincia); telefono; email; dominio/sito.\n\t3.\tPresenza digitale & social (solo company pages)\n • URL LinkedIn, Facebook, Instagram, YouTube, TikTok, X/Twitter.\n • Valutazione qualità, aggiornamento e coerenza comunicativa.\n • Indica presenza di: form contatti, tracciamenti (cookie banner, GA, Tag Manager), blog/newsletter, marketing automation, campagne ADV attive.\n\t4.\tBusiness e mercato\n • Settore specifico; prodotti/servizi principali; mercati serviti; clienti/segmenti target; posizionamento; principali concorrenti.\n\t5.\tDimensione e performance (se pubbliche o stimabili)\n • Dipendenti (valore o range); fatturato (valore o range); fase di crescita; segnali recenti di espansione o stabilità.\n • Benchmark margini di settore (fonte): es. “Servizi professionali: EBITDA 10–18% (fonte: …)”.\n • RPE (ricavi/dipendente) se ricavabile.\n • Trend: crescita / stabile / declino (fonte).\n\t6.\tTrust & proof\n • Case study, referenze, certificazioni, partnership, premi/riconoscimenti, media mention, testimonianze, clienti rilevanti.\n\t7.\tContesto commerciale & budget indicativo\n • Segnali di investimento in comunicazione/marketing.\n • Canali attivi (ADV, fiere, eventi, PR, influencer, newsletter).\n • Iniziative in corso o recenti.\n • Segnali marketing: presenza ADV attiva, frequenza contenuti, strumenti (CRM, marketing automation), team marketing, fiere/eventi, case study pubblici.\n\t8.\tOpportunità per agenzia di comunicazione\n • 5–8 raccomandazioni pratiche e prioritarie su branding, narrativa, contenuti, lead generation, asset digitali, PR, social media.\n • Evidenzia aree ad alto potenziale di miglioramento o posizionamento.\n\t9.\tRischi & red flags\n • Claim non provati, incoerenze, mancanze critiche per conversione/trust, eventuali rischi reputazionali.\n\t10.\tDomande da porre al prospect\n • Max 6 domande mirate a colmare gap informativi o a validare ipotesi.\n\t11.\tFonti e affidabilità\n • Tabella riassuntiva: Dato | Fonte (URL/titolo) | Affidabilità: confermato / probabile / stimato.\n\t12.\tValutazione di completezza\n • “Completezza informazioni: XX%” + breve motivazione.\n\n⸻\n\nSezioni di approfondimento per derivazioni\n\n(questi dati servono all’agente di sintesi per calcolare stime e punteggi, quindi vanno sempre indicati se presenti o deducibili)\n\t•\tBenchmark margini EBITDA per il settore\n\t•\tFascia di fatturato o RPE (ricavi/dipendente)\n\t•\tSegnali di budget marketing / comunicazione\n\t•\tPresenza e qualità strumenti digitali (CRM, MA, newsletter, tracciamenti)\n\t•\tNumero e aggiornamento dei social attivi\n\t•\tPresenza di ADV / campagne online / investimenti visibili\n\n⸻\n\nCriteri di qualità\n\n• Specificità > vaghezza: cita esempi concreti tratti da sito o social.\n• Deduplica le informazioni, niente ridondanze.\n• Dichiara sempre le fonti e la loro affidabilità.\n• Evidenzia le informazioni non reperibili o incerte (senza sostituirle con stime arbitrarie).\n• Completezza ≥ 70% = analisi soddisfacente.\n\n⸻\n\nOutput: un report testuale completo, strutturato secondo i 12 punti sopra, pronto per essere processato dall’agente di sintesi.",
+              "role": "system"
+            },
+            {
+              "content": "=Conduci una ricerca completa e approfondita su questa azienda italiana.\nUsa linguaggio business per CEO o titolari, evita tecnicismi da sviluppatore.\n\n⸻\n\nDati di partenza (obbligatori):\n• Ragione sociale: {{ $json.acf.company_name_full }}\n• Dominio / Sito web: {{ $json.acf.domain }}\n• P. IVA: {{ $json.acf.partita_iva }}\n\n⸻\n\nObiettivi prioritari:\n• Dati anagrafici completi e verificati (ragione sociale, P.IVA, indirizzo, telefono, email, dominio)\n• Presenza digitale e social (URL ufficiali delle pagine aziendali e qualità/aggiornamento)\n• Settore specifico, prodotti/servizi, target e posizionamento\n• Dimensione (dipendenti/fatturato se reperibili o stimabili con fonte e affidabilità)\n• Trust & proof (case study, certificazioni, partnership, media)\n• Segnali di budget o propensione a investire in comunicazione e marketing\n• Opportunità concrete per un intervento di agenzia (branding, contenuti, digital marketing, lead gen)\n\n⸻\n\nIstruzioni:\n• Cita sempre le fonti (URL o indicazione precisa) e indica l’affidabilità: confermato / probabile / stimato.\n• Se un’informazione non è reperibile, scrivi “Non disponibile” o “Dato non reperito”.\n• Mantieni la struttura completa 1→12 richiesta dal system, includendo anche i dettagli aggiuntivi utili a:\n – calcolare o citare benchmark di settore / margini EBITDA;\n – individuare segnali di budget marketing (ADV, eventi, fiere, campagne, strumenti digitali);\n – valutare la maturità digitale (aggiornamento sito, tracciamenti, newsletter, CRM, automation, social attivi).\n• Non produrre JSON o elenchi di campi, ma un report testuale narrativo coerente con il formato richiesto.\n\n⸻\n\nConcludi con:\n“Completezza informazioni: XX%” (stima motivata).\n\nInizia ora l’analisi completa."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1376,
+        528
+      ],
+      "id": "13517c4a-76b4-4e5c-8a17-baf0cf460745",
+      "name": "Agente di analisi",
+      "credentials": {
+        "openAiApi": {
+          "id": "YKH8CfczdzNM1zeT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-5-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Sei un sistema di estrazione dati, normalizzazione e qualificazione lead per aziende italiane B2B. Ricevi un report testuale già revisionato e devi:\n\t1.\tEstrarre i dati strutturati\n\t2.\tApplicare solo inferenze minime e plausibili (derivazioni consentite sotto)\n\t3.\tNon inventare dati (usa null o “Non reperito” se mancano)\n\t4.\tUsare range solo se derivabili dal contenuto\n\t5.\tGenerare un JSON valido e pulito identico alla struttura richiesta\n\t6.\tNessun commento o testo extra fuori dal JSON\n\nRegole di normalizzazione\n• P. IVA: 11 cifre (se non esatte → “Non reperito”).\n• URL: assicurati https:// (se manca schema, prepend).\n• Email: estrai solo indirizzi aziendali; se c’è solo un form → “Non reperito”.\n• Telefono: formato internazionale se possibile (prefisso +39).\n• Indirizzo: stringa unica (via, numero, CAP, città, provincia) quando disponibile; se parti mancanti, riporta ciò che è certo in address e compila city/province se presenti nel testo.\n• employee_count / annual_revenue / marketing_budget_est: accetta valore o range testuale coerente con la fonte; mai numeri inventati.\n• linkedin_url: solo pagina aziendale (no profili personali).\n• social_links: textarea con una URL per riga (LinkedIn, Facebook, Instagram, YouTube, TikTok, X/Twitter).\n• growth_stage (solo questi valori): Non definito | Startup | Crescita | Consolidata | Corporate.\n• geography_scope (solo questi valori): Non definito | Locale | Regionale | Nazionale | Internazionale.\n• ebitda_margin_est: numero 0–100 oppure null se non presente/solo vago.\n• digital_maturity_score: numero 0–100 o null se non valutabile.\n• budget_tier: stringa tra Micro | Small | Medium | Large | Enterprise.\n– Se nel report è presente marketing budget:\nMicro: < €25k/anno\nSmall: €25k–€100k\nMedium: €100k–€300k\nLarge: €300k–€1M\nEnterprise: > €1M\n– Se manca il budget ma è presente fatturato (range/stima), mappa PRUDENZIALMENTE verso il basso:\n< €1M ⇒ Micro\n€1–5M ⇒ Small\n€5–20M ⇒ Medium\n€20–100M ⇒ Large\n> €100M ⇒ Enterprise\n• qualification_status: usa solo 0:rifiutata | 1:rifiutata | 2:qualificata.\n– Se dati insufficienti ⇒ 0:rifiutata e qualification_reason: “Dati insufficienti”\n– Se budget_tier ≥ Medium e carenze digitali rilevanti ⇒ 2:qualificata (motivando).\n• priority_score: intero 0–100; se non deducibile ⇒ null.\n• financial_confidence: 0–100; se non valutabile ⇒ 0 (prudenza).\n• short_bio: massimo ~800 caratteri, tono business sintetico.\n\nDerivazioni consentite (solo se supportate dal report)\n• ebitda_margin_est (0–100):\n– Se il report fornisce un benchmark di settore per l’EBITDA (es. “10–18%”), usa il limite INFERIORE della forchetta come base. Applica un aggiustamento massimo ±5 punti SOLO se esplicitamente giustificato dai segnali (es. forte hiring e molte iniziative ⇒ −1…−3; pricing premium, retainer, case study solidi ⇒ +1…+2). Clamp 0–35 per servizi professionali, altrimenti 0–100.\n– In assenza di benchmark ma con RPE (ricavi/dipendente) o ricavi + dipendenti affidabili:\nRPE < €80k ⇒ 5–8% (usa 7)\n€80–120k ⇒ 8–15% (usa 10)\n€120–180k ⇒ 15–22% (usa 17)\n> €180k ⇒ 22–30% (usa 24)\n– Se i prerequisiti non ci sono ⇒ null.\n• marketing_budget_est (stringa range) + budget_tier:\n– Se esiste un valore/fascia espliciti nel report ⇒ usa quelli.\n– Se manca, ma esiste fatturato: applica percentuali PRUDENZIALI in base a growth_stage (B2B servizi):\nStartup: 2–5% del fatturato\nCrescita: 1.5–3%\nConsolidata/Non definito: 0.8–1.2%\nCorporate: 0.5–1%\nRestituisci una FASCIA (es. “€25k–€40k”). Se il fatturato è un range, applica la % agli estremi.\n– Deriva budget_tier con le soglie definite sopra. Se non hai budget né fatturato ⇒ “Non reperito” e budget_tier coerente con i segnali più prudenti (o “Micro” se assenti).\n• digital_maturity_score (0–100):\n– Assegna punti SOLO se il segnale è esplicito nel report:\n+15 sito aggiornato <12 mesi\n+10 SEO on-page base (title/description coerenti)\n+10 CTA/form contatti chiare\n+10 blog/risorse con cadenza ≥ mensile\n+10 newsletter o marketing automation attiva\n+15 ADV attiva (Meta/Google/LinkedIn) con tracce visibili\n+10 tracking adeguato (cookie banner + GA/TM)\n+10 video/case study strutturati\n+10 ≥3 social attivi, aggiornati <60 gg\nSomma e clamp 0–100. Se segnali insufficienti ⇒ null (non forzare).\n\nControlli finali prima dell’output\n• Non inventare numeri precisi. In caso di dubbio: null o “Non reperito”.\n• Rispetta i domini dei campi select ed i range numerici.\n• Normalizza URL ed email come da regole.\n• Non aggiungere nessun testo oltre al JSON richiesto.\n\nRestituisci esclusivamente questo JSON:\n\n{\n“company_name_full”: “”,\n“partita_iva”: “”,\n“address”: “”,\n“city”: “”,\n“province”: “”,\n“phone”: “”,\n“email”: “”,\n“domain”: “”,\n\n“linkedin_url”: “”,\n“social_links”: “”,\n\n“business_type”: “”,\n“sector_specific”: “”,\n“employee_count”: “”,\n\n“growth_stage”: “Non definito”,\n“geography_scope”: “Non definito”,\n\n“annual_revenue”: “”,\n“ebitda_margin_est”: null,\n“marketing_budget_est”: “”,\n“budget_tier”: “Micro”,\n\n“financial_confidence”: 0,\n“digital_maturity_score”: null,\n\n“short_bio”: “”,\n\n“qualification_status”: “”,\n“qualification_reason”: “”,\n“service_fit”: “”,\n“priority_score”: null\n}",
+              "role": "system"
+            },
+            {
+              "content": "=Estrai e struttura i dati dal seguente report revisionato.\nApplica fedelmente tutte le regole e le derivazioni del system, comprese quelle per EBITDA stimato, budget marketing stimato e digital maturity score.\nNon inserire commenti, spiegazioni o testo extra: restituisci esclusivamente il JSON richiesto, valido e conforme alla struttura definita.\n\n⸻\n\n{{ $json.message.content }}\n\n⸻\n\nOutput richiesto: solo il JSON finale, nessun testo o commento aggiuntivo."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1728,
+        528
+      ],
+      "id": "d89f8290-b59d-439a-b138-999d8c997ee1",
+      "name": "Agente di sintesi",
+      "credentials": {
+        "openAiApi": {
+          "id": "YKH8CfczdzNM1zeT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// INPUT atteso (items[0].json) uguale alla tua struttura:\n// [\n//   { index: 0, message: { role: \"assistant\", content: \"{...json...}\" } }\n// ]\n//\n// OUTPUT: items[0].json.acfPayload  (oggetto con campi ACF pronti)\n\nfunction normStr(v) {\n  if (v === null || v === undefined) return \"\";\n  return String(v).trim();\n}\n\nfunction onlyDigits(s) {\n  return (s || \"\").replace(/\\D+/g, \"\");\n}\n\nfunction normPIVA(piva) {\n  const d = onlyDigits(piva);\n  if (d.length === 11) return d;\n  return \"Non reperito\";\n}\n\nfunction ensureHttp(url) {\n  if (!url) return \"\";\n  let u = String(url).trim();\n  if (!u) return \"\";\n  if (!/^https?:\\/\\//i.test(u)) u = \"https://\" + u;\n  return u;\n}\n\nfunction clamp(num, min, max) {\n  if (num == null || isNaN(num)) return null;\n  return Math.max(min, Math.min(max, Number(num)));\n}\n\nfunction toIntOrNull(v) {\n  if (v === null || v === undefined || v === \"\") return null;\n  const n = Number(v);\n  return Number.isFinite(n) ? Math.round(n) : null;\n}\n\nfunction normalizeEnum(value, allowed, fallback) {\n  const v = normStr(value);\n  return allowed.includes(v) ? v : fallback;\n}\n\nfunction normalizeBudgetTier(v) {\n  const allowed = [\"Micro\", \"Small\", \"Medium\", \"Large\", \"Enterprise\"];\n  // Accetta numeri 0..4 di un vecchio mapping e converte\n  const mapIdx = [\"Micro\", \"Small\", \"Medium\", \"Large\", \"Enterprise\"];\n  if (typeof v === \"number\") return mapIdx[v] || \"Micro\";\n  return normalizeEnum(v, allowed, \"Micro\");\n}\n\nfunction normalizeQualStatus(v) {\n  // accetta 0|1|2 o stringhe già pronte\n  const allowed = [\"0:rifiutata\", \"1:rifiutata\", \"2:qualificata\"];\n  if (typeof v === \"number\") {\n    if (v === 0) return \"0:rifiutata\";\n    if (v === 1) return \"1:rifiutata\";\n    if (v === 2) return \"2:qualificata\";\n  }\n  const s = normStr(v);\n  if (allowed.includes(s)) return s;\n  // fallback prudenziale\n  return \"0:rifiutata\";\n}\n\nfunction normalizeSocialTextarea(obj) {\n  // Accetta oggetti o stringhe e produce una textarea con 1 URL per riga\n  // + restituisce anche un linkedin_url separato se presente\n  let urls = [];\n  let linkedin_url = \"\";\n\n  // Caso: il tuo agente restituisce già \"social_links\" come stringa (una o più righe)\n  if (typeof obj.social_links === \"string\") {\n    const lines = obj.social_links.split(/\\r?\\n/).map(s => s.trim()).filter(Boolean);\n    urls.push(...lines);\n  } else if (obj.social_links && typeof obj.social_links === \"object\") {\n    // caso legacy (linkedin, facebook, instagram, x, youtube, tiktok)\n    const keys = [\"linkedin\",\"facebook\",\"instagram\",\"x\",\"youtube\",\"tiktok\"];\n    for (const k of keys) {\n      const u = normStr(obj.social_links[k]);\n      if (u) urls.push(u);\n    }\n  }\n\n  // Linkedin dedicato (campo ACF separato)\n  if (obj.linkedin_url) {\n    linkedin_url = ensureHttp(obj.linkedin_url);\n    if (linkedin_url) urls.push(linkedin_url);\n  }\n\n  // normalizza e deduplica\n  urls = urls\n    .map(ensureHttp)\n    .filter(Boolean);\n\n  // dedup semplice case-insensitive\n  const seen = new Set();\n  urls = urls.filter(u => {\n    const key = u.toLowerCase();\n    if (seen.has(key)) return false;\n    seen.add(key);\n    return true;\n  });\n\n  // ricava la linkedin company page (se presente tra le righe) come campo singolo\n  if (!linkedin_url) {\n    const ln = urls.find(u => /linkedin\\.com\\/company\\//i.test(u));\n    if (ln) linkedin_url = ln;\n  }\n\n  return {\n    linkedin_url,\n    social_links: urls.join(\"\\n\")\n  };\n}\n\nfunction sanitizeForACF(src) {\n  const out = {};\n\n  // Obbligatori base + contatti\n  out.company_name_full = normStr(src.company_name_full);\n  out.partita_iva       = normPIVA(src.partita_iva);\n  out.address           = normStr(src.address);\n  out.city              = normStr(src.city);\n  out.province          = normStr(src.province);\n  out.phone             = normStr(src.phone);\n  out.email             = normStr(src.email);\n  out.domain            = ensureHttp(src.domain);\n\n  // Social: textarea + linkedin_url separato\n  const social = normalizeSocialTextarea(src);\n  out.linkedin_url = social.linkedin_url || \"\";\n  out.social_links = social.social_links || \"\";\n\n  // Profilo\n  out.business_type   = normStr(src.business_type);\n  out.sector_specific = normStr(src.sector_specific);\n  out.employee_count  = normStr(src.employee_count); // range/testo consentito\n\n  // Select\n  out.growth_stage = normalizeEnum(\n    src.growth_stage,\n    [\"Non definito\",\"Startup\",\"Crescita\",\"Consolidata\",\"Corporate\"],\n    \"Non definito\"\n  );\n\n  out.geography_scope = normalizeEnum(\n    src.geography_scope,\n    [\"Non definito\",\"Locale\",\"Regionale\",\"Nazionale\",\"Internazionale\"],\n    \"Non definito\"\n  );\n\n  // Economics\n  out.annual_revenue       = normStr(src.annual_revenue || src.estimated_annual_revenue);\n  out.ebitda_margin_est    = src.ebitda_margin_est != null ? clamp(src.ebitda_margin_est, 0, 100) : null;\n  out.marketing_budget_est = normStr(src.marketing_budget_est || src.estimated_marketing_budget);\n  out.budget_tier          = normalizeBudgetTier(src.budget_tier);\n\n  // Confidence & digital maturity\n  const fc = toIntOrNull(src.financial_confidence || src.confidence_score);\n  out.financial_confidence   = fc != null ? clamp(fc, 0, 100) : 0;\n  out.digital_maturity_score = src.digital_maturity_score != null ? clamp(src.digital_maturity_score, 0, 100) : null;\n\n  // Short bio\n  out.short_bio = normStr(src.short_bio || src.key_insights).slice(0, 800);\n\n  // Qualifica & priorità\n  out.qualification_status = normalizeQualStatus(src.qualification_status);\n  out.qualification_reason = normStr(src.qualification_reason);\n  out.service_fit          = normStr(src.service_fit);\n  out.priority_score       = toIntOrNull(src.priority_score);\n\n  return out;\n}\n\ntry {\n  // 1) prendi il JSON dall’array dell’agente\n  const raw = items[0]?.json;\n  if (!raw || !raw.message || !raw.message.content) {\n    throw new Error(\"Struttura input inattesa: manca message.content\");\n  }\n\n  // 2) parse del JSON contenuto in message.content\n  const parsed = JSON.parse(raw.message.content);\n\n  // 3) sanificazione + mappatura a schema ACF\n  const acfPayload = sanitizeForACF(parsed);\n\n  // 4) enum minimi e check rapidi extra\n  // - qualification_status coerente\n  if (![\"0:rifiutata\",\"1:rifiutata\",\"2:qualificata\"].includes(acfPayload.qualification_status)) {\n    acfPayload.qualification_status = \"0:rifiutata\";\n    if (!acfPayload.qualification_reason) {\n      acfPayload.qualification_reason = \"Dati insufficienti\";\n    }\n  }\n\n  // - budget_tier fallback se non derivabile\n  if (![\"Micro\",\"Small\",\"Medium\",\"Large\",\"Enterprise\"].includes(acfPayload.budget_tier)) {\n    acfPayload.budget_tier = \"Micro\";\n  }\n\n  // 5) esito pronto per WordPress (via update_field o REST ACF)\n  return [\n    {\n      json: {\n        acfPayload\n      }\n    }\n  ];\n\n} catch (err) {\n  // In caso di errore di parsing, restituisci diagnosi\n  return [\n    {\n      json: {\n        error: true,\n        message: String(err && err.message ? err.message : err),\n        hint: \"Controlla che message.content sia JSON valido e non contenga testo extra.\"\n      }\n    }\n  ];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        528
+      ],
+      "id": "abe9e530-77d3-4e22-bfb8-3538eaaae6df",
+      "name": "Parsing"
+    },
+    {
+      "parameters": {
+        "jsCode": "const ok = $json.statusCode >= 200 && $json.statusCode < 300;\nconst statusCode = $json.statusCode ?? 0;\nconst body = $json.body ?? {};\nconst msg = ok ? 'OK' : (body?.message || body?.data?.message || 'Errore upsert');\n\nreturn [{\n  json: {\n    upsert_ok: ok,\n    upsert_status_code: statusCode,\n    upsert_message: msg,\n    upsert_raw: body,\n    upsert_at_iso: new Date().toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2528,
+        528
+      ],
+      "id": "6eeb130c-09a7-4c14-bd3a-16cd978470d5",
+      "name": "Compose Upsert Result"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://lead.perspect.it/wp-json/wp/v2/azienda/{{ $('Read Company WP').item.json.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "acf[enrichment_last_status_code]",
+              "value": "={{ $json.upsert_status_code }}"
+            },
+            {
+              "name": "acf[enrichment_last_message]",
+              "value": "={{ $json.upsert_message }}"
+            },
+            {
+              "name": "acf[data_ultimo_enrichment]",
+              "value": "={{ $json.upsert_at_iso }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2752,
+        432
+      ],
+      "id": "bd323581-e643-41fa-9a7a-5d1fa1b013c3",
+      "name": "Log Enrichment Result WP",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "3aI2CNmgXh2YqkjZ",
+          "name": "Lead 18kPRo WP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"ok\": {{ $json.upsert_ok }},\n  \"status\": {{ $json.upsert_status_code }},\n  \"message\": \"{{ $json.upsert_message }}\"\n}",
+        "options": {
+          "responseCode": "={{ $json.upsert_status_code || 200 }}"
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        2752,
+        624
+      ],
+      "id": "af62651d-fb6a-4cfd-bb74-3a8de92ae24e",
+      "name": "Return Status"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Company Enrichment Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read Company WP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Company WP": {
+      "main": [
+        [
+          {
+            "node": "Agente di analisi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Company WP": {
+      "main": [
+        [
+          {
+            "node": "Compose Upsert Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente di analisi": {
+      "main": [
+        [
+          {
+            "node": "Agente di sintesi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente di sintesi": {
+      "main": [
+        [
+          {
+            "node": "Parsing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsing": {
+      "main": [
+        [
+          {
+            "node": "Update Company WP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compose Upsert Result": {
+      "main": [
+        [
+          {
+            "node": "Log Enrichment Result WP",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Return Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Enrichment Result WP": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ac65923f-b5f5-43e0-9c05-2b5b882b3d51",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "fe117d56aad4346ee596609bb8c3079d6edd34e383a675201472f524674346cc"
+  },
+  "id": "XrJOYGjHIe3uDlPO",
+  "tags": []
+}
