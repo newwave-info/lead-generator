@@ -67,18 +67,41 @@ Produrre in modo continuativo:
 ```json
 {
   "riassunto": "string (≤280 caratteri)",
-  "punti_debolezza": ["..."],
+  "messaggi_principali": ["..."],
+  "promessa_valore": "string",
+  "tono_di_voce": "string",
+  "differenziazione": ["..."],
+  "coerenza_comunicativa": "string",
   "punti_forza": ["..."],
+  "punti_debolezza": ["..."],
   "opportunita": ["..."],
   "azioni_rapide": ["..."],
+  "target_commerciali": ["..."],
+  "potenziale": "string",
+  "idee_valore_agenzia": ["..."],
+  "domande_prospect": ["..."],
+  "rischi_mitigazioni": [
+    { "rischio": "string", "mitigazione": "string" }
+  ],
+  "priorita_temporali": {
+    "entro_30_giorni": ["..."],
+    "entro_90_giorni": ["..."],
+    "entro_12_mesi": ["..."]
+  },
+  "prove_trust": {
+    "team_visibile": true,
+    "case_study": false,
+    "testimonianze": false,
+    "certificazioni": ["..."]
+  },
+  "fonti": [
+    { "titolo": "string", "url": "https://..." }
+  ],
   "voto_qualita_analisi": 0,
   "voto_qualita_dati": 0,
-  "numeri_chiave": {
-    "organic_ctr": {
-      "label": "CTR organico",
-      "dato": 2.4,
-      "fonte": "stima"
-    }
+  "attendibilita_dati": {
+    "alert": false,
+    "note": "string"
   }
 }
 ```
@@ -86,17 +109,16 @@ Produrre in modo continuativo:
 - Regole:
   - Liste da 3 a 8 voci, ordinate per impatto e senza duplicati.
   - Azioni rapide operative, completabili in ≤2 settimane.
-  - Numeri chiave opzionali; ogni metrica deve avere `label`, `dato`, `fonte`.
+  - Le priorità temporali sono ripartite per bucket (30/90/12 mesi).
   - I voti valutano qualità dell’analisi e dei dati di partenza (scala 0–100).
 
 ### 6. Parsing — Code Node
 
 - Valida il JSON prodotto dall’agente di sintesi.
-- Normalizza i campi testuali e converte le liste in array coerenti.
-- Calcola i conteggi (`numero_*`) per punti di forza, debolezza, opportunità e azioni rapide.
-- Converte i voti in interi 0–100 e li salva nei campi ACF dedicati.
-- Costruisce `json_dati_strutturati` serializzando il blocco `numeri_chiave` con schema `{ label, dato, fonte }` per ogni KPI.
-- Mantiene un backup dell’output originale degli agenti per audit (analisi iniziale e revisione).
+- Normalizza i campi testuali, deduplica le liste e rende esplicite le strutture nidificate (priorità temporali, prove trust, rischi).
+- Calcola i conteggi (`count_*`) per ogni array da salvare come numero ACF (`numero_*`).
+- Converte i voti in interi clampati 0–100.
+- Serializza i blocchi strutturati (trust, fonti, rischi) prima dell’upsert e allega `output_agente_raw` per audit.
 
 ### 7. Upsert WordPress
 
@@ -107,14 +129,13 @@ Produrre in modo continuativo:
   - `status`: `publish`
   - `agent_type`: `7` (Web Development)
   - **ACF aggiornati:**
-    - `parent_company_id`
-    - `analisy_perplexity_deep_research`
-    - `riassunto`
-    - `punti_di_forza`, `punti_di_debolezza`, `opportunita`, `azioni_rapide`
-    - `numero_punti_di_forza`, `numero_punti_di_debolezza`, `numero_opportunita`, `numero_azioni_rapide`
-    - `voto_qualita_analisi`, `qualita_dati`
-    - `json_dati_strutturati` (JSON dei numeri chiave con `{label, dato, fonte}`)
-    - `revisione_analisi_completa`
+    - Campi narrativi: `analisy_perplexity_deep_research`, `revisione_analisi_completa`, `riassunto`
+    - SWOT & azioni: `punti_di_forza`, `punti_di_debolezza`, `opportunita`, `azioni_rapide` + rispettivi `numero_*`
+    - Sintesi brand: `messaggi_principali`, `promessa_di_valore`, `tono_di_voce`, `coerenza_comunicativa`, `elementi_differenzianti` + `numero_*`
+    - Target & value: `target_commerciali`, `idee_di_valore_perspect`, `domande_prospect`, `priorita_temporali` + `numero_*`
+    - Telemetria: `voto_qualita_analisi`, `qualita_dati`
+    - Logging analisi: `analysis_last_status_code`, `analysis_last_message`, `analysis_last_at`
+    - Aggancio: `parent_company_id`
 
 ### 8. Logging
 
@@ -141,95 +162,87 @@ Produrre in modo continuativo:
 
 ## Mappatura Campi ACF (Post type: analisi)
 
-### Campo: parent_company_id
+| Campo ACF | Tipo | Provenienza Parsing | Note |
+| --- | --- | --- | --- |
+| `parent_company_id` | post_object | ID azienda | Collegamento WP |
+| `riassunto` | text | `riassunto` | ≤280 caratteri |
+| `analisy_perplexity_deep_research` | textarea | Agente analisi base | Testo completo AI (prima stesura) |
+| `revisione_analisi_completa` | textarea | Agente revisione | Versione consulenziale |
+| `messaggi_principali` | textarea | array → newline | Key messaging |
+| `numero_messaggi_principali` | number | `count_messaggi_principali` | Conteggio dedup |
+| `promessa_di_valore` | textarea | `promessa_valore` | Unique selling proposition |
+| `tono_di_voce` | textarea | `tono_di_voce` | |
+| `elementi_differenzianti` | textarea | `differenziazione` | USP puntuali |
+| `numero_elementi_differenzianti` | number | `count_differenziazione` | |
+| `coerenza_comunicativa` | textarea | `coerenza_comunicativa` | Valutazione narrativa |
+| `punti_di_forza` | textarea | `punti_forza` | Lista dedup |
+| `numero_punti_di_forza` | number | `count_punti_forza` | |
+| `punti_di_debolezza` | textarea | `punti_debolezza` | |
+| `numero_punti_di_debolezza` | number | `count_punti_debolezza` | |
+| `opportunita` | textarea | `opportunita` | |
+| `numero_opportunita` | number | `count_opportunita` | |
+| `azioni_rapide` | textarea | `azioni_rapide` | Task ≤2 settimane |
+| `numero_azioni_rapide` | number | `count_azioni_rapide` | |
+| `target_commerciali` | textarea | `target_commerciali` | Segmenti priorità |
+| `numero_target_commerciali` | number | `count_target_commerciali` | |
+| `idee_di_valore_perspect` | textarea | `idee_valore_agenzia` | Proposte consulenziali |
+| `numero_idee_di_valore` | number | `count_idee_valore_agenzia` | |
+| `domande_prospect` | textarea | `domande_prospect` | Domande per discovery |
+| `numero_domande` | number | `count_domande_prospect` | |
+| `rischi` | textarea | `rischi_mitigazioni` serializzato | Elenco rischi (mitigazioni opzionali) |
+| `numero_rischi` | number | `count_rischi_mitigazioni` | |
+| `priorita_temporali` | textarea | `priorita_temporali` serializzato | Bucket 30/90/12 mesi |
+| `voto_qualita_analisi` | number | `voto_qualita_analisi` | 0–100 |
+| `qualita_dati` | number | `voto_qualita_dati` | 0–100 |
+| `analysis_last_status_code` | number | Upsert WP result | HTTP/business esito |
+| `analysis_last_message` | textarea | Upsert WP result | Messaggio log |
+| `analysis_last_at` | text | Upsert WP result | Timestamp ISO |
 
-- **Tipo:** `post_object` (azienda)
-- **Note:** collega l’analisi alla scheda aziendale originale.
+> **Nota sui formati**: gli array vengono inviati come stringhe JSON (`["voce 1","voce 2"]`) perché i campi ACF sono `textarea`. Il front-end converte e formatta in liste leggibili.
 
-### Campo: analisy_perplexity_deep_research
+## Mappatura Campi ACF (Post type: analisi)
 
-- **Tipo:** `wysiwyg`
-- **Note:** testo completo generato dall’agente di analisi (versione “base”).
+### Collegamento e testi base
 
-### Campo: riassunto
+- `parent_company_id` — `post_object`; associa il post all’azienda sorgente.
+- `analisy_perplexity_deep_research` — `wysiwyg`; analisi iniziale generata dall’agente.
+- `revisione_analisi_completa` — `wysiwyg`; versione consulenziale revisionata.
+- `riassunto` — `text`; executive summary ≤280 caratteri.
 
-- **Tipo:** `text`
-- **Note:** sintesi ≤280 caratteri prodotta dall’agente di sintesi.
+### Brand, messaggi e posizionamento
 
-### Campo: punti_di_forza
+- `messaggi_principali` — `textarea`; lista (serializzata JSON) dei claim chiave.
+- `numero_messaggi_principali` — `number`; conteggio dedup dei messaggi.
+- `promessa_di_valore` — `textarea`; value proposition sintetica.
+- `tono_di_voce` — `textarea`; indicazioni di stile comunicativo.
+- `elementi_differenzianti` — `textarea`; punti di differenziazione competitiva.
+- `numero_elementi_differenzianti` — `number`; conteggio relativo.
+- `coerenza_comunicativa` — `textarea`; valutazione qualitativa della coerenza narrativa.
 
-- **Tipo:** `text`
-- **Note:** elenco normalizzato; il front-end gestisce la visualizzazione puntuale.
+### SWOT & azioni
 
-### Campo: punti_di_debolezza
+- `punti_di_forza` / `punti_di_debolezza` / `opportunita` / `azioni_rapide` — `textarea`; liste normalizzate (serializzate JSON).
+- `numero_punti_di_forza` / `numero_punti_di_debolezza` / `numero_opportunita` / `numero_azioni_rapide` — `number`; conteggi calcolati dal parsing.
 
-- **Tipo:** `text`
-- **Note:** lista delle criticità prioritarie.
+### Target, valore e discovery
 
-### Campo: opportunita
+- `target_commerciali` — `textarea`; segmenti prioritari individuati.
+- `numero_target_commerciali` — `number`; quantità segmenti deduplicati.
+- `idee_di_valore_perspect` — `textarea`; proposte consulenziali ad alto valore.
+- `numero_idee_di_valore` — `number`; conteggio idee.
+- `domande_prospect` — `textarea`; domande per la fase di discovery.
+- `numero_domande` — `number`; total domande critiche.
+- `rischi` — `textarea`; elenco (JSON) di rischi con eventuali mitigazioni.
+- `numero_rischi` — `number`; conteggio elementi rischi/mitigazioni.
+- `priorita_temporali` — `textarea`; struttura JSON con bucket `entro_30_giorni`, `entro_90_giorni`, `entro_12_mesi`.
 
-- **Tipo:** `text`
-- **Note:** opportunità strategiche e competitive.
+### Telemetria e quality score
 
-### Campo: azioni_rapide
-
-- **Tipo:** `text`
-- **Note:** task operativi ≤2 settimane per ingaggi commerciali rapidi.
-
-### Campo: numero_punti_di_forza
-
-- **Tipo:** `number`
-- **Note:** conteggio generato dal parsing; usato per widget e indicatori.
-
-### Campo: numero_punti_di_debolezza
-
-- **Tipo:** `number`
-- **Note:** numero di criticità individuate.
-
-### Campo: numero_opportunita
-
-- **Tipo:** `number`
-- **Note:** totale delle opportunità identificate.
-
-### Campo: numero_azioni_rapide
-
-- **Tipo:** `number`
-- **Note:** quantità di task rapidi proposti.
-
-### Campo: voto_qualita_analisi
-
-- **Tipo:** `number`
-- **Note:** punteggio 0–100 calcolato dall’agente di sintesi sulla qualità dell’elaborato finale.
-
-### Campo: qualita_dati
-
-- **Tipo:** `text`
-- **Note:** scala 0–100 (coerente con `voto_qualita_dati`) salvata come stringa per compatibilità front-end.
-
-### Campo: json_dati_strutturati
-
-- **Tipo:** `textarea`
-- **Note:** JSON serializzato dei KPI chiave con struttura `{ "chiave": { "label", "dato", "fonte" } }`, usato per widget analitici.
-
-### Campo: revisione_analisi_completa
-
-- **Tipo:** `textarea`
-- **Note:** testo finale revisionato (“Analisi migliorata”) pronto per la scheda azienda.
-
-### Campo: analysis_last_status_code
-
-- **Tipo:** `text`
-- **Note:** esito HTTP dell’ultimo upsert (logging lato azienda).
-
-### Campo: analysis_last_message
-
-- **Tipo:** `textarea`
-- **Note:** messaggio di log o errore dell’ultimo upsert.
-
-### Campo: analysis_last_at
-
-- **Tipo:** `text`
-- **Note:** timestamp ISO 8601 dell’ultimo aggiornamento completato.
+- `voto_qualita_analisi` — `number`; valutazione 0–100 sulla qualità dell’output.
+- `qualita_dati` — `number`; attendibilità percepita del dato di partenza (0–100).
+- `analysis_last_status_code` — `number`; esito HTTP/business dell’ultimo upsert.
+- `analysis_last_message` — `textarea`; messaggio log dell’ultimo run.
+- `analysis_last_at` — `text`; timestamp ISO 8601 dell’ultimo aggiornamento salvato.
 
 ## Flusso Logico
 
@@ -247,5 +260,5 @@ Produrre in modo continuativo:
 
 - Tutti i modelli OpenAI utilizzano la credenziale `OpenAi account`.
 - Timeout HTTP globale: 30 secondi.
-- L’array `numeri_chiave` deve sempre rispettare la struttura `{ label, dato, fonte }`; in assenza di metriche affidabili salvare `{}`.
+- Le strutture JSON (`rischi_mitigazioni`, `priorita_temporali`, `prove_trust`, `fonti`) devono mantenere le chiavi documentate; il parsing serializza automaticamente in stringa prima dell’upsert.
 - I backup degli output (analisi iniziale e revisione) restano disponibili per audit e per eventuale riutilizzo in altri moduli (Company Enrichment, Lead Qualification).

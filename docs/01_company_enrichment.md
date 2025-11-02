@@ -162,6 +162,18 @@ Rendere il dataset utilizzabile per:
 - +10 video o case study
 - +10 almeno 3 social aggiornati <60 giorni
 
+## Asset Digitali & Branding
+
+### Campo: website_screenshot_url
+
+- Tipo: image (ID allegato WP)
+- Note: screenshot aggiornato del sito aziendale estratto via Microlink; usato per la preview nella scheda.
+
+### Campo: website_logo_url
+
+- Tipo: image (ID allegato WP)
+- Note: logo vettoriale/bitmap recuperato automaticamente; fallback al logo Microlink se vuoto.
+
 ## Fit Perspect / Newwave
 
 ### Campo: qualification_status
@@ -192,6 +204,11 @@ Rendere il dataset utilizzabile per:
 - Scalabile per futuri agenti verticali (SEO, social, branding)
 - Ogni valore deve avere fonte e livello di confidenza
 - Progettato per account-based marketing e ranking
+
+### Meta calcolato: enrichment_completeness
+
+- Origine: meta WordPress (non ACF)
+- Note: percentuale 0–100 calcolata dal workflow per stimare la copertura dati.
 
 #### Future Fields (fase 2)
 

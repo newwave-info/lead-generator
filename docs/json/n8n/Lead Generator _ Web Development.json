@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "jsCode": "// ===== Helper =====\nconst toArray = (v) => Array.isArray(v) ? v.filter(x => x !== null && x !== undefined && String(x).trim() !== '') : [];\nconst toInt = (v) => {\n  const n = Number.parseInt(v, 10);\n  return Number.isFinite(n) ? n : null;\n};\nconst clamp01 = (n) => n === null ? null : Math.max(0, Math.min(100, n));\nconst isPlainObject = (v) => v && typeof v === 'object' && !Array.isArray(v);\n\n// ===== 1) Input =====\nconst first = $input.first()?.json ?? {};\nlet content = first?.message?.content ?? first?.content ?? first;\nlet contentStr = typeof content === 'string' ? content : JSON.stringify(content);\n\n// ===== 2) Parse JSON dell’agente =====\nlet parsedData;\ntry {\n  parsedData = JSON.parse(contentStr);\n} catch (e) {\n  throw new Error('Content non è JSON valido: ' + e.message);\n}\n\n// ===== 3) Normalizzazione base =====\nconst riassunto = (parsedData.riassunto ?? '').toString();\nconst punti_debolezza = toArray(parsedData.punti_debolezza);\nconst punti_forza     = toArray(parsedData.punti_forza);\nconst opportunita     = toArray(parsedData.opportunita);\nconst azioni_rapide   = toArray(parsedData.azioni_rapide);\n\nconst countDebolezze   = punti_debolezza.length;\nconst countForze       = punti_forza.length;\nconst countOpp         = opportunita.length;\nconst countAzioni      = azioni_rapide.length;\nconst totaleElementi   = countDebolezze + countForze + countOpp + countAzioni;\n\n// ===== 4) Voti =====\nconst votoAnalisi = clamp01(toInt(parsedData.voto_qualita_analisi));\nconst votoDati    = clamp01(toInt(parsedData.voto_qualita_dati ?? parsedData.voto_qualita_input ?? parsedData.qualita_dati));\n\n// ===== 5) Numeri chiave (nuova struttura: {label, dato, fonte}) =====\nconst numeriChiaveObj = isPlainObject(parsedData.numeri_chiave) ? parsedData.numeri_chiave : {};\n\n// Repeater ACF: [ { chiave, label, dato, fonte } ]\nconst numeriChiaveRepeater = Object.entries(numeriChiaveObj).map(([chiave, voceRaw]) => {\n  const voce = isPlainObject(voceRaw) ? voceRaw : {};\n  return {\n    chiave,                                   // es. \"organic_ctr\"\n    label: (voce.label ?? chiave).toString(), // es. \"CTR organico\"\n    dato:  (voce.dato ?? null),               // numero o stringa\n    fonte: (voce.fonte ?? null)               // es. \"dato sito\", \"analisi\", \"stima\"\n  };\n});\n\n// Conserva il raw per audit / dashboard future\nlet numeriChiaveRawStr = '{}';\ntry { numeriChiaveRawStr = JSON.stringify(numeriChiaveObj); } catch { /* ignore */ }\n\n// ===== 6) Payload WordPress (ACF) =====\n// Adegua i nomi ai tuoi field keys ACF (eventualmente 'field_XXXX').\nconst wordpressData = {\n  acf: {\n    riassunto,\n\n    punti_debolezza,\n    count_punti_debolezza: countDebolezze,\n\n    punti_forza,\n    count_punti_forza: countForze,\n\n    opportunita,\n    count_opportunita: countOpp,\n\n    azioni_rapide,\n    count_azioni_rapide: countAzioni,\n\n    totale_elementi: totaleElementi,\n\n    // Doppi voti\n    voto_qualita_analisi: votoAnalisi,\n    voto_qualita_dati: votoDati,\n\n    // Numeri chiave (nuovo schema)\n    numeri_chiave: numeriChiaveRepeater,\n    numeri_chiave_count: numeriChiaveRepeater.length,\n    numeri_chiave_raw: numeriChiaveRawStr,\n\n    // Traccia l'output completo dell'agente per audit\n    output_agente_raw: contentStr\n  }\n};\n\n// ===== 7) Return =====\nreturn { json: wordpressData };"
+        "jsCode": "// ===== Helper =====\nconst toArray = (v) =>\n  Array.isArray(v)\n    ? v.map(x => (typeof x === 'string' ? x.trim() : x))\n        .filter(x => x !== null && x !== undefined && String(x).trim() !== '')\n    : [];\n\nconst toStringSafe = (v) => (v === null || v === undefined) ? '' : String(v).trim();\n\nconst toInt = (v) => {\n  const n = Number.parseInt(v, 10);\n  return Number.isFinite(n) ? n : null;\n};\nconst clamp01 = (n) => (n === null ? null : Math.max(0, Math.min(100, n)));\nconst dedup = (arr) => [...new Set(arr.map(x => (typeof x === 'string' ? x.trim() : x)))];\nconst toBool = (v) => Boolean(v);\n\n// Normalizza array di oggetti { rischio, mitigazione }\nconst normRischiMitigazioni = (arr) => {\n  const a = Array.isArray(arr) ? arr : [];\n  return a.map(x => {\n      const o = (x && typeof x === 'object') ? x : {};\n      const rischio = toStringSafe(o.rischio);\n      const mitigazione = toStringSafe(o.mitigazione);\n      return (rischio || mitigazione) ? { rischio, mitigazione } : null;\n    })\n    .filter(Boolean);\n};\n\n// Normalizza priorità temporali\nconst normPriorita = (obj) => {\n  const o = (obj && typeof obj === 'object') ? obj : {};\n  const entro_30_giorni = dedup(toArray(o.entro_30_giorni || []));\n  const entro_90_giorni = dedup(toArray(o.entro_90_giorni || []));\n  const entro_12_mesi   = dedup(toArray(o.entro_12_mesi   || []));\n  return { entro_30_giorni, entro_90_giorni, entro_12_mesi };\n};\n\n// Normalizza prove trust\nconst normProveTrust = (obj) => {\n  const o = (obj && typeof obj === 'object') ? obj : {};\n  return {\n    team_visibile:   toBool(o.team_visibile),\n    case_study:      toBool(o.case_study),\n    testimonianze:   toBool(o.testimonianze),\n    certificazioni:  dedup(toArray(o.certificazioni || []))\n  };\n};\n\n// Normalizza fonti {titolo?, url(required)}\nconst normFonti = (arr) => {\n  const a = Array.isArray(arr) ? arr : [];\n  return a.map(x => {\n      const o = (x && typeof x === 'object') ? x : {};\n      const url = toStringSafe(o.url);\n      const titolo = toStringSafe(o.titolo || '');\n      return url ? { titolo, url } : null;\n    })\n    .filter(Boolean);\n};\n\n// ===== 1) Input =====\nconst first = $input.first()?.json ?? {};\nlet content = first?.message?.content ?? first?.content ?? first;\nlet contentStr = typeof content === 'string' ? content : JSON.stringify(content);\n\n// ===== 2) Parse JSON dell’agente =====\nlet parsedData;\ntry {\n  parsedData = JSON.parse(contentStr);\n} catch (e) {\n  throw new Error('Content non è JSON valido: ' + e.message);\n}\n\n// ===== 3) Estrazione & Normalizzazione =====\n// Executive & Brand\nconst riassunto              = toStringSafe(parsedData.riassunto);\nconst messaggi_principali    = dedup(toArray(parsedData.messaggi_principali));\nconst promessa_valore        = toStringSafe(parsedData.promessa_valore);\nconst tono_di_voce           = toStringSafe(parsedData.tono_di_voce);\nconst differenziazione       = dedup(toArray(parsedData.differenziazione));\nconst coerenza_comunicativa  = toStringSafe(parsedData.coerenza_comunicativa);\n\n// Core SWOT/Actions\nconst punti_forza            = dedup(toArray(parsedData.punti_forza));\nconst punti_debolezza        = dedup(toArray(parsedData.punti_debolezza));\nconst opportunita            = dedup(toArray(parsedData.opportunita));\nconst azioni_rapide          = dedup(toArray(parsedData.azioni_rapide));\n\n// Target & Value\nconst target_commerciali     = dedup(toArray(parsedData.target_commerciali));\nconst potenziale             = toStringSafe(parsedData.potenziale);\nconst idee_valore_agenzia    = dedup(toArray(parsedData.idee_valore_agenzia));\nconst domande_prospect       = dedup(toArray(parsedData.domande_prospect));\n\n// Attendibilità & Rischi\nconst attendibilita_dati_in  = (parsedData.attendibilita_dati && typeof parsedData.attendibilita_dati === 'object') ? parsedData.attendibilita_dati : {};\nconst attendibilita_dati     = {\n  alert: Boolean(attendibilita_dati_in.alert),\n  note:  toStringSafe(attendibilita_dati_in.note)\n};\nconst rischi_mitigazioni     = normRischiMitigazioni(parsedData.rischi_mitigazioni);\n\n// Priorità temporali\nconst priorita_temporali     = normPriorita(parsedData.priorita_temporali);\n\n// Prove trust\nconst prove_trust            = normProveTrust(parsedData.prove_trust);\n\n// Fonti\nconst fonti                  = normFonti(parsedData.fonti);\n\n// Voti\nconst voto_qualita_analisi   = clamp01(toInt(parsedData.voto_qualita_analisi));\nconst voto_qualita_dati      = clamp01(toInt(parsedData.voto_qualita_dati));\n\n// ===== 4) Conteggi =====\nconst count_messaggi_principali   = messaggi_principali.length;\nconst count_differenziazione      = differenziazione.length;\n\nconst count_punti_forza           = punti_forza.length;\nconst count_punti_debolezza       = punti_debolezza.length;\nconst count_opportunita           = opportunita.length;\nconst count_azioni_rapide         = azioni_rapide.length;\n\nconst count_target_commerciali    = target_commerciali.length;\nconst count_idee_valore_agenzia   = idee_valore_agenzia.length;\nconst count_domande_prospect      = domande_prospect.length;\n\nconst count_rischi_mitigazioni    = rischi_mitigazioni.length;\n\nconst count_priorita_30            = priorita_temporali.entro_30_giorni.length;\nconst count_priorita_90            = priorita_temporali.entro_90_giorni.length;\nconst count_priorita_12m           = priorita_temporali.entro_12_mesi.length;\n\nconst count_certificazioni         = prove_trust.certificazioni.length;\n\nconst count_fonti                  = fonti.length;\n\nconst totale_elementi =\n  count_messaggi_principali +\n  count_differenziazione +\n  count_punti_forza +\n  count_punti_debolezza +\n  count_opportunita +\n  count_azioni_rapide +\n  count_target_commerciali +\n  count_idee_valore_agenzia +\n  count_domande_prospect +\n  count_rischi_mitigazioni +\n  count_priorita_30 + count_priorita_90 + count_priorita_12m +\n  count_certificazioni +\n  count_fonti;\n\n// ===== 5) Payload WordPress (ACF) =====\n// Adegua i field keys ACF se usi chiavi 'field_XXXX'\nconst wordpressData = {\n  acf: {\n    // Executive & Brand\n    riassunto,\n    messaggi_principali,\n    count_messaggi_principali,\n    promessa_valore,\n    tono_di_voce,\n    differenziazione,\n    count_differenziazione,\n    coerenza_comunicativa,\n\n    // Core SWOT/Actions\n    punti_forza,\n    count_punti_forza,\n    punti_debolezza,\n    count_punti_debolezza,\n    opportunita,\n    count_opportunita,\n    azioni_rapide,\n    count_azioni_rapide,\n\n    // Target & Value\n    target_commerciali,\n    count_target_commerciali,\n    potenziale,\n    idee_valore_agenzia,\n    count_idee_valore_agenzia,\n    domande_prospect,\n    count_domande_prospect,\n\n    // Attendibilità & Rischi\n    attendibilita_dati, // {alert, note}\n    rischi_mitigazioni, // repeater [{rischio, mitigazione}]\n    count_rischi_mitigazioni,\n\n    // Priorità temporali\n    priorita_temporali, // {entro_30_giorni:[], entro_90_giorni:[], entro_12_mesi:[]}\n    count_priorita_30,\n    count_priorita_90,\n    count_priorita_12_mesi: count_priorita_12m,\n\n    // Prove trust\n    prove_trust, // {team_visibile, case_study, testimonianze, certificazioni:[]}\n    count_certificazioni,\n\n    // Fonti\n    fonti, // [{titolo?, url}]\n    count_fonti,\n\n    // Totali & Voti\n    totale_elementi,\n    voto_qualita_analisi,\n    voto_qualita_dati,\n\n    // Audit\n    output_agente_raw: contentStr\n  }\n};\n\n// ===== 6) Return =====\nreturn { json: wordpressData };\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -71,7 +71,7 @@
         "messages": {
           "values": [
             {
-              "content": "=Ruolo\nAgisci come un consulente strategico senior specializzato in analisi di aziende e siti web.\nOpera con mentalità analitica, approccio evidence-based, e rigore da top-tier consulting (McKinsey/BCG/Bain).\n\nIl tuo compito è analizzare il sito web dell'azienda e restituire un report completo su:\n\n- posizionamento e messaggi chiave\n- brand, tono e differenziazione\n- trust & proof (elementi che generano credibilità)\n- funnel e conversione\n- contenuti e thought-leadership\n- UX/UI e chiarezza narrativa\n- SEO e posizionamento organico\n- risk & gaps\n- piano operativo e raccomandazioni\n\nNon inventare informazioni.\nSe un dato non è visibile o verificabile, dichiaralo esplicitamente.\nSe fai un’inferenza, dichiarala come tale.\nEvita giudizi generici: tutto deve essere motivato e specifico.\n\nRestituisci l’analisi in sezioni:\n\n1) Sintesi Esecutiva\n- posizionamento percepito\n- target implicito\n- punti di forza\n- aree critiche\n- potenziale\n\n2) Brand & Posizionamento\n- messaggi principali\n- promessa di valore\n- tono di voce\n- differenziazione vs competitor generici del settore\n- coerenza comunicativa\n\n3) Credibilità & Trust\n\nValuta presenza/assenza di:\n- dati, numeri, risultati\n- case study\n- team e competenze\n- partner / certificazioni / media\n- testimonianze\n- trasparenza\n\n4) Funnel & Conversione\n- CTA primarie e secondarie\n- percorsi utente\n- frizione/ostacoli\n- moduli o lead magnet\n- qualità percepita del processo commerciale\n\n5) Contenuti\n- profondità / qualità\n- rilevanza per il pubblico\n- valore informativo\n- aggiornamento e consistenza\n- formati (testo, video, risorse …)\n\n6) SEO (alto livello)\n- cluster di contenuti visibili\n- parole chiave implicite\n- struttura di navigazione\n- opportunità strategiche\n\n7) UX / UI\n- chiarezza\n- leggibilità\n- gerarchia informativa\n- mobile experience (se evidente)\n\n8) Rischi & Red Flag\n\nIndica eventuali:\n- incoerenze\n- claim non provati\n- mancanza elementi critici per conversione/trust\n- aree che potrebbero generare sfiducia\n\n9) Opportunità e Raccomandazioni\n\nCategoria e priorità:\n- Quick wins (0–30 giorni)\n- Azioni prioritarie (30–90 giorni)\n- Strategia lungo termine (3–12 mesi)\n\n10) Domande Intelligenti al Cliente\n\n- Specifica cosa dovresti chiedere per completare l’analisi (dati mancanti).\n- Regole di comportamento\n\nNiente frasi vuote o generiche.\n\nNessuna supposizione spacciata per certezza.\n\nCita esempi presi dal sito quando supportano le conclusioni.\n\nSe mancano dati, segnala e proponi come ottenerli (es: “verifica pagina servizi / LinkedIn / press / Google”).",
+              "content": "=Ruolo\nAgisci come un consulente strategico senior specializzato in analisi di aziende e siti web. Evidence-based, tono top-tier (McK/BCG/Bain). Non inventare dati: se assumi, dichiara “inferenza”.\n\nCompito\nAnalizza il sito e restituisci un report completo su:\n\nposizionamento e messaggi chiave\n\nbrand, tono e differenziazione\n\ntrust & proof (elementi di credibilità)\n\nfunnel e conversione\n\ncontenuti e thought-leadership\n\nUX/UI e chiarezza narrativa\n\nSEO (alto livello)\n\nrischi e mitigazioni\n\npiano operativo (priorità temporali) e raccomandazioni\n\nSezioni (obbligatorie, in questo ordine):\n\nSintesi Esecutiva\n\nposizionamento percepito\n\ntarget implicito\n\npunti di forza\n\naree critiche\n\npotenziale\n\nBrand & Posizionamento\n\nmessaggi principali\n\npromessa di valore\n\ntono di voce\n\ndifferenziazione vs competitor generici\n\ncoerenza comunicativa\n\nCredibilità & Trust (prove)\n\ndati/risultati, case study, team/competenze, partner/certificazioni/media, testimonianze, trasparenza\n\nFunnel & Conversione\n\nCTA, percorsi, frizioni, lead magnet, qualità del processo\n\nContenuti & Thought-Leadership\n\nprofondità/qualità, rilevanza, valore informativo, aggiornamento, formati\n\nSEO (alto livello)\n\ncluster, keyword implicite, navigazione, opportunità strategiche\n\nUX/UI\n\nchiarezza, leggibilità, gerarchia, mobile (se evidente)\n\nRischi & Mitigazioni\n\nper ogni rischio: Rischio → Mitigazione concreta\n\nPriorità temporali\n\nQuick wins (0–30 giorni)\n\nAzioni prioritarie (30–90 giorni)\n\nStrategia lungo termine (3–12 mesi)\n\nDomande intelligenti al cliente (dati mancanti)\n\nPremessa e attendibilità dei dati (obbligatoria, breve)\n\nfonti, denominazione legale, cosa è verificato / cosa è inferenza\n\nFonti (elenco puntato: titolo + URL)\n\nRegole\n\nCita esempi dal sito quando supportano le conclusioni.\n\nZero superlativi vuoti, niente jargon inutile.\n\nSe mancano dati, esplicitalo e proponi dove recuperarli.",
               "role": "system"
             },
             {
@@ -109,11 +109,11 @@
         "messages": {
           "values": [
             {
-              "content": "=Agisci come un analista senior. Riceverai un JSON eterogeneo e dovrai distillarlo senza perdita di valore in un output strutturato. Scrivi sempre in italiano; mantieni l’inglese solo per termini tecnici intraducibili.\n\nObiettivo\nDato l’input, produci solo un JSON valido (nessun testo extra) con questo schema:\n\n{\n“riassunto”: “stringa di testo”,\n“punti_debolezza”: [“elemento1”, …],\n“punti_forza”: [“elemento1”, …],\n“opportunita”: [“elemento1”, …],\n“azioni_rapide”: [“elemento1”, …],\n“voto_qualita_analisi”: 0-100,\n“voto_qualita_dati”: 0-100,\n“numeri_chiave”: {\n“”: {\n“label”: “stringa”,\n“dato”: numero | stringa,\n“fonte”: “origine del dato o stima”\n}\n}\n}\n\nRegole\n\t•\tSolo JSON: nessun testo extra, nessuna spiegazione.\n\t•\tRiassunto ≤280 caratteri, chiaro, fattuale. Se dati mancanti: indica “dati limitati su …”.\n\t•\tpunti_debolezza / punti_forza: 3–8 voci ciascuna, una idea per riga, deduplicate, ordinate per impatto.\n\t•\topportunita: trend, gap competitivi, quick wins.\n\t•\tazioni_rapide: 3–7 task operativi ≤2 settimane, all’imperativo, opzionale metrica target.\n\t•\tnumeri_chiave: chiavi dinamiche snake_case (es. organic_ctr, brand_awareness_score). Non inserire tra i numeri chiave i dati aziendali già disponibili (ad esempio: indirizzo, p.iva, telefono.). Cerca di estrarre dei numeri chiave estremamente contestualizzati al tipo di analisi effettuata.\n\t•\tOgni metrica deve avere: label (testo), dato (numero o stringa), fonte (descrivi origine: “dato sito”, “deduzione analisi”, “stima”).\n\nVoto_qualita_analisi (0–100) — valuta la qualità dell’output\n\t•\tAccuratezza vs input (0–30)\n\t•\tStruttura e priorità (0–25)\n\t•\tAzionabilità (0–20)\n\t•\tSintesi e leggibilità (0–15)\n\t•\tCoerenza interna (0–10)\nSomma e arrotonda.\n\nVoto_qualita_dati (0–100) — valuta la qualità dell’input\n\t•\tCopertura dati (0–40)\n\t•\tCoerenza (0–25)\n\t•\tSpecificità e KPI (0–20)\n\t•\tFreschezza (0–15)\nSomma e arrotonda.\n\nValidazione finale\n\t•\tTutte le chiavi richieste presenti\n\t•\tOutput deve essere JSON valido, nessun testo fuori dal JSON\n\t•\tChiavi dinamiche correttamente formattate\n\nInput da analizzare:\n{{ $json.message.content }}",
+              "content": "=Agisci come un analista senior. Riceverai un input eterogeneo (testo o JSON) e dovrai distillarlo senza perdita di valore in un output JSON compatibile con WordPress. Italiano professionale, chiaro, orientato al decision-maker. Nessun testo extra fuori dal JSON.\n\n{\n  \"riassunto\": \"string (≤600 char)\",\n  \"messaggi_principali\": [\"...\"],\n  \"promessa_valore\": \"string\",\n  \"tono_di_voce\": \"string\",\n  \"differenziazione\": [\"...\"],\n  \"coerenza_comunicativa\": \"string\",\n\n  \"punti_forza\": [\"...\"],\n  \"punti_debolezza\": [\"...\"],\n  \"opportunita\": [\"...\"],\n  \"azioni_rapide\": [\"...\"],\n\n  \"target_commerciali\": [\"...\"],\n  \"potenziale\": \"string\",\n  \"idee_valore_agenzia\": [\"...\"],\n  \"domande_prospect\": [\"...\"],\n\n  \"attendibilita_dati\": { \"alert\": true, \"note\": \"string\" },\n  \"rischi_mitigazioni\": [ { \"rischio\": \"string\", \"mitigazione\": \"string\" } ],\n  \"priorita_temporali\": {\n    \"entro_30_giorni\": [\"...\"],\n    \"entro_90_giorni\": [\"...\"],\n    \"entro_12_mesi\": [\"...\"]\n  },\n  \"prove_trust\": {\n    \"team_visibile\": true,\n    \"case_study\": true,\n    \"testimonianze\": true,\n    \"certificazioni\": [\"...\"]\n  },\n\n  \"fonti\": [ { \"titolo\": \"string\", \"url\": \"string\" } ],\n\n  \"voto_qualita_analisi\": 0,\n  \"voto_qualita_dati\": 0\n}\n\n\nRegole di contenuto\n\nriassunto: integra Potenziale, Messaggi principali, Promessa di valore, Tono, Differenziazione, Coerenza.\n\npunti_forza/debolezza: 3–8 voci, ordinate per impatto, deduplicate.\n\nazioni_rapide: 3–7 task entro 2–3 settimane; se l’input ha priorità 30/90/12, riporta qui SOLO le immediate/ad alto ROI.\n\nattendibilita_dati: alert=true se ci sono dubbi su fonti/denominazioni/metriche; non stimare numeri.\n\nrischi_mitigazioni: copia/condensa dagli input; ogni rischio deve avere una mitigazione.\n\nprove_trust: boolean + elenco certificazioni/ordini/partner se emersi.\n\nfonti: elenca le citazioni URL disponibili (titolo facoltativo).\n\nValidazione finale\n\nNessun testo fuori dal JSON; tutte le chiavi presenti (array vuoto o stringa vuota se assente).\n\nJSON valido, leggibile, conciso; zero “pseudo-numeri”.\n\nDeduplica concetti ripetuti; tono strategico.",
               "role": "system"
             },
             {
-              "content": "=Esegui l'analisi realtiva a questa azienda:\n\nCONTESTO AZIENDA:\n- Nome: {{ $('Read Azienda WP').item.json.title.rendered }}\n- Indirizzo: {{ $('Read Azienda WP').item.json.acf.address }}\n- P.IVA: {{ $('Read Azienda WP').item.json.acf.partita_iva }}\n- Sito web: {{ $('Read Azienda WP').item.json.acf.website }}\n- Business: {{ $('Read Azienda WP').item.json.acf.business_type }}\n- Settore: {{ $('Read Azienda WP').item.json.acf.sector_specific }}"
+              "content": "=Esegui l'analisi realtiva a questa azienda:\n\nCONTESTO AZIENDA:\n- Nome: {{ $('Read Azienda WP').item.json.title.rendered }}\n- Indirizzo: {{ $('Read Azienda WP').item.json.acf.address }}\n- P.IVA: {{ $('Read Azienda WP').item.json.acf.partita_iva }}\n- Sito web: {{ $('Read Azienda WP').item.json.acf.domain }}\n- Business: {{ $('Read Azienda WP').item.json.acf.business_type }}\n- Settore: {{ $('Read Azienda WP').item.json.acf.sector_specific }}"
             }
           ]
         },
@@ -145,7 +145,7 @@
         "messages": {
           "values": [
             {
-              "content": "=Agisci come revisore strategico senior di un’analisi digitale per un’agenzia di comunicazione.\n\nRicevi un’analisi già svolta. Il tuo compito NON è riscriverla da zero ma:\n- identificarne punti deboli, lentezze, ridondanze, errori o assunzioni\n- correggere assertività e tono quando non giustificati\n- eliminare frasi generiche o vuote\n- aggiungere insight mancanti utili per un team di branding/comunicazione, non tecnico\n- mantenere focus business e narrativa, non performance tecniche\n- verificare che ogni raccomandazione sia azionabile e rilevante per un’agenzia\n- evidenziare chiaramente dove mancano dati e cosa andrebbe richiesto al cliente\n- migliorare profondità e chiarezza, non prolissità\n\nStruttura sempre output come ANALISI MIGLIORATA in testo puro.\n\nLinee guida:\n- niente ripetizioni inutili\n- niente superlativi vuoti (“molto innovativo”, “sito ben fatto”)\n- ogni affermazione va supportata da esempio o evidenza\n- pensa sempre a posizionamento, messaggio, conversione, narrative, trust, valore percepito\n- non introdurre aspetti tecnici (Core Web Vitals, DNS, etc.) salvo abbiano impatto diretto sulla percezione e conversione\n\nFinale obbligatorio:\n- elenco “Domande critiche da porre al prospect”\n- elenco “Idee di valore da proporre come agenzia”\n- NO JSON (il JSON lo farà il passaggio successivo)",
+              "content": "=Agisci come revisore strategico senior per un’agenzia.\nRicevi un’analisi già svolta. Non riscriverla da zero:\n\nelimina ridondanze, frasi generiche, assertività non giustificata\n\naggiungi insight utili a branding/comunicazione (non tecnico-performance)\n\nrendi azionabili le raccomandazioni; evidenzia dati mancanti e cosa chiedere al cliente\n\nmantieni focus su posizionamento, messaggio, conversione, narrativa, trust, valore percepito\n\nOutput obbligatorio (testo puro, usa ESATTAMENTE questi header):\n\nANALISI MIGLIORATA\n\nPremessa e attendibilità dei dati\n[… sintetico: cosa è verificato, cosa no, denominazioni, fonti …]\n\nPosizionamento e messaggio\n[… contenuto revisionato …]\n\nTarget e priorità commerciali\n[… archetipi + proposition …]\n\nProva di valore e trust\n[… team, case, testimonianze, partner/certificazioni …]\n\nFunnel e conversione\n[… CTA, lead magnet, form, timeline “come lavoriamo” …]\n\nContenuti e thought-leadership\n[… pilastri editoriali, formati, KPI di business …]\n\nPresenza LinkedIn (in ottica ABM)\n[… calendario, autori Partner, gating …]\n\nSito e narrativa\n[… above the fold: prove sopra la piega + CTA …]\n\nRischi e mitigazioni\n\nRischio: … → Mitigazione: …\n\nPriorità ad alto impatto\n\nEntro 30 giorni: …\n\nEntro 90 giorni: …\n\nEntro 12 mesi: …\n\nDati mancanti da richiedere\n[… elenco puntato …]\n\nDomande critiche da porre al prospect\n[… 6–10 bullets …]\n\nIdee di valore da proporre come agenzia\n[… 6–10 bullets …]\n\nFonti\n[… elenco titolo + URL …]\n\nLinee guida\n\nniente superlativi vuoti; ogni affermazione ha un esempio/evidenza\n\nnon introdurre numeri non verificati; niente stime “di fantasia”\n\ntono consulenziale, conciso, orientato a decisione",
               "role": "system"
             },
             {
@@ -249,16 +249,76 @@
               "value": "={{ $('Agente di analisi').item.json.message.content }}"
             },
             {
-              "name": "acf[json_dati_strutturati]",
-              "value": "={{ $json.acf.numeri_chiave_raw }}"
-            },
-            {
               "name": "acf[revisione_analisi_completa]",
               "value": "={{ $('Agente di revisione').item.json.message.content }}"
             },
             {
               "name": "acf[qualita_dati]",
               "value": "={{ $json.acf.voto_qualita_dati }}"
+            },
+            {
+              "name": "acf[messaggi_principali]",
+              "value": "={{ $json.acf.messaggi_principali }}"
+            },
+            {
+              "name": "acf[]promessa_di_valore",
+              "value": "={{ $json.acf.promessa_valore }}"
+            },
+            {
+              "name": "acf[numero_messaggi_principali]",
+              "value": "={{ $json.acf.count_messaggi_principali }}"
+            },
+            {
+              "name": "acf[tono_di_voce]",
+              "value": "={{ $json.acf.tono_di_voce }}"
+            },
+            {
+              "name": "acf[]elementi_differenzianti",
+              "value": "={{ $json.acf.differenziazione }}"
+            },
+            {
+              "name": "acf[numero_elementi_differenzianti]",
+              "value": "={{ $json.acf.count_differenziazione }}"
+            },
+            {
+              "name": "acf[]coerenza_comunicativa",
+              "value": "={{ $json.acf.coerenza_comunicativa }}"
+            },
+            {
+              "name": "acf[target_commerciali]",
+              "value": "={{ $json.acf.target_commerciali }}"
+            },
+            {
+              "name": "acf[]numero_target_commerciali",
+              "value": "={{ $json.acf.count_target_commerciali }}"
+            },
+            {
+              "name": "acf[idee_di_valore_perspect]",
+              "value": "={{ $json.acf.idee_valore_agenzia }}"
+            },
+            {
+              "name": "acf[numero_idee_di_valore]",
+              "value": "={{ $json.acf.count_idee_valore_agenzia }}"
+            },
+            {
+              "name": "acf[domande_prospect]",
+              "value": "={{ $json.acf.domande_prospect }}"
+            },
+            {
+              "name": "acf[numero_domande]",
+              "value": "={{ $json.acf.count_domande_prospect }}"
+            },
+            {
+              "name": "acf[rischi]",
+              "value": "={{ $json.acf.rischi_mitigazioni }}"
+            },
+            {
+              "name": "acf[numero_rischi]",
+              "value": "={{ $json.acf.count_rischi_mitigazioni }}"
+            },
+            {
+              "name": "acf[priorita_temporali]",
+              "value": "={{ $json.acf.priorita_temporali }}"
             }
           ]
         },
@@ -372,9 +432,320 @@
           "name": "Lead 18kPRo WP"
         }
       }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-search-api",
+          "mode": "list",
+          "cachedResultName": "GPT-5-SEARCH-API"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Ruolo\nAgisci come un consulente strategico senior specializzato in analisi di aziende e siti web. Evidence-based, tono top-tier (McK/BCG/Bain). Non inventare dati: se assumi, dichiara “inferenza”.\n\nCompito\nAnalizza il sito e restituisci un report completo su:\n\nposizionamento e messaggi chiave\n\nbrand, tono e differenziazione\n\ntrust & proof (elementi di credibilità)\n\nfunnel e conversione\n\ncontenuti e thought-leadership\n\nUX/UI e chiarezza narrativa\n\nSEO (alto livello)\n\nrischi e mitigazioni\n\npiano operativo (priorità temporali) e raccomandazioni\n\nSezioni (obbligatorie, in questo ordine):\n\nSintesi Esecutiva\n\nposizionamento percepito\n\ntarget implicito\n\npunti di forza\n\naree critiche\n\npotenziale\n\nBrand & Posizionamento\n\nmessaggi principali\n\npromessa di valore\n\ntono di voce\n\ndifferenziazione vs competitor generici\n\ncoerenza comunicativa\n\nCredibilità & Trust (prove)\n\ndati/risultati, case study, team/competenze, partner/certificazioni/media, testimonianze, trasparenza\n\nFunnel & Conversione\n\nCTA, percorsi, frizioni, lead magnet, qualità del processo\n\nContenuti & Thought-Leadership\n\nprofondità/qualità, rilevanza, valore informativo, aggiornamento, formati\n\nSEO (alto livello)\n\ncluster, keyword implicite, navigazione, opportunità strategiche\n\nUX/UI\n\nchiarezza, leggibilità, gerarchia, mobile (se evidente)\n\nRischi & Mitigazioni\n\nper ogni rischio: Rischio → Mitigazione concreta\n\nPriorità temporali\n\nQuick wins (0–30 giorni)\n\nAzioni prioritarie (30–90 giorni)\n\nStrategia lungo termine (3–12 mesi)\n\nDomande intelligenti al cliente (dati mancanti)\n\nPremessa e attendibilità dei dati (obbligatoria, breve)\n\nfonti, denominazione legale, cosa è verificato / cosa è inferenza\n\nFonti (elenco puntato: titolo + URL)\n\nRegole\n\nCita esempi dal sito quando supportano le conclusioni.\n\nZero superlativi vuoti, niente jargon inutile.\n\nSe mancano dati, esplicitalo e proponi dove recuperarli.",
+              "role": "system"
+            },
+            {
+              "content": "=Esegui un'analisi completa per la seguente azienda.\nIMPORTANTE: usa linguaggio business per CEO/titolari, NON tecnicismi sviluppatore.\n\nAzienda: {{ $json.acf.company_name_full }}\nProvincia: {{ $json.acf.province }}\nIndirizzo: {{ $json.acf.address }}\nP.IVA: {{ $json.acf.partita_iva }}\nDominio / Sito web: {{ $json.acf.domain }}\nTipo di business: {{ $json.acf.business_type }}\nSettore: {{ $json.acf.sector_specific }}\n\nLinkedin: {{ $json.acf.linkedin_url }}\nLink social: {{ $json.acf.social_links }}\n\nSintesi analisi azienda: {{ $json.acf.short_bio }}\n\nRispondi sempre in italiano. Mantieni l'inglese solo per termini tecnici che non si possono tradurre."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -416,
+        -288
+      ],
+      "id": "fad37498-297c-4bd4-b525-b2f4ddc668f4",
+      "name": "Agente di analisi1",
+      "retryOnFail": true,
+      "waitBetweenTries": 2500,
+      "credentials": {
+        "openAiApi": {
+          "id": "YKH8CfczdzNM1zeT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5",
+          "mode": "list",
+          "cachedResultName": "GPT-5"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Agisci come un analista senior. Riceverai un JSON eterogeneo e dovrai distillarlo senza perdita di valore in un output strutturato e leggibile, destinato a un report aziendale o a WordPress.\nScrivi sempre in italiano professionale, chiaro e orientato al decision-maker. Mantieni l’inglese solo per termini tecnici intraducibili.\n\nDato l’input, produci solo un JSON valido (nessun testo extra) con questo schema:\n\n{\n  \"riassunto\": \"stringa di testo (massimo 600 caratteri, ma densa e leggibile)\",\n  \"punti_forza\": [\"elemento1\", ...],\n  \"punti_debolezza\": [\"elemento1\", ...],\n  \"opportunita\": [\"elemento1\", ...],\n  \"azioni_rapide\": [\"elemento1\", ...],\n  \"target_commerciali\": [\"archetipo1\", ...],\n  \"potenziale\": \"stringa di testo breve che riassume la traiettoria di crescita o sviluppo del brand\",\n  \"idee_valore_agenzia\": [\"elemento1\", ...],\n  \"domande_prospect\": [\"domanda1\", ...],\n  \"voto_qualita_analisi\": 0-100,\n  \"voto_qualita_dati\": 0-100\n}\n\n\nRegole di contenuto\n\nriassunto: sintetizza in modo narrativo ma solido gli elementi di:\n\nPotenziale, Messaggi principali, Promessa di valore, Tono di voce, Differenziazione vs competitor, Coerenza comunicativa.\n\nDeve sembrare un executive summary scritto per il CEO: visione, posizionamento e vantaggi distintivi.\n\nMax 600 caratteri (non 280).\n\npunti_forza / punti_debolezza: 3–8 voci ciascuno, ordinate per impatto.\n\nopportunita: evidenzia leve strategiche, trend competitivi e quick wins.\n\nazioni_rapide: 3–7 task operativi realizzabili entro 2–3 settimane, all’imperativo, opzionale metrica target.\n\nSe nell’analisi originale erano presenti priorità temporali (es. 30–90–12 mesi), includi solo le azioni immediate o ad alto ROI.\n\ntarget_commerciali: se l’analisi contiene segmenti o archetipi di clienti (es. PMI in crescita, in crisi, evolute), elencali in forma sintetica con l’obiettivo principale di ciascuno.\n\npotenziale: breve paragrafo (1–2 frasi) che spieghi la traiettoria futura o la scalabilità del brand.\n\nidee_valore_agenzia: elenca le proposte operative concrete emerse (es. lead magnet, CFO Club, serie video, campagne LinkedIn, webinar con partner).\n\ndomande_prospect: includi le domande critiche e i dati mancanti da validare, utili per la discovery commerciale o la definizione del brief.\n\nvoto_qualita_analisi e voto_qualita_dati: mantieni la stessa metodologia di scoring descritta nel prompt originale.\n\nValidazione finale\n\nNessun testo fuori dal JSON.\n\nTutte le chiavi presenti anche se vuote (sezione non rilevata ⇒ restituisci array vuoto o stringa vuota).\n\nJSON formattato correttamente e leggibile.\n\nNon inserire più la sezione “numeri_chiave”.\n\nSe l’analisi non contiene dati quantitativi verificabili, non inventarli né stimarli.\n\nDeduplica concetti ripetuti e mantieni un tono strategico, non descrittivo.\n\n\nDati di input:\n{{ $json.message.content }}",
+              "role": "system"
+            },
+            {
+              "content": "=Esegui l'analisi realtiva a questa azienda:\n\nCONTESTO AZIENDA:\n- Nome: {{ $('Read Azienda WP').item.json.title.rendered }}\n- Indirizzo: {{ $('Read Azienda WP').item.json.acf.address }}\n- P.IVA: {{ $('Read Azienda WP').item.json.acf.partita_iva }}\n- Sito web: {{ $('Read Azienda WP').item.json.acf.domain }}\n- Business: {{ $('Read Azienda WP').item.json.acf.business_type }}\n- Settore: {{ $('Read Azienda WP').item.json.acf.sector_specific }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        288,
+        -288
+      ],
+      "id": "73b54cfa-c223-4075-a5bd-9cfe24740810",
+      "name": "Agente di sintesi1",
+      "credentials": {
+        "openAiApi": {
+          "id": "YKH8CfczdzNM1zeT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5",
+          "mode": "list",
+          "cachedResultName": "GPT-5"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Agisci come revisore strategico senior di un’analisi digitale per un’agenzia di comunicazione.\n\nRicevi un’analisi già svolta. Il tuo compito NON è riscriverla da zero ma:\n- identificarne punti deboli, lentezze, ridondanze, errori o assunzioni\n- correggere assertività e tono quando non giustificati\n- eliminare frasi generiche o vuote\n- aggiungere insight mancanti utili per un team di branding/comunicazione, non tecnico\n- mantenere focus business e narrativa, non performance tecniche\n- verificare che ogni raccomandazione sia azionabile e rilevante per un’agenzia\n- evidenziare chiaramente dove mancano dati e cosa andrebbe richiesto al cliente\n- migliorare profondità e chiarezza, non prolissità\n\nStruttura sempre output come ANALISI MIGLIORATA in testo puro.\n\nLinee guida:\n- niente ripetizioni inutili\n- niente superlativi vuoti (“molto innovativo”, “sito ben fatto”)\n- ogni affermazione va supportata da esempio o evidenza\n- pensa sempre a posizionamento, messaggio, conversione, narrative, trust, valore percepito\n- non introdurre aspetti tecnici (Core Web Vitals, DNS, etc.) salvo abbiano impatto diretto sulla percezione e conversione\n\nFinale obbligatorio:\n- elenco “Domande critiche da porre al prospect”\n- elenco “Idee di valore da proporre come agenzia”\n- NO JSON (il JSON lo farà il passaggio successivo)",
+              "role": "system"
+            },
+            {
+              "content": "=Stai revisionando un’analisi digitale per supportare un approccio consulenziale verso un prospect di agenzia di comunicazione.\nNon devi rifare l’analisi da zero: devi migliorarla, renderla più incisiva, più strategica e orientata a business e posizionamento.\n\nInformazioni azienda:\nAzienda: {{ $('Read Azienda WP').item.json.title.rendered }}\nProvincia: {{ $('Read Azienda WP').item.json.acf.provincia }}\nIndirizzo: {{ $('Read Azienda WP').item.json.acf.address }}\nP.IVA: {{ $('Read Azienda WP').item.json.acf.partita_iva }}\nSito web: {{ $('Read Azienda WP').item.json.acf.website }}\nDominio: {{ $('Read Azienda WP').item.json.acf.domain }}\nMail aziendale: {{ $('Read Azienda WP').item.json.acf.email_azienda }}\nTipo di business: {{ $('Read Azienda WP').item.json.acf.business_type }}\nSettore: {{ $('Read Azienda WP').item.json.acf.sector_specific }}\n\nCanali principali:\nLinkedin: {{ $('Read Azienda WP').item.json.acf.linkedin_url }}\nFacebook: {{ $('Read Azienda WP').item.json.acf.facebook_url }}\nInstagram: {{ $('Read Azienda WP').item.json.acf.instagram_url }}\nYouTube: {{ $('Read Azienda WP').item.json.acf.youtube_url }}\n\nSintesi iniziale dell’analisi aziendale: {{ $('Read Azienda WP').item.json.acf.key_factor_analisi }}\n\nTask principale:\nRaffina e potenzia l’analisi seguente. Rendi il contenuto:\n\t•\tpiù strategico e consulenziale\n\t•\tfocalizzato su branding, comunicazione, posizionamento, lead generation e percezione del valore\n\t•\tconcreto e orientato ai decisori aziendali (CEO/CMO)\n\t•\tpulito da ipotesi deboli, frasi generiche e ambiguità\n\t•\tprioritizzato per impatto business\n\t•\tchiaro nel mostrare dove mancano dati e quali informazioni servono\n\nEvita tecnicismi da sviluppatore o dettagli troppo “tech”; privilegia visione, posizionamento, messaggio, customer journey, conversione e trust.\n\nOutput richiesto:\nTesto analitico raffinato (non JSON).\nAlla fine aggiungi due sezioni:\n\t1.\tDomande critiche da porre al prospect (max 10 bullet)\n\t2.\tIdee di valore da proporre come agenzia (max 10 bullet)\n\nNon aggiungere altro.\n\nAnalisi da revisionare:\n{{ $json.message.content }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -64,
+        -288
+      ],
+      "id": "c597cc06-8a38-4c77-8f1d-dfcbe94214d6",
+      "name": "Agente di revisione1",
+      "credentials": {
+        "openAiApi": {
+          "id": "YKH8CfczdzNM1zeT",
+          "name": "OpenAi account"
+        }
+      }
     }
   ],
-  "pinData": {},
+  "pinData": {
+    "Agente di analisi1": [
+      {
+        "json": {
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "Ecco l’analisi strategica del sito **beadvisor.it / Be Advisor Srl**, fatta con approccio “top-tier consulting”, rivolta al CEO / titolari.\n\n---\n\n## 1) Sintesi Esecutiva\n\n**Posizionamento percepito**  \nBe Advisor si presenta come uno studio di consulenza integrata (contabile, fiscale, advisory e operazioni straordinarie), che aiuta le imprese a gestire la complessità — normative, fiscali, operazioni straordinarie — per trasformarla in opportunità. Il claim “Integrated Advisory” e riferimenti ad M&A, crisi d’impresa, due diligence, business plan rispecchiano un’offerta professional-alta. ([beadvisor.it](https://www.beadvisor.it/?utm_source=openai))\n\n**Target implicito**  \nPMI, soprattutto nel Nord-Est Italia, realtà con esigenza non soltanto di servizi ordinari (contabilità, fiscalità), ma che ambiscono a crescere, ad affrontare fusioni/acquisizioni, ristrutturazioni, crisi d’impresa. Aziende strutturate ma anche realtà più piccole che desiderano professionalità e personalizzazione. ([beadvisor.it](https://www.beadvisor.it/azienda/?utm_source=openai))\n\n**Punti di forza**  \n- Dati concreti: fatturato 2024 circa €2,33M, utile netto di ca. €203.000, 18 dipendenti. ([ufficiocamerale.it](https://www.ufficiocamerale.it/6125/berto-associati-srl?utm_source=openai))  \n- Storia / esperienza: “25 anni” di attività, oltre 300 clienti attivi. ([beadvisor.it](https://www.beadvisor.it/azienda/?utm_source=openai))  \n- Offerta multidisciplinare: advisory, contabilità, operazioni straordinarie, gestione crisi. ([beadvisor.it](https://www.beadvisor.it/azienda/?utm_source=openai))  \n- Posizionamento distintivo verso operazioni straordinarie e trasformazioni aziendali.  \n\n**Aree critiche**  \n- Mancanza di visibilità forte del team: non è chiaro chi sono i partner, senior manager etc. ([beadvisor.it](https://www.beadvisor.it/azienda/?utm_source=openai))  \n- Case study limitati, senza dati numerici o risultati misurabili pubblici. ([beadvisor.it](https://www.beadvisor.it/?utm_source=openai))  \n- Presenza social debole: pochi follower, attività limitata. ([it.linkedin.com](https://it.linkedin.com/posts/be-advisor_beadvisor-business-bilanciosostenibilit%C3%A02023-activity-7308039850736214016-70Wa?utm_source=openai))  \n- SEO e visibilità organica: potenziali lacune su keyword specifiche e contenuti mirati. (vedi più avanti)  \n\n**Potenziale**  \nBuone basi per diventare punto di riferimento regionale per consulenza alta (M&A, crisi d’impresa, valutazioni aziendali). Se rafforzata la credibilità online, strutturato funnel di acquisizione, e ampliata thought leadership, può scalare verso mercati più grandi (Veneto tutto, Nord-Italia) e attrarre clienti con budget medio-alto.\n\n---\n\n## 2) Brand & Posizionamento\n\n**Messaggi principali**  \n- “Un chiaro riferimento nella complessità” — il concetto di complessità gestita. ([beadvisor.it](https://www.beadvisor.it/?utm_source=openai))  \n- “Supportiamo la crescita delle aziende” — orientamento crescita. ([beadvisor.it](https://www.beadvisor.it/?utm_source=openai))  \n- “Integrated Advisory”: promessa di servizi completi piuttosto che fragmentati. ([beadvisor.it](https://www.beadvisor.it/?utm_source=openai))  \n\n**Promessa di valore**  \n- Trasformare problemi complessi in opportunità.  \n- Affidabilità, competenza, guida sicura nelle operazioni straordinarie.  \n- Ottimizzazione nella gestione ordinaria per liberare spazio per strategie di crescita.  \n\n**Tono di voce**  \nProfessionale, rassicurante, formale ma non distante. Usa metafore (“complessità”, “semplice”), richiama sicurezza, competenza, risultati piuttosto che tecnicismi visibili.  \n\n**Differenziazione vs competitor generici**  \nMolti studi contabili/officine fiscali si fermano ai servizi ordinari. Be Advisor emerge per:  \n- focus su operazioni straordinarie (M&A, ristrutturazioni)  \n- advisory strategico (business plan, due diligence)  \n- forte componente consulenziale combinata con servizi ordinari  \n\n**Coerenza comunicativa**  \nIl messaggio è abbastanza coerente: il sito, l’“About”, i servizi, i case studies rimandano costantemente all’idea di gestione della complessità, crescita, trasformazione. Manca però nel dettaglio la leadership del team, che potrebbe indebolire la credibilità percepita.\n\n---\n\n## 3) Credibilità & Trust\n\nPresenza / assenza dei seguenti elementi:\n\n**Dati, numeri, risultati**  \n- Sì: fatturato, utile, numero dipendenti, numero clienti (“oltre 300”). ([ufficiocamerale.it](https://www.ufficiocamerale.it/6125/berto-associati-srl?utm_source=openai))  \n- No: margini, ROI reali ottenuti dai clienti, dettagli sui risultati specifici delle case study.\n\n**Case study**  \n- Sì: almeno due menzioni (“Be Advisor con Venevision per acquisizione di Eurofin”, “TrisOttica acquisisce Ottica Prealpi”). ([beadvisor.it](https://www.beadvisor.it/?utm_source=openai))  \n- Tuttavia, nei case study pubblicati non sono visibili numeri concreti di impatto (incrementi, risparmi, efficienza) né dettagli processuali.  \n\n**Team e competenze**  \n- Si dichiara “team multidisciplinare”, competenze estese, revisori dei conti etc. ([beadvisor.it](https://www.beadvisor.it/azienda/?utm_source=openai))  \n- Mancano nomi specifici, ruoli, biografie, esperienze. Non è chiaro chi siano i partner responsabili.  \n\n**Partner / certificazioni / media**  \n- Non evidenziata certificazione specifica (es. ISO, registro società di revisione attivo?).  \n- Non ho trovato riferimenti a partnership note, né citazioni media (oltre al bilancio di sostenibilità e comunicati LinkedIn).  \n\n**Testimonianze**  \n- Non visibili testimonianze cliente singole, citazioni dirette di clienti, recensioni.  \n\n**Trasparenza**  \n- Ottima sui dati societari ufficiali (P.IVA, indirizzo, numero dipendenti, bilancio). ([beadvisor.it](https://www.beadvisor.it/contatti/?utm_source=openai))  \n- Meno trasparente su persone chiave, su risultati concreti, prezzi/modalità.  \n\n---\n\n## 4) Funnel & Conversione\n\n**CTA primarie e secondarie**  \n- CTA primarie: “Scopri di più” per i servizi, “Contattaci”. ([beadvisor.it](https://www.beadvisor.it/?utm_source=openai))  \n- CTA secondarie: “Lavora con noi”. ([beadvisor.it](https://www.beadvisor.it/?utm_source=openai))  \n\n**Percorsi utente**  \n- Dal sito Home → servizi → approfondimento.  \n- Dal sito Home → case studies.  \n- Possibilità di andare su pagina “Azienda / Insights”.  \n\n**Friczione / ostacoli**  \n- Mancanza di moduli lead magnet: non appare un’offerta con contenuto scaricabile (white paper, guida, checklist).  \n- Non si vedono preventivi online o strumenti di self-assessment.  \n- Possibile difficoltà nel contatto rapido: solo telefono, email; non è chiaro se ci siano chat o contatto immediato.  \n\n**Moduli o lead magnet**  \n- Non ho riscontrato lead magnet evidenti.  \n\n**Qualità percepita del processo commerciale**  \n- Il sito comunica competenza, professionalità, ma la mancanza di dettagli operativi, testimonianze, preventivazione o casi misurabili può far sembrare il processo astratto fino al contatto diretto.  \n\n---\n\n## 5) Contenuti e Thought-Leadership\n\n**Profondità / qualità**  \n- I contenuti presenti (“servizi”, “azienda”, “insights”) sono coerenti, ben scritti, ma non molto dettagliati: spiegano cosa fanno, ma meno come lo fanno, e con che impatto.  \n\n**Rilevanza per il pubblico**  \n- Buona rilevanza: i servizi corrispondono a bisogni concreti per PMI in crescita: fusioni, crisi d’impresa, riorganizzazione fiscale, operazioni straordinarie.  \n\n**Valore informativo**  \n- Valido come primo orientamento; tuttavia, per un imprenditore interessato a capire costi, metodo, tempi, casi reali, manca materiale concreto (es. approfondimenti di procedure, esempi numerici).  \n\n**Aggiornamento e consistenza**  \n- C’è il bilancio di sostenibilità 2023, segno che producono contenuti correnti. ([it.linkedin.com](https://it.linkedin.com/posts/be-advisor_beadvisor-business-bilanciosostenibilit%C3%A02023-activity-7308039850736214016-70Wa?utm_source=openai))  \n- Tuttavia non ho visto frequenza alta nel blog/insights; non si capisce ogni quanto viene aggiornato.  \n\n**Formati**  \n- Predominano testo e immagini.  \n- Case studies menzionati, ma non in video o infografiche evidenti.  \n\n---\n\n## 6) SEO e posizionamento organico\n\n**Cluster di contenuti visibili**  \n- Servizi: contabilità/tax, operazioni straordinarie, crisi d’impresa. ([beadvisor.it](https://www.beadvisor.it/?utm_source=openai))  \n- Case studies.  \n- Insights / bilancio sostenibilità.  \n\n**Parole chiave implicite**  \n- “Advisory”, “consulenza fiscale”, “contabilità”, “M&A”, “fusioni e acquisizioni”, “crisi d'impresa”, “due diligence”, “business plan”.  \n\n**Struttura di navigazione**  \n- Home → Servizi → Azienda → Case studies / Insights → Contatti.  \n- Chiara la distinzione tra servizi ordinari e servizi specialistici.  \n\n**Opportunità strategiche**  \n- Creare contenuti SEO-mirati su long-tail: ad esempio “come affrontare una fusione in Veneto”, “gestione crisi aziendale normativa 2025”, “valutazione aziendale PMI italiana”.  \n- Migliorare la struttura interna: articoli di approfondimento, FAQ per ogni servizio.  \n- Ottimizzare tag title, meta description per regioni/geografia (Noale, Veneto, Nord Italia) e per servizi specializzati (M&A, crisi d’impresa).  \n\n---\n\n## 7) UX / UI e chiarezza narrativa\n\n**Chiarezza**  \n- Il sito è chiaro nella proposta di valore, nei servizi offerti, nel messaggio di crescita e complessità convertita in opportunità.  \n- La gerarchia: dalla mission → servizi → contatti è logica.  \n\n**Leggibilità**  \n- Testi leggibili, linguaggio “business”, non eccessivamente tecnico, adatto al CEO/dirigente.  \n\n**Gerarchia informativa**  \n- Elementi come case studies posizionati in Home sono utili.  \n- Non sempre sono chiari i punti di differenziazione rispetto alla concorrenza; occorrerebbe rafforzare USP ‒ alcune sono implicite, non esplicite (es: velocità, esperienza specifica).  \n\n**Mobile experience**  \n- Non ho accesso diretto al dispositivo mobile, ma il sito appare aggiornato e con layout moderno (immagini, sezioni chiare), probabilmente responsive.  \n\n---\n\n## 8) Rischi & Gaps\n\n**Incoerenze**  \n- Nessuna incoerenza importante rilevata; piuttosto omissioni rilevanti.  \n\n**Claim non provati**  \n- “Oltre 300 clienti seguiti”: non si sa quali, in quali settori, che risultati hanno conseguito.  \n- Case studies menzionati ma privi di dati misurabili (valori, tempi, impatti).  \n\n**Mancanza elementi critici**  \n- Team con nomi, background, competenze specifiche.  \n- Testimonianze cliente, recensioni / citazioni esterne.  \n- Lead magnet, strumenti di engagement digitale.  \n- Strutturazione del preventivo / proposta commerciale come risorsa.  \n\n**Aree che possono generare sfiducia**  \n- Se il cliente non vede il “come” del servizio: metodi, esperienze concrete, misurazioni, potrebbe considerare l’offerta generica.  \n- Mancanza trasparenza su pricing o tempistiche: rischio percepito come “troppo caro” o “non chiaro”.  \n\n---\n\n## 9) Opportunità e Raccomandazioni\n\nDivise per priorità temporale.\n\n**Quick Wins (0–30 giorni)**\n\n1. Integrare testimonianze concrete – breve video o citazione scritta di cliente, con numeri (es. “abbiamo ridotto il carico fiscale del X%”, “acquisizione completata in Y mesi”).  \n2. Mostrare il team: foto, nomi, esperienze, ruoli chiave (partner, senior).  \n3. Aggiungere un lead magnet: e.g. “Guida gratuita alle operazioni straordinarie per PMI”, “Checklist crisi d’impresa”.  \n4. Ottimizzare titoli / meta description / tag SEO sulla home e pagine servizi per evidenziare keyword specifiche (“M&A”, “crisi d’impresa”, “valutazioni aziendali”).  \n5. Email/contact form visibile e semplificato; valutare chat online.\n\n**Azioni Prioritarie (30–90 giorni)**\n\n1. Produrre case study dettagliati: settore, cliente, problema, intervento, risultati quantitativi.  \n2. Strategia contenuti: pianificazione editorial calendar per “Insights” / blog con articoli approfonditi su tematiche attuali (normative, crisi, M&A).  \n3. Rafforzare visibilità social: aumentare frequenza post LinkedIn, condividere studi/casi, insight originali.  \n4. Offrire versioni “mirate” del sito per settori verticali (industria, commercio, servizi) per mostrare specializzazione.  \n5. Analisi UX mobile: verificare esperienza su smartphone/tablet; migliorare velocità caricamento e visualizzazione.\n\n**Strategia Lungo Termine (3–12 mesi)**\n\n1. Costruire thought leadership forte: pubblicazioni, webinar, partnership con associazioni d’impresa, pubblicare white papers tecnici.  \n2. Branding più strutturato: video corporate, presenza in eventi, sponsorizzazioni locali/regionali.  \n3. Sviluppare strumenti digitali propri: calcolatori, simulazioni, software/frammenti digitali per consulenza preliminare gratuita.  \n4. Espansione geografica: oltre Nord-Est verso aree vicine o partner in altre province/regione.  \n5. Certificazioni riconosciute / accreditamenti che aumentino credibilità (ad esempio in crisi d’impresa, revisione, etc.).\n\n---\n\n## 10) Domande Intelligenti al Cliente\n\nPer completare l’analisi, sarebbe utile avere:\n\n- Qual è il margine medio dei progetti di consulenza strategica / operazioni straordinarie? Costi-benefici misurati?  \n- Qual è la vostra clientela tipica (dimensione aziendale, settore, fatturato, localizzazione)?  \n- Che processi interni utilizzate nel progetto clienti (metodi, tempistiche, team dedicato)?  \n- Avete già raccolto testimonianze clienti o case study dettagliati interni non pubblicati?  \n- Risultati attesi in termini di crescita: % aumento fatturato, clienti, espansione geografica etc.  \n- Budget marketing digitale / contenuti già stanziato?  \n\n---\n\nSe vuoi, posso prepararti anche un benchmark con due-tre studi di consulenza simili nella tua zona per capire come Be Advisor si posiziona rispetto alla concorrenza reale. Vuoi che proceda con questo confronto?",
+            "refusal": null,
+            "annotations": [
+              {
+                "type": "url_citation",
+                "url_citation": {
+                  "end_index": 655,
+                  "start_index": 594,
+                  "title": "Home - Be Advisor",
+                  "url": "https://www.beadvisor.it/?utm_source=openai"
+                }
+              },
+              {
+                "type": "url_citation",
+                "url_citation": {
+                  "end_index": 1066,
+                  "start_index": 997,
+                  "title": "Azienda - Be Advisor - Be Advisor",
+                  "url": "https://www.beadvisor.it/azienda/?utm_source=openai"
+                }
+              },
+              {
+                "type": "url_citation",
+                "url_citation": {
+                  "end_index": 1276,
+                  "start_index": 1179,
+                  "title": "BE ADVISOR SRL, Partita IVA: 03480370273, Fatturato, Dipendenti, PEC",
+                  "url": "https://www.ufficiocamerale.it/6125/berto-associati-srl?utm_source=openai"
+                }
+              },
+              {
+                "type": "url_citation",
+                "url_citation": {
+                  "end_index": 1420,
+                  "start_index": 1351,
+                  "title": "Azienda - Be Advisor - Be Advisor",
+                  "url": "https://www.beadvisor.it/azienda/?utm_source=openai"
+                }
+              },
+              {
+                "type": "url_citation",
+                "url_citation": {
+                  "end_index": 1586,
+                  "start_index": 1517,
+                  "title": "Azienda - Be Advisor - Be Advisor",
+                  "url": "https://www.beadvisor.it/azienda/?utm_source=openai"
+                }
+              },
+              {
+                "type": "url_citation",
+                "url_citation": {
+                  "end_index": 1862,
+                  "start_index": 1793,
+                  "title": "Azienda - Be Advisor - Be Advisor",
+                  "url": "https://www.beadvisor.it/azienda/?utm_source=openai"
+                }
+              },
+              {
+                "type": "url_citation",
+                "url_citation": {
+                  "end_index": 2002,
+                  "start_index": 1941,
+                  "title": "Home - Be Advisor",
+                  "url": "https://www.beadvisor.it/?utm_source=openai"
+                }
+              },
+              {
+                "type": "url_citation",
+                "url_citation": {
+                  "end_index": 2229,
+                  "start_index": 2066,
+                  "title": "È online il Bilancio di Sostenibilità 2023 di Be Advisor, un documento che testimonia l’impegno verso un modello di crescita responsabile, integrando i principi ESG nella strategia aziendale. | Be Advisor",
+                  "url": "https://it.linkedin.com/posts/be-advisor_beadvisor-business-bilanciosostenibilit%C3%A02023-activity-7308039850736214016-70Wa?utm_source=openai"
+                }
+              },
+              {
+                "type": "url_citation",
+                "url_citation": {
+                  "end_index": 2898,
+                  "start_index": 2837,
+                  "title": "Home - Be Advisor",
+                  "url": "https://www.beadvisor.it/?utm_source=openai"
+                }
+              },
+              {
+                "type": "url_citation",
+                "url_citation": {
+                  "end_index": 3029,
+                  "start_index": 2968,
+                  "title": "Home - Be Advisor",
+                  "url": "https://www.beadvisor.it/?utm_source=openai"
+                }
+              },
+              {
+                "type": "url_citation",
+                "url_citation": {
+                  "end_index": 3174,
+                  "start_index": 3113,
+                  "title": "Home - Be Advisor",
+                  "url": "https://www.beadvisor.it/?utm_source=openai"
+                }
+              },
+              {
+                "type": "url_citation",
+                "url_citation": {
+                  "end_index": 4517,
+                  "start_index": 4420,
+                  "title": "BE ADVISOR SRL, Partita IVA: 03480370273, Fatturato, Dipendenti, PEC",
+                  "url": "https://www.ufficiocamerale.it/6125/berto-associati-srl?utm_source=openai"
+                }
+              },
+              {
+                "type": "url_citation",
+                "url_citation": {
+                  "end_index": 4822,
+                  "start_index": 4761,
+                  "title": "Home - Be Advisor",
+                  "url": "https://www.beadvisor.it/?utm_source=openai"
+                }
+              },
+              {
+                "type": "url_citation",
+                "url_citation": {
+                  "end_index": 5147,
+                  "start_index": 5078,
+                  "title": "Azienda - Be Advisor - Be Advisor",
+                  "url": "https://www.beadvisor.it/azienda/?utm_source=openai"
+                }
+              },
+              {
+                "type": "url_citation",
+                "url_citation": {
+                  "end_index": 5807,
+                  "start_index": 5737,
+                  "title": "Contatti - Be Advisor - Be Advisor",
+                  "url": "https://www.beadvisor.it/contatti/?utm_source=openai"
+                }
+              },
+              {
+                "type": "url_citation",
+                "url_citation": {
+                  "end_index": 6078,
+                  "start_index": 6017,
+                  "title": "Home - Be Advisor",
+                  "url": "https://www.beadvisor.it/?utm_source=openai"
+                }
+              },
+              {
+                "type": "url_citation",
+                "url_citation": {
+                  "end_index": 6178,
+                  "start_index": 6117,
+                  "title": "Home - Be Advisor",
+                  "url": "https://www.beadvisor.it/?utm_source=openai"
+                }
+              },
+              {
+                "type": "url_citation",
+                "url_citation": {
+                  "end_index": 7948,
+                  "start_index": 7785,
+                  "title": "È online il Bilancio di Sostenibilità 2023 di Be Advisor, un documento che testimonia l’impegno verso un modello di crescita responsabile, integrando i principi ESG nella strategia aziendale. | Be Advisor",
+                  "url": "https://it.linkedin.com/posts/be-advisor_beadvisor-business-bilanciosostenibilit%C3%A02023-activity-7308039850736214016-70Wa?utm_source=openai"
+                }
+              },
+              {
+                "type": "url_citation",
+                "url_citation": {
+                  "end_index": 8386,
+                  "start_index": 8325,
+                  "title": "Home - Be Advisor",
+                  "url": "https://www.beadvisor.it/?utm_source=openai"
+                }
+              }
+            ]
+          },
+          "finish_reason": "stop"
+        }
+      }
+    ],
+    "Agente di revisione1": [
+      {
+        "json": {
+          "index": 0,
+          "message": {
+            "role": "assistant",
+            "content": "ANALISI MIGLIORATA\n\nPremessa e attendibilità dei dati\n- Criticità: i dati economico-finanziari citati (fatturato, utile, dipendenti) sembrano riferiti a una fonte terza e a una denominazione societaria non coincidente (“Berto Associati Srl” vs “Be Advisor Srl”). Senza conferma ufficiale, questi numeri non vanno usati in comunicazione: rischiano di minare la credibilità.\n- Azione: verificare con il cliente la denominazione legale, l’ultimo bilancio depositato e quali metriche sono autorizzate alla pubblicazione. In assenza, sostituire con intervalli o indicatori qualitativi verificabili (es. “oltre X operazioni seguite negli ultimi 24 mesi”).\n\n1) Posizionamento e messaggio: cosa funziona e cosa indebolisce\n- Cosa c’è: “Integrated Advisory” e la narrativa “gestiamo la complessità” sono coerenti con un’offerta multidisciplinare (contabile, fiscale, straordinaria).\n- Debolezza: “Integrated Advisory” è indistinguibile rispetto a molti studi. Non spiega perché scegliere Be Advisor, né in cosa è superiore su operazioni straordinarie, crisi o M&A.\n- Miglioria strategica: scegliere un “wedge” di posizionamento chiaro e difendibile:\n  - Boutique per operazioni straordinarie e situazioni speciali delle PMI del Nord-Est (M&A, ristrutturazioni, early warning crisi).\n  - Oppure: Studio integrato che unisce la gestione ordinaria al “deal readiness” (controllo di gestione + fiscalità + M&A) per trasformare la PMI in un’azienda pronta a crescere per linee esterne.\n- Esempio di messaggio più orientato al valore: “Riduciamo il rischio e accorciamo i tempi nelle operazioni straordinarie delle PMI. Dalla diagnosi al closing, con una filiera unica contabile–fiscale–advisory.”\n\n2) Target e priorità commerciali (chiare per il CEO)\n- Target implicito corretto (PMI Nord-Est), ma va segmentato in 3 archetipi con proposition dedicate:\n  1) PMI in crescita per acquisizioni/integrazioni (Owner/CFO): obiettivo riduzione rischio transazione, sinergie post-merger.\n  2) PMI in tensione finanziaria/crisi (Owner/Advisor legale): obiettivo salvaguardia continuità, negoziazioni con banche/fornitori.\n  3) PMI con gestione ordinaria evoluta (CFO): obiettivo “deal readiness” e ottimizzazione fiscale/governance.\n- Azione: mappare una value proposition per ciascun archetipo con benefici espliciti (es. “time-to-close ridotto”, “valore di impresa protetto”, “continuità preservata”) e CTA dedicate.\n\n3) Prova di valore e trust: cosa manca per convincere\n- Team: la mancanza di Partner e Senior visibili è la lacuna maggiore. In consulenza, si compra il team.\n  - Azione: pagina “Partner e Leadership” con foto professionali, bio sintetiche (settori, tipologia di operazioni seguite, incarichi di attestazione/revisione), iscrizioni ad albi (ODCEC, Revisori legali), ruoli di responsabilità.\n- Case study: i casi citati sono esempi, ma privi di numeri.\n  - Azione: sviluppare 4–6 case study “investibili” con struttura fissa: contesto (settore, dimensioni), problema, approccio, risultati misurabili (intervalli se vincoli di NDA: “range EV, % riduzione debito, mesi al closing, covenant negoziati”).\n- Testimonianze: assenti.\n  - Azione: 3–5 citazioni di CEO/CFO (anche anonime ma specifiche per settore e risultato), formato breve e video di 45–60 secondi per la home.\n- Prove esterne: certificazioni/partnership e presenza media non evidenziate.\n  - Azione: inserire loghi di associazioni/ordini, partnership con banche/associazioni territoriali, partecipazioni ad eventi, articoli o commenti su stampa economica locale.\n\n4) Funnel e conversione: dal “contattaci” alla richiesta qualificata\n- CTA attuali generiche (“Contattaci”) rallentano la conversione qualificata.\n- Azioni precise:\n  - Sostituire “Contattaci” con “Prenota 20’ con un Partner” e micro-copie diverse per i tre archetipi. Obiettivo: calo attrito e qualificazione.\n  - Introdurre 2 offerte d’ingresso chiare:\n    1) Deal Readiness Check (gratuito): checklist + call di 20’ per PMI orientate a M&A.\n    2) Early Warning Crisi (gratuito): autovalutazione di 10 indicatori + esito con 3 priorità.\n  - Form multistep per segmentare (dimensione, settore, obiettivo, timing), così l’agenzia può nutrire con contenuti verticali.\n  - Aggiungere “Come lavoriamo” con timeline di progetto (esempio: due diligence in 6–8 settimane; ristrutturazioni: 90–120 giorni, range). Anche solo indicativo crea prevedibilità e fiducia.\n\n5) Contenuti e thought leadership: da “spiegare cosa” a “spiegare come”\n- Oggi: descrittivi e corretti, ma con poco “come e con che impatto”.\n- Architettura contenuti proposta (3 pilastri editoriali):\n  1) Operazioni straordinarie per PMI: guide pratiche (integrazione post-acquisizione, valutazione, vendor due diligence).\n  2) Crisi d’impresa e continuità: early warning, negoziazione con banche, piani attestati (con esempi concreti).\n  3) Governance e fiscalità strategica: dal controllo di gestione alla scalabilità (casi “prima/dopo”, tax planning con impatti su cassa).\n- Formati:\n  - 4 “guide definitive” annue (scaricabili, gated) con schemi e checklist operative.\n  - 6–8 case study all’anno, 2 video corti al mese con i Partner su temi verticali.\n  - Webinar trimestrali in partnership con banche/associazioni (lead di qualità).\n- KPI (di business, non vanity): call con Partner prenotate, tasso di conversione da lead magnet a call, richieste preventivo per servizio, quota inbound sul totale nuove commesse.\n\n6) Presenza LinkedIn: usare il canale che il target già frequenta\n- Oggi: frequenza bassa, reach limitata.\n- Azione editoriale:\n  - Calendario settimanale (min. 2 post): 1 contenuto educativo (carousel/mini-guida), 1 contenuto di prova sociale (case, testimonianza, numero).\n  - Voci: coinvolgere Partner come autori, non solo la pagina corporate (aumenta reach organica verso CEO/CFO).\n  - ABM light: liste di 100–150 aziende target per settore e provincia; outreach soft con contenuti di valore e invito a webinar.\n  - Sponsorizzazioni mirate solo su contenuti gated (guide/webinar) per lead qualificati, non su post generici.\n\n7) Sito e narrativa: ordine delle prove prima delle promesse\n- Above the fold: messaggio chiaro + 3 prove rapide (esempi)\n  - “Operazioni straordinarie per PMI del Nord-Est”\n  - “X operazioni seguite negli ultimi 24 mesi” • “Y professionisti” • “Z settori serviti”\n  - CTA: “Prenota 20’ con un Partner”\n- Sezione “Per chi lavoriamo”: 3 archetipi con problemi tipici e outcome attesi.\n- “Come lavoriamo”: metodo in 4 fasi con output per fase (diagnosi, pianificazione, esecuzione, closing/monitoraggio).\n- “Casi reali”: filtri per settore e obiettivo (acquisizione, ristrutturazione, ottimizzazione).\n- “Team”: Partner e Senior, ruoli e specializzazioni. Inserire responsabilità diretta per contatti (“Partner responsabile M&A: Nome Cognome”).\n\n8) Rischi e mitigazioni\n- Rischio di claim non provati: numeri non verificati/attribuzioni improprie.\n  - Mitigazione: intervalli, fonti citate, note di contesto. Meglio pochi numeri solidi che molti deboli.\n- Confidenzialità: vincoli su dati di operazioni e crisi.\n  - Mitigazione: anonimizzazione strutturata (settore, range, tempi), approvazione legale, metriche percentuali.\n- Percezione di “studio come altri”: se narrativa resta generica.\n  - Mitigazione: scegliere un wedge chiaro, mostrare metodo e casi, mettere i Partner in prima linea.\n\n9) Priorità ad alto impatto (orientate a business)\n- Entro 30 giorni\n  - Pubblicare pagina Team/Partner con bio utilizzabili in commerciale.\n  - Introdurre CTA “Prenota 20’ con un Partner” e 2 lead magnet (Deal Readiness Check + Early Warning Crisi).\n  - Produrre 2 case study completi (anche anonimizzati) con 1 numero chiave ciascuno.\n  - Avviare calendario LinkedIn (8 post/mese, 2 autori Partner).\n- Entro 90 giorni\n  - Rilasciare una “Guida PMI alle Operazioni Straordinarie 2025” (gated) e 1 webinar con partner bancario/associazione.\n  - Libreria “Come lavoriamo” per 3 servizi core con timeline e output.\n  - Landing per 3 archetipi con messaggi/CTA dedicate e form multistep.\n- Entro 12 mesi\n  - Programma “CFO Club” (roundtable trimestrali, 20–30 partecipanti, insieme ad associazioni locali).\n  - Serie video “5 minuti con il Partner” (24 episodi/anno).\n  - Pacchetti di ingresso a prezzo fisso per diagnosi (es. “M&A readiness in 10 giorni”), così da accelerare decisione.\n\n10) Dati mancanti da richiedere (per evitare assunzioni)\n- Profilo clienti: settori prevalenti, range fatturato, area geografica servita.\n- Metriche autorizzabili: numero operazioni/anno, tempo medio a chiusura, tasso di successo iniziative di ristrutturazione, valori in range.\n- Lista servizi prioritari per crescita (top 3) e marginalità attesa per linea.\n- Capacità del team (FTE su advisory vs ordinario) e saturazione: per calibrare la domanda che vogliamo generare.\n- Partnership attive (banche, associazioni, studi legali) e referenze utilizzabili.\n- Contenuti esistenti non pubblicati (presentazioni, casi interni) da trasformare in asset marketing.\n- Obiettivi 12 mesi: numero lead qualificati, SQL, nuovi clienti, mix inbound/outbound.\n- Vincoli legali/compliance sulla pubblicazione di casi e testimonianze.\n\nDomande critiche da porre al prospect\n- Quali sono i 2–3 servizi su cui puntate per crescere nei prossimi 12 mesi (e con quale ticket medio)?\n- Quante operazioni straordinarie e quante ristrutturazioni avete seguito negli ultimi 24 mesi? Quali numeri possiamo pubblicare (anche per range)?\n- Quali settori rappresentano oggi l’80% del vostro fatturato e dove volete espandervi?\n- Come si struttura un progetto tipo (fasi, durata media, ruoli del team)? Quali output tangibili riceve il cliente in ogni fase?\n- Qual è lo “sweet spot” del vostro cliente ideale (dimensione, area, momento aziendale)?\n- Avete testimonial disposti a rilasciare citazioni/video? In assenza, quali casi possiamo anonimizzare con numeri?\n- Quali partnership/alleanze possiamo esporre (banche, associazioni, studi legali)?\n- Quali metriche interne usate per valutare il successo (tempo al closing, % accordi, miglioramento PFN, ecc.)?\n- Quanta capacità avete per nuovi progetti nei prossimi 3–6 mesi? Meglio puntare su pochi lead ad alto valore o volume più ampio?\n- Quali aree del messaggio attuale ritenete generiche e dove volete essere più coraggiosi nel posizionamento?\n\nIdee di valore da proporre come agenzia\n- Redesign della narrativa e della home: wedge di posizionamento + prove sopra la piega + CTA “Prenota 20’ con un Partner”.\n- Pacchetto “Trust Fast-Track”: pagina Partner, 4 case study strutturati, 3 testimonianze video, sezione “Come lavoriamo”.\n- Due lead magnet ad alta conversione (Deal Readiness Check + Early Warning Crisi) con landing e form di qualificazione.\n- Calendario LinkedIn di 90 giorni con contenuti a firma Partner, case e mini-guide, più ABM light verso liste target.\n- Guida premium “Operazioni straordinarie PMI 2025” (gated) e webinar con partner bancario/associazione per lead qualificati.\n- Serie “5 minuti con il Partner” (video verticali) per spiegare: due diligence, piani attestati, integrazione post-deal.\n- Landing per i 3 archetipi con messaggi, problemi tipici, risultati attesi e CTA dedicate.\n- Toolkit di vendita: one-pager per servizio, template proposta con opzioni, lista FAQ per ridurre i tempi di decisione.\n- Programma “CFO Club” (roundtable trimestrali) e pacchetto PR locale (stampa economica, eventi territoriali) per autorevolezza.\n- Misurazione business-driven: dashboard di KPI (call partner prenotate, tasso conversione lead magnet→call, richieste preventivo per servizio) per collegare marketing a pipeline.",
+            "refusal": null,
+            "annotations": []
+          },
+          "finish_reason": "stop"
+        }
+      }
+    ]
+  },
   "connections": {
     "Parsing": {
       "main": [
@@ -468,13 +839,40 @@
           }
         ]
       ]
+    },
+    "Agente di analisi1": {
+      "main": [
+        [
+          {
+            "node": "Agente di revisione1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente di revisione1": {
+      "main": [
+        [
+          {
+            "node": "Agente di sintesi1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Upsert Result WP": {
+      "main": [
+        []
+      ]
     }
   },
   "active": true,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "2bec89b2-4e73-42b6-bf36-28d3ff47c5a3",
+  "versionId": "3c0b2ccb-766e-4844-b9ef-c550e2278a4b",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "fe117d56aad4346ee596609bb8c3079d6edd34e383a675201472f524674346cc"

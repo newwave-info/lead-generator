@@ -62,6 +62,32 @@ if (!function_exists('psip_theme_normalize_scalar')) {
     }
 }
 
+/**
+ * Carica gli asset dedicati alla scheda azienda.
+ */
+add_action('wp_enqueue_scripts', function () {
+    if (!is_singular('azienda')) {
+        return;
+    }
+
+    $theme_uri = get_template_directory_uri();
+    $theme_dir = get_template_directory();
+
+    $style_path  = $theme_dir . '/assets/azienda.css';
+    $script_path = $theme_dir . '/assets/azienda.js';
+
+    $style_version  = file_exists($style_path) ? filemtime($style_path) : false;
+    $script_version = file_exists($script_path) ? filemtime($script_path) : false;
+
+    if (file_exists($style_path)) {
+        wp_enqueue_style('lg-azienda', $theme_uri . '/assets/azienda.css', [], $style_version ?: null);
+    }
+
+    if (file_exists($script_path)) {
+        wp_enqueue_script('lg-azienda', $theme_uri . '/assets/azienda.js', [], $script_version ?: null, true);
+    }
+}, 20);
+
 if (!function_exists('psip_update_company_field')) {
     /**
      * Aggiorna un campo (ACF o meta standard) per un post azienda.

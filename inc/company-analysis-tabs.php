@@ -85,17 +85,77 @@ $placeholder_text = 'Lorem ipsum';
                 $count_quick_actions = $has_analysis ? get_field('numero_azioni_rapide', $analysis_id) : null;
                 $count_quick_actions = ($count_quick_actions !== null && $count_quick_actions !== '' && is_numeric($count_quick_actions)) ? (int) $count_quick_actions : null;
 
-                // Parse items as arrays instead of HTML strings
-                $parse_items = function($text) {
-                    if ($text === null || $text === '') {
+                $parse_items = static function ($value) use (&$parse_items) {
+                    if ($value === null || $value === '') {
                         return [];
                     }
-                    $segments = preg_split('/,\s*(?=[A-ZÀ-ÖØ-Ý])/u', $text);
-                    if (!$segments || count($segments) === 1) {
-                        return [$text];
+
+                    // Preserve raw content if JSON-like
+                    if (is_string($value)) {
+                        $trimmed = trim($value);
+                        $first_char = $trimmed !== '' ? $trimmed[0] : '';
+                        $last_char = $trimmed !== '' ? substr($trimmed, -1) : '';
+                        if (($first_char === '[' && $last_char === ']') || ($first_char === '{' && $last_char === '}')) {
+                            $decoded = json_decode($trimmed, true);
+                            if (json_last_error() === JSON_ERROR_NONE) {
+                                $value = $decoded;
+                            } else {
+                                $value = $trimmed;
+                            }
+                        } else {
+                            $value = $trimmed;
+                        }
                     }
-                    $segments = array_map('trim', $segments);
-                    return array_filter($segments, function($s) { return $s !== ''; });
+
+                    if (is_array($value)) {
+                        $items = [];
+                        foreach ($value as $entry) {
+                            if (is_array($entry)) {
+                                $sub_items = $parse_items($entry);
+                                foreach ($sub_items as $sub_item) {
+                                    if ($sub_item !== '') {
+                                        $items[] = $sub_item;
+                                    }
+                                }
+                            } else {
+                                $entry = trim((string) $entry);
+                                if ($entry !== '') {
+                                    $items[] = $entry;
+                                }
+                            }
+                        }
+                        return array_values(array_unique($items));
+                    }
+
+                    $value = trim((string) $value);
+                    if ($value === '') {
+                        return [];
+                    }
+
+                    $segments = preg_split('/\r\n|\r|\n|•/u', $value);
+                    if (count($segments) > 1) {
+                        $segments = array_map(static function ($segment) {
+                            return trim(trim($segment), "- \t");
+                        }, $segments);
+                        $segments = array_filter($segments, static function ($segment) {
+                            return $segment !== '';
+                        });
+                        if (!empty($segments)) {
+                            return array_values(array_unique($segments));
+                        }
+                    }
+
+                    if (strpos($value, ',') !== false) {
+                        $parts = array_map('trim', explode(',', $value));
+                        $parts = array_filter($parts, static function ($part) {
+                            return $part !== '';
+                        });
+                        if (!empty($parts)) {
+                            return array_values(array_unique($parts));
+                        }
+                    }
+
+                    return [$value];
                 };
 
                 $weaknesses_items = $parse_items($weaknesses);

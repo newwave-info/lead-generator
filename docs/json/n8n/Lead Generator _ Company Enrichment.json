@@ -12,7 +12,7 @@
       "typeVersion": 2.1,
       "position": [
         928,
-        528
+        -48
       ],
       "id": "bc879ff4-3081-43fc-a963-207cbfd168b9",
       "name": "Company Enrichment Trigger",
@@ -53,7 +53,7 @@
       "typeVersion": 4.2,
       "position": [
         1152,
-        528
+        -48
       ],
       "id": "39504123-b9b7-427e-8925-8071d35e3e9b",
       "name": "Read Company WP",
@@ -164,6 +164,14 @@
             {
               "name": "acf[priority_score]",
               "value": "={{ $json.acfPayload.priority_score }}"
+            },
+            {
+              "name": "acf[website_screenshot_url]",
+              "value": "={{ $json.screenshot_id }}"
+            },
+            {
+              "name": "acf[website_logo_url]",
+              "value": "={{ $json.logo_id }}"
             }
           ]
         },
@@ -179,8 +187,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2304,
-        528
+        3424,
+        -48
       ],
       "id": "d7834baa-1434-44ed-b736-b8c510ed9e95",
       "name": "Update Company WP",
@@ -215,8 +223,8 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.8,
       "position": [
-        1376,
-        528
+        2272,
+        144
       ],
       "id": "13517c4a-76b4-4e5c-8a17-baf0cf460745",
       "name": "Agente di analisi",
@@ -251,8 +259,8 @@
       "type": "@n8n/n8n-nodes-langchain.openAi",
       "typeVersion": 1.8,
       "position": [
-        1728,
-        528
+        2624,
+        144
       ],
       "id": "d89f8290-b59d-439a-b138-999d8c997ee1",
       "name": "Agente di sintesi",
@@ -270,8 +278,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2080,
-        528
+        2976,
+        144
       ],
       "id": "abe9e530-77d3-4e22-bfb8-3538eaaae6df",
       "name": "Parsing"
@@ -283,8 +291,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2528,
-        528
+        3648,
+        -48
       ],
       "id": "6eeb130c-09a7-4c14-bd3a-16cd978470d5",
       "name": "Compose Upsert Result"
@@ -292,7 +300,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://lead.perspect.it/wp-json/wp/v2/azienda/{{ $('Read Company WP').item.json.id }}",
+        "url": "=https://lead.perspect.it/wp-json/wp/v2/azienda/{{ $json.upsert_raw.id }}",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpBasicAuth",
         "sendHeaders": true,
@@ -326,8 +334,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2752,
-        432
+        3872,
+        -144
       ],
       "id": "bd323581-e643-41fa-9a7a-5d1fa1b013c3",
       "name": "Log Enrichment Result WP",
@@ -357,11 +365,290 @@
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.4,
       "position": [
-        2752,
-        624
+        3872,
+        48
       ],
       "id": "af62651d-fb6a-4cfd-bb74-3a8de92ae24e",
       "name": "Return Status"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize Company URL — n8n Code v2 (no `new URL`)\n\nfunction pickSource(acf) {\n  if (acf?.domain && String(acf.domain).trim()) return 'domain';\n  if (acf?.website && String(acf.website).trim()) return 'website';\n  if (acf?.email && String(acf.email).includes('@')) return 'email';\n  return 'none';\n}\n\n// Estrae un hostname pulito da dominio/website/email senza usare `new URL`\nfunction toHostname(raw) {\n  if (!raw) return '';\n  let s = String(raw).trim();\n\n  // ripulisci prefissi e spazi\n  s = s.replace(/^mailto:/i, '').replace(/\\s+/g, '');\n\n  // se è un'email, prendi tutto dopo '@'\n  const at = s.indexOf('@');\n  if (at !== -1) s = s.slice(at + 1);\n\n  // togli schema (http/https/ftp/…) se presente\n  s = s.replace(/^[a-z]+:\\/\\//i, '');\n  // togli eventuali slash iniziali\n  s = s.replace(/^\\/+/, '');\n  // tieni solo fino a / ? #\n  s = s.split(/[\\/?#]/)[0];\n  // normalizza\n  s = s.toLowerCase().replace(/\\.$/, '');\n\n  return s;\n}\n\nfunction isValidHostname(h) {\n  if (!h) return false;\n  if (h === 'localhost') return false;\n  if (!h.includes('.')) return false;\n  // consenti a-z 0-9 . - (niente underscore/spazi)\n  return /^[a-z0-9.-]+$/.test(h);\n}\n\nconst out = [];\nfor (const item of items) {\n  const j = item.json ?? {};\n  const acf = j.acf ?? {};\n  const src = pickSource(acf);\n\n  let raw =\n    src === 'domain'  ? acf.domain  :\n    src === 'website' ? acf.website :\n    src === 'email'   ? acf.email   :\n    '';\n\n  const host = toHostname(raw);\n\n  // valori di debug utili\n  item.json.url_debug_source = src;\n  item.json.url_debug_input  = raw || null;\n  item.json.url_debug_host   = host || null;\n\n  if (!isValidHostname(host)) {\n    item.json.targetUrl    = null;\n    item.json.skipMicrolink = true;\n    item.json.url_source    = src || 'none';\n    out.push(item);\n    continue;\n  }\n\n  item.json.targetUrl     = `https://${host}`;\n  item.json.skipMicrolink = false;\n  item.json.url_source    = src;\n  out.push(item);\n}\n\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1376,
+        -144
+      ],
+      "id": "bbb3960e-8c0a-4248-a0c9-9e94ed883d7e",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ea8c1186-cdf8-47cf-a48f-56cb03f95c50",
+              "leftValue": "={{ $json.skipMicrolink }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1600,
+        -144
+      ],
+      "id": "02d6bda8-4e74-4e4b-8c8c-f53fc41698aa",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.microlink.io",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "={{ $json.targetUrl }}"
+            },
+            {
+              "name": "screenshot",
+              "value": "true"
+            },
+            {
+              "name": "type",
+              "value": "jpeg"
+            },
+            {
+              "name": "fullPage",
+              "value": "true"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "n8n/lead-generator"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1824,
+        -144
+      ],
+      "id": "9f0ae2dd-7696-4e81-83d2-01c2133aaf0d",
+      "name": "Microlink"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.data.screenshot.url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2048,
+        -240
+      ],
+      "id": "88064c48-5235-4e51-ab9e-31b13752dd38",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://lead.perspect.it/wp-json/wp/v2/media",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Disposition",
+              "value": "={{ 'attachment; filename=' + ($binary.data.fileName || 'screenshot.png') }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2336,
+        -240
+      ],
+      "id": "f1d81f9a-e524-4fb5-ab9d-e50fce621252",
+      "name": "HTTP Request1",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "3aI2CNmgXh2YqkjZ",
+          "name": "Lead 18kPRo WP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.data.logo.url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2048,
+        -48
+      ],
+      "id": "80ec0cb3-f86c-4ee6-a126-788f7ffaa9a8",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://lead.perspect.it/wp-json/wp/v2/media",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Disposition",
+              "value": "={{ 'attachment; filename=' + ($binary.data.fileName || 'logo.png') }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2336,
+        -48
+      ],
+      "id": "4441884e-a23c-42fb-88fc-6fed8f293609",
+      "name": "HTTP Request3",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "3aI2CNmgXh2YqkjZ",
+          "name": "Lead 18kPRo WP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bd1e38f7-89c0-4ad6-8798-4d376242b7a5",
+              "name": "screenshot_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2688,
+        -240
+      ],
+      "id": "e7e28aa1-1759-4d29-9344-923c2a8d0d57",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fbb61198-cd4d-49ab-96d9-602b75cbc723",
+              "name": "logo_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2688,
+        -48
+      ],
+      "id": "ad397261-9ed0-4cbe-a9c1-8618ea908fd9",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2976,
+        -144
+      ],
+      "id": "89a063ed-8c51-4726-aceb-655fab5f38ff",
+      "name": "Merge"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3200,
+        -48
+      ],
+      "id": "fc1e1d3c-3832-4e50-a329-7111a62c2a48",
+      "name": "Merge1"
     }
   ],
   "pinData": {},
@@ -382,6 +669,11 @@
         [
           {
             "node": "Agente di analisi",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code",
             "type": "main",
             "index": 0
           }
@@ -425,9 +717,9 @@
       "main": [
         [
           {
-            "node": "Update Company WP",
+            "node": "Merge1",
             "type": "main",
-            "index": 0
+            "index": 1
           }
         ]
       ]
@@ -452,13 +744,140 @@
       "main": [
         []
       ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Microlink",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Microlink": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Update Company WP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "27a3093a-437b-40b5-8f46-c082fef56aab",
+  "versionId": "5e2f274d-670b-47ff-8ba4-40e1e764aa7f",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "fe117d56aad4346ee596609bb8c3079d6edd34e383a675201472f524674346cc"
