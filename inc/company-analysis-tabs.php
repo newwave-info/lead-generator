@@ -85,10 +85,23 @@ $placeholder_text = 'Lorem ipsum';
                 $count_quick_actions = $has_analysis ? get_field('numero_azioni_rapide', $analysis_id) : null;
                 $count_quick_actions = ($count_quick_actions !== null && $count_quick_actions !== '' && is_numeric($count_quick_actions)) ? (int) $count_quick_actions : null;
 
-                $weaknesses_html = psip_theme_format_list_text($weaknesses);
-                $strengths_html = psip_theme_format_list_text($strengths);
-                $opportunities_html = psip_theme_format_list_text($opportunities);
-                $quick_actions_html = psip_theme_format_list_text($quick_actions);
+                // Parse items as arrays instead of HTML strings
+                $parse_items = function($text) {
+                    if ($text === null || $text === '') {
+                        return [];
+                    }
+                    $segments = preg_split('/,\s*(?=[A-ZÀ-ÖØ-Ý])/u', $text);
+                    if (!$segments || count($segments) === 1) {
+                        return [$text];
+                    }
+                    $segments = array_map('trim', $segments);
+                    return array_filter($segments, function($s) { return $s !== ''; });
+                };
+
+                $weaknesses_items = $parse_items($weaknesses);
+                $strengths_items = $parse_items($strengths);
+                $opportunities_items = $parse_items($opportunities);
+                $quick_actions_items = $parse_items($quick_actions);
                 $deep_research_html = psip_theme_format_markdown_bold($deep_research_raw);
                 $analysis_review_html = psip_theme_format_markdown_bold($analysis_review_raw); ?>
 
@@ -116,39 +129,6 @@ $placeholder_text = 'Lorem ipsum';
                 $quality_score_display = ($quality_score !== null && $quality_score !== '')
                     ? $quality_score
                     : '—';
-
-                $kpi_cards = [
-                    [
-                        'label' => __('Quality score', 'psip'),
-                        'value' => $quality_score_display,
-                        'hint' => $analysis_last_run_display !== '' ? $analysis_last_run_display : null,
-                        'modifier' => 'is-accent',
-                    ],
-                    [
-                        'label' => __('Punti di forza', 'psip'),
-                        'value' => ($count_strengths !== null && $count_strengths !== '') ? $count_strengths : '—',
-                        'hint' => null,
-                        'modifier' => '',
-                    ],
-                    [
-                        'label' => __('Punti di debolezza', 'psip'),
-                        'value' => ($count_weaknesses !== null && $count_weaknesses !== '') ? $count_weaknesses : '—',
-                        'hint' => null,
-                        'modifier' => '',
-                    ],
-                    [
-                        'label' => __('Opportunità', 'psip'),
-                        'value' => ($count_opportunities !== null && $count_opportunities !== '') ? $count_opportunities : '—',
-                        'hint' => null,
-                        'modifier' => '',
-                    ],
-                    [
-                        'label' => __('Azioni rapide', 'psip'),
-                        'value' => ($count_quick_actions !== null && $count_quick_actions !== '') ? $count_quick_actions : '—',
-                        'hint' => null,
-                        'modifier' => '',
-                    ],
-                ];
                 ?>
 
                 <div class="analysis-suite__panel">
@@ -164,110 +144,191 @@ $placeholder_text = 'Lorem ipsum';
                         </div>
                     </header>
 
-                    <div class="analysis-suite__kpi-section">
-                        <div class="analysis-suite__kpi-grid">
-                            <?php foreach ($kpi_cards as $card): ?>
-                                <div class="analysis-suite__kpi-card <?php echo esc_attr($card['modifier']); ?>">
-                                    <span class="analysis-suite__kpi-label"><?php echo esc_html($card['label']); ?></span>
-                                    <span class="analysis-suite__kpi-value"><?php echo esc_html((string) $card['value']); ?></span>
-                                    <?php if (!empty($card['hint'])): ?>
-                                        <span class="analysis-suite__kpi-hint"><?php echo esc_html($card['hint']); ?></span>
+                    <div class="analysis-suite__hero-section">
+                        <div class="analysis-suite__hero-summary">
+                            <h4 class="analysis-suite__hero-title">Riassunto</h4>
+                            <div class="analysis-suite__hero-content">
+                                <?php echo $summary
+                                    ? wp_kses_post(wpautop($summary))
+                                    : wp_kses_post(wpautop($placeholder_text)); ?>
+                            </div>
+                        </div>
+                        <div class="analysis-suite__hero-score">
+                            <span class="analysis-suite__hero-score-label">Quality Score</span>
+                            <span class="analysis-suite__hero-score-value"><?php echo esc_html((string) $quality_score_display); ?></span>
+                            <span class="analysis-suite__hero-score-max">/10</span>
+                            <?php if ($analysis_last_run_display): ?>
+                                <span class="analysis-suite__hero-score-hint"><?php echo esc_html($analysis_last_run_display); ?></span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <?php if (!empty($highlight_widgets)): ?>
+                        <div class="analysis-suite__highlight-widgets">
+                            <?php foreach ($highlight_widgets as $widget): ?>
+                                <div class="analysis-suite__highlight-widget">
+                                    <span class="analysis-suite__highlight-widget-value"><?php echo esc_html($widget['value']); ?></span>
+                                    <?php if (!empty($widget['label'])): ?>
+                                        <span class="analysis-suite__highlight-widget-label"><?php echo esc_html($widget['label']); ?></span>
+                                    <?php endif; ?>
+                                    <?php if (!empty($widget['source'])): ?>
+                                        <span class="analysis-suite__highlight-widget-source"><?php echo esc_html($widget['source']); ?></span>
                                     <?php endif; ?>
                                 </div>
                             <?php endforeach; ?>
                         </div>
+                    <?php endif; ?>
 
-                        <?php if (!empty($highlight_widgets)): ?>
-                            <div class="analysis-suite__kpi-widgets">
-                                <?php foreach ($highlight_widgets as $widget): ?>
-                                    <div class="analysis-suite__kpi-widget">
-                                        <span class="analysis-suite__kpi-widget-value"><?php echo esc_html($widget['value']); ?></span>
-                                        <?php if (!empty($widget['label'])): ?>
-                                            <span class="analysis-suite__kpi-widget-label"><?php echo esc_html($widget['label']); ?></span>
-                                        <?php endif; ?>
-                                        <?php if (!empty($widget['source'])): ?>
-                                            <span class="analysis-suite__kpi-widget-source"><?php echo esc_html($widget['source']); ?></span>
-                                        <?php endif; ?>
-                                    </div>
-                                <?php endforeach; ?>
+                    <div class="analysis-suite__metrics-row">
+                        <div class="analysis-suite__metric-widget analysis-suite__metric-widget--strength">
+                            <div class="analysis-suite__metric-icon">
+                                <span class="dashicons dashicons-awards"></span>
                             </div>
-                        <?php endif; ?>
+                            <div class="analysis-suite__metric-content">
+                                <span class="analysis-suite__metric-value"><?php echo ($count_strengths !== null && $count_strengths !== '') ? esc_html($count_strengths) : '0'; ?></span>
+                                <span class="analysis-suite__metric-label">Punti di forza</span>
+                            </div>
+                        </div>
+
+                        <div class="analysis-suite__metric-widget analysis-suite__metric-widget--weakness">
+                            <div class="analysis-suite__metric-icon">
+                                <span class="dashicons dashicons-warning"></span>
+                            </div>
+                            <div class="analysis-suite__metric-content">
+                                <span class="analysis-suite__metric-value"><?php echo ($count_weaknesses !== null && $count_weaknesses !== '') ? esc_html($count_weaknesses) : '0'; ?></span>
+                                <span class="analysis-suite__metric-label">Punti di debolezza</span>
+                            </div>
+                        </div>
+
+                        <div class="analysis-suite__metric-widget analysis-suite__metric-widget--opportunity">
+                            <div class="analysis-suite__metric-icon">
+                                <span class="dashicons dashicons-thumbs-up"></span>
+                            </div>
+                            <div class="analysis-suite__metric-content">
+                                <span class="analysis-suite__metric-value"><?php echo ($count_opportunities !== null && $count_opportunities !== '') ? esc_html($count_opportunities) : '0'; ?></span>
+                                <span class="analysis-suite__metric-label">Opportunità</span>
+                            </div>
+                        </div>
+
+                        <div class="analysis-suite__metric-widget analysis-suite__metric-widget--action">
+                            <div class="analysis-suite__metric-icon">
+                                <span class="dashicons dashicons-star-filled"></span>
+                            </div>
+                            <div class="analysis-suite__metric-content">
+                                <span class="analysis-suite__metric-value"><?php echo ($count_quick_actions !== null && $count_quick_actions !== '') ? esc_html($count_quick_actions) : '0'; ?></span>
+                                <span class="analysis-suite__metric-label">Azioni rapide</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analysis-suite__lists-grid">
+                        <div class="analysis-suite__list-container analysis-suite__list-container--strength">
+                            <div class="analysis-suite__list-header">
+                                <span class="dashicons dashicons-awards"></span>
+                                <h4>Punti di forza</h4>
+                                <span class="analysis-suite__list-count"><?php echo ($count_strengths !== null && $count_strengths !== '') ? esc_html($count_strengths) : '0'; ?></span>
+                            </div>
+                            <div class="analysis-suite__list-content">
+                                <?php if (!empty($strengths_items)): ?>
+                                    <?php foreach ($strengths_items as $index => $item): ?>
+                                        <div class="analysis-suite__list-item">
+                                            <span class="analysis-suite__list-number"><?php echo esc_html($index + 1); ?></span>
+                                            <span class="analysis-suite__list-text"><?php echo esc_html($item); ?></span>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <p class="analysis-suite__list-empty">Nessun dato disponibile</p>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <div class="analysis-suite__list-container analysis-suite__list-container--weakness">
+                            <div class="analysis-suite__list-header">
+                                <span class="dashicons dashicons-warning"></span>
+                                <h4>Punti di debolezza</h4>
+                                <span class="analysis-suite__list-count"><?php echo ($count_weaknesses !== null && $count_weaknesses !== '') ? esc_html($count_weaknesses) : '0'; ?></span>
+                            </div>
+                            <div class="analysis-suite__list-content">
+                                <?php if (!empty($weaknesses_items)): ?>
+                                    <?php foreach ($weaknesses_items as $index => $item): ?>
+                                        <div class="analysis-suite__list-item">
+                                            <span class="analysis-suite__list-number"><?php echo esc_html($index + 1); ?></span>
+                                            <span class="analysis-suite__list-text"><?php echo esc_html($item); ?></span>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <p class="analysis-suite__list-empty">Nessun dato disponibile</p>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <div class="analysis-suite__list-container analysis-suite__list-container--opportunity">
+                            <div class="analysis-suite__list-header">
+                                <span class="dashicons dashicons-thumbs-up"></span>
+                                <h4>Opportunità</h4>
+                                <span class="analysis-suite__list-count"><?php echo ($count_opportunities !== null && $count_opportunities !== '') ? esc_html($count_opportunities) : '0'; ?></span>
+                            </div>
+                            <div class="analysis-suite__list-content">
+                                <?php if (!empty($opportunities_items)): ?>
+                                    <?php foreach ($opportunities_items as $index => $item): ?>
+                                        <div class="analysis-suite__list-item">
+                                            <span class="analysis-suite__list-number"><?php echo esc_html($index + 1); ?></span>
+                                            <span class="analysis-suite__list-text"><?php echo esc_html($item); ?></span>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <p class="analysis-suite__list-empty">Nessun dato disponibile</p>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
+                        <div class="analysis-suite__list-container analysis-suite__list-container--action">
+                            <div class="analysis-suite__list-header">
+                                <span class="dashicons dashicons-star-filled"></span>
+                                <h4>Azioni rapide</h4>
+                                <span class="analysis-suite__list-count"><?php echo ($count_quick_actions !== null && $count_quick_actions !== '') ? esc_html($count_quick_actions) : '0'; ?></span>
+                            </div>
+                            <div class="analysis-suite__list-content">
+                                <?php if (!empty($quick_actions_items)): ?>
+                                    <?php foreach ($quick_actions_items as $index => $item): ?>
+                                        <div class="analysis-suite__list-item">
+                                            <span class="analysis-suite__list-number"><?php echo esc_html($index + 1); ?></span>
+                                            <span class="analysis-suite__list-text"><?php echo esc_html($item); ?></span>
+                                        </div>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <p class="analysis-suite__list-empty">Nessun dato disponibile</p>
+                                <?php endif; ?>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="analysis-suite__panel-body">
                         <div class="analysis-suite__column analysis-suite__column--narrative">
                             <div class="analysis-suite__card">
-                                <h4 class="analysis-suite__card-title">Riassunto</h4>
-                                <div class="analysis-suite__card-content">
-                                    <?php echo $summary
-                                        ? wp_kses_post(wpautop($summary))
-                                        : wp_kses_post(wpautop($placeholder_text)); ?>
-                                </div>
-                            </div>
-                            <div class="analysis-suite__card">
-                                <h4 class="analysis-suite__card-title">Analisi approfondita</h4>
-                                <div class="analysis-suite__card-content">
-                                    <?php echo $deep_research_html !== ''
-                                        ? $deep_research_html
-                                        : wp_kses_post(wpautop($placeholder_text)); ?>
-                                </div>
-                            </div>
-                            <div class="analysis-suite__card">
                                 <h4 class="analysis-suite__card-title">Revisione dell'analisi</h4>
-                                <div class="analysis-suite__card-content">
+                                <div class="analysis-suite__card-content analysis-suite__card-content--scrollable">
                                     <?php echo $analysis_review_html !== ''
                                         ? $analysis_review_html
                                         : wp_kses_post(wpautop($placeholder_text)); ?>
                                 </div>
                             </div>
                         </div>
-                        <div class="analysis-suite__column analysis-suite__column--stack">
-                            <div class="analysis-suite__card analysis-suite__card--list">
-                                <div class="analysis-suite__card-header">
-                                    <h4 class="analysis-suite__card-title">Punti di forza</h4>
-                                    <span class="analysis-suite__card-badge"><?php echo ($count_strengths !== null && $count_strengths !== '') ? esc_html($count_strengths) : '—'; ?></span>
-                                </div>
-                                <div class="analysis-suite__card-content">
-                                    <?php echo $strengths_html !== ''
-                                        ? wp_kses_post(wpautop($strengths_html))
-                                        : wp_kses_post(wpautop($placeholder_text)); ?>
-                                </div>
-                            </div>
-                            <div class="analysis-suite__card analysis-suite__card--list">
-                                <div class="analysis-suite__card-header">
-                                    <h4 class="analysis-suite__card-title">Punti di debolezza</h4>
-                                    <span class="analysis-suite__card-badge"><?php echo ($count_weaknesses !== null && $count_weaknesses !== '') ? esc_html($count_weaknesses) : '—'; ?></span>
-                                </div>
-                                <div class="analysis-suite__card-content">
-                                    <?php echo $weaknesses_html !== ''
-                                        ? wp_kses_post(wpautop($weaknesses_html))
-                                        : wp_kses_post(wpautop($placeholder_text)); ?>
-                                </div>
-                            </div>
-                            <div class="analysis-suite__card analysis-suite__card--list">
-                                <div class="analysis-suite__card-header">
-                                    <h4 class="analysis-suite__card-title">Opportunità</h4>
-                                    <span class="analysis-suite__card-badge"><?php echo ($count_opportunities !== null && $count_opportunities !== '') ? esc_html($count_opportunities) : '—'; ?></span>
-                                </div>
-                                <div class="analysis-suite__card-content">
-                                    <?php echo $opportunities_html !== ''
-                                        ? wp_kses_post(wpautop($opportunities_html))
-                                        : wp_kses_post(wpautop($placeholder_text)); ?>
-                                </div>
-                            </div>
-                            <div class="analysis-suite__card analysis-suite__card--list">
-                                <div class="analysis-suite__card-header">
-                                    <h4 class="analysis-suite__card-title">Azioni rapide</h4>
-                                    <span class="analysis-suite__card-badge"><?php echo ($count_quick_actions !== null && $count_quick_actions !== '') ? esc_html($count_quick_actions) : '—'; ?></span>
-                                </div>
-                                <div class="analysis-suite__card-content">
-                                    <?php echo $quick_actions_html !== ''
-                                        ? wp_kses_post(wpautop($quick_actions_html))
-                                        : wp_kses_post(wpautop($placeholder_text)); ?>
-                                </div>
-                            </div>
-                        </div>
                     </div>
+
+                    <?php if ($deep_research_html !== ''): ?>
+                        <details class="analysis-suite__deep-research-accordion">
+                            <summary class="analysis-suite__deep-research-summary">
+                                <span class="dashicons dashicons-search"></span>
+                                <span class="analysis-suite__deep-research-title">Analisi approfondita</span>
+                                <span class="analysis-suite__deep-research-hint">Clicca per espandere il contenuto completo</span>
+                            </summary>
+                            <div class="analysis-suite__deep-research-content">
+                                <?php echo $deep_research_html; ?>
+                            </div>
+                        </details>
+                    <?php endif; ?>
+
                     <?php if ($structured_has_body): ?>
                         <div class="analysis-suite__structured">
                             <div class="analysis-suite__structured-header">
