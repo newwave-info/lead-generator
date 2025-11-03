@@ -22,6 +22,10 @@ L’obiettivo è prioritizzare i prospect, qualificare le aziende con metodo e r
 Per garantire coerenza e allineamento, tutta la documentazione e gli asset di configurazione vivono nella cartella `docs/` e devono essere considerati **la bibbia del progetto**.
 
 - `docs/*.md` — documentazione funzionale e tecnica (vision, data model, workflow operativi).
+  - `00_progetto.md` — visione high-level e struttura piattaforma.
+  - `01_company_enrichment.md` — schema dati enrichment e pipeline WP.
+  - `02_web_analysis.md` — workflow analisi web generalista.
+  - `03_eaa_accessibility.md` — specifiche pipeline EAA Accessibility & compliance.
 - `docs/json/` — asset JSON di riferimento:
   - configurazione ACF di WordPress (field group, mapping campi);
   - workflow n8n ufficiali usati per enrichment, parsing, upsert e logging.
@@ -79,6 +83,7 @@ Ogni analisi approfondisce un ambito rilevante per value proposition Perspect/Ne
 - ESG & comunicazione sostenibilità
 - Strategia digitale complessiva
 - Competitor & positioning
+- **EAA Accessibility & Compliance** (European Accessibility Act, WCAG 2.1 AA audit + remediation roadmap)
 
 **Output:** insight strutturati + raccomandazioni operative.
 

@@ -553,6 +553,42 @@ if (!defined('ABSPATH')) {
 // URL base della tua istanza N8N (MODIFICA QUI)
 define('PSIP_N8N_BASE_URL', 'https://automation.perspect.it');
 
+if (!function_exists('psip_build_n8n_webhook_url')) {
+    /**
+     * Normalizza un percorso webhook n8n in una URL completa.
+     *
+     * Accetta sia percorsi relativi (/webhook/foo) sia URL assolute.
+     *
+     * @param string $webhook_path Percorso o URL del webhook.
+     * @return string URL normalizzata (stringa vuota se input non valido).
+     */
+    function psip_build_n8n_webhook_url($webhook_path) {
+        $webhook_path = trim((string) $webhook_path);
+        if ($webhook_path === '') {
+            return '';
+        }
+
+        if (filter_var($webhook_path, FILTER_VALIDATE_URL)) {
+            return $webhook_path;
+        }
+
+        $base = rtrim(PSIP_N8N_BASE_URL, '/');
+        $base_host = parse_url($base, PHP_URL_HOST);
+        $normalized = $webhook_path;
+
+        if ($base_host) {
+            $without_scheme = preg_replace('#^https?://#i', '', $normalized);
+            if (strpos($without_scheme, $base_host) === 0) {
+                $normalized = substr($without_scheme, strlen($base_host));
+            }
+        }
+
+        $normalized_path = '/' . ltrim($normalized, '/');
+
+        return $base . $normalized_path;
+    }
+}
+
 if (!function_exists('psip_get_default_agent_map')) {
     /**
      * Configurazione di fallback per agenti registrati via codice.
@@ -1249,7 +1285,13 @@ function psip_ajax_launch_agent() {
 
     // Get agent config
     $agent = $agents[$agent_id];
-    $webhook_url = PSIP_N8N_BASE_URL . $agent['webhook'];
+    $webhook_url = psip_build_n8n_webhook_url($agent['webhook'] ?? '');
+
+    if ($webhook_url === '') {
+        wp_send_json_error([
+            'message' => '❌ Webhook dell\'agente non configurato correttamente.'
+        ]);
+    }
 
     // Call N8N webhook
     $response = wp_remote_post($webhook_url, [

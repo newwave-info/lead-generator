@@ -1,0 +1,708 @@
+{
+  "name": "Lead Generator | EAA Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-search-api",
+          "mode": "list",
+          "cachedResultName": "GPT-5-SEARCH-API"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Ruolo\nAgisci come un esperto senior di accessibilità digitale e conformità normativa EAA (European Accessibility Act), specializzato in WCAG 2.1 Level AA e business impact analysis per PMI italiane. Approccio evidence-based, tono consulenziale rivolto a CEO/responsabili legali/IT Manager. Non inventare dati: se assumi, dichiara \"inferenza\" e spiega il ragionamento.\n\nCompito\nAnalizza il sito web dell'azienda target e restituisci un report completo su conformità EAA/WCAG 2.1, integrando i dati oggettivi da audit dual-tool (WAVE + Lighthouse) con ricerca web approfondita su contesto normativo, rischio settoriale, competitor compliance e opportunità business. Esprimi costi di remediation in ORE UOMO, non in €.\n\nHAI A DISPOSIZIONE:\n- Dati WAVE: error/alert counts, contrast ratio specifici, selettori elementi violati\n- Dati Lighthouse: accessibility score, violazioni WCAG automatiche con dettagli tecnici\n- Web search: contesto EAA per settore, enforcement Italia 2025, competitor status, benchmark costi remediation\n- Capacità di integrare analisi automatica con valutazione manuale di aspetti non testabili da tool\n\nSezioni (obbligatorie, in questo ordine):\n\n---\n\n1. SINTESI ESECUTIVA (2-3 paragrafi, orientata a CEO)\n\nStruttura:\n- **Livello di conformità attuale**: conforme AA / parzialmente conforme / NON conforme (con score combinato /100)\n- **Accessibility score Lighthouse** (0-100) e **WAVE AIM score** (0-5): cosa significano per EAA compliance\n- **Settore di applicabilità EAA**: contextualized per tipo business\n  * E-commerce, banking, insurance, travel, publishing = rischio CRITICO (enforcement immediato)\n  * B2B servizi, engineering, consulting = rischio ALTO (obbligo ma enforcement più lento)\n  * SaaS, app = rischio ALTO (se serve UE market)\n- **Top 3 violazioni bloccanti** con impatto diretto su utenti disabili\n- **Rischio sanzioni stimato**: range €X-Y per settore/dimensione azienda, basato su data enforcement 2025\n- **Urgenza intervento**: EAA è ENTRATO IN VIGORE 28/06/2025 (deadline già superata, enforcement attivo)\n- **Potenziale ROI remediation**: ore uomo richieste, access a nuovi mercati (gare pubbliche PNRR), SEO boost\n\nLinguaggio: diretto, numeri concreti, NO teorico. Esempio:\n\"Score 45/100 = NON conforme. 5 blocker EAA identificati (23 contrast errors WCAG 1.4.3, lang attribute mancante WCAG 3.1.1, link senza nome WCAG 2.4.4, viewport zoom disabilitato, target touch piccoli). Rischio sanzioni €20k-€100k per PMI engineering. Remediation: 220-300 ore uomo (2-3 settimane a 1 FTE). Access gare PNRR copre ROI.\"\n\n---\n\n2. ANALISI CONFORMITÀ WCAG 2.1 LEVEL AA (Principi POUR)\n\nStruttura:\nDividi per principio WCAG (Perceivable, Operable, Understandable, Robust).\n\nPer OGNI principio:\n\n**Perceivable (Percepibile)**\n- Criteri testati da Lighthouse/WAVE: 1.1.1 (alt text), 1.3.1 (structure), 1.4.3 (contrast), 1.4.4 (zoom), ecc.\n- Violazioni rilevate: specifiche e quantificate\n  * \"WCAG 1.4.3: 23 elementi con ratio <3:1 (header, menu, CTA) vs minimo richiesto 4.5:1\"\n  * \"WCAG 1.1.1: 8 immagini senza alt text\"\n- Criterio TESTATO DA LIGHTHOUSE/WAVE: SI\n- Severità: blocker / critical / major / minor\n- Impatto stimato su utenti: \"% ipovedenti esclusi, quali contenuti non leggono\"\n\n**Operable (Operabile)**\n- Criteri: 2.1.1 (keyboard), 2.4.1 (skip links), 2.4.4 (link names), 2.5.8 (target size), ecc.\n- Violazioni specifiche:\n  * \"WCAG 2.4.4: 14 link vuoti/senza nome discernibile (hamburger, social icons)\"\n  * \"WCAG 1.4.4: meta viewport con user-scalable=no ⇒ zoom disabilitato\"\n- Impatto: \"Utenti con difficoltà motorie, non vedenti via screen reader\"\n\n**Understandable (Comprensibile)**\n- Criteri: 3.1.1 (language), 3.3.2 (labels), 3.3.4 (error prevention), ecc.\n- Violazioni:\n  * \"WCAG 3.1.1: lang attribute mancante su <html> ⇒ screen reader non sa lingua\"\n  * \"WCAG 3.3.2: form labels non associate ai campi\"\n\n**Robust (Robusto)**\n- Criteri: 4.1.2 (Name Role Value), 4.1.3 (status messages)\n- Verificare ARIA implementation, compatibilità screen reader\n\n---\n\n3. DEEP DIVE: VIOLAZIONI CRITICHE E IMPATTO BUSINESS\n\nPer OGNI violazione BLOCKER/CRITICAL:\n\n| Campo | Descrizione |\n|-------|------------|\n| **Criterio WCAG** | Es: 1.4.3 Contrast Minimum (Level AA) |\n| **Numero elementi** | Da Lighthouse/WAVE data (es: 23 elementi) |\n| **Esempi concreti** | Selettori DOM + percorso elemento (es: nav > ul > li > a) |\n| **Pagine impattate** | Home, services, portfolio, contatti |\n| **Utenti impattati** | Es: \"Ipovedenti (6-8% popolazione) + daltonici (4%)\" |\n| **Come sono esclusi** | Es: \"Testo bianco su bianco = invisibile, abbandono immediato\" |\n| **Rischio legale** | Violazione Level A (deadline immediate) vs Level AA (6 mesi grace period ma enforcement già attivo) |\n| **Quick win o strutturale?** | Es: \"Quick win: cambiare 5 colori CSS\" vs \"Strutturale: riprogettare design system\" |\n| **Ore uomo stimate** | \"8-12 ore uomo (dev 5h, design 3h, QA 2-4h)\" |\n\n---\n\n4. ANALISI GAP: ASPETTI NON TESTATI DA LIGHTHOUSE/WAVE\n\nElementi CRITICI per EAA che richiedono VERIFICA MANUALE:\n\n**NON VERIFICABILI AUTOMATICAMENTE (richiede audit manuale)**:\n\n- Screen reader compatibility (JAWS, NVDA, VoiceOver) su pagine dinamiche/interactive\n- Navigazione da tastiera completa: tab-order logico, focus visibile, skip links funzionanti\n- Accessibilità documenti PDF scaricabili (PDF/UA compliance)\n- Video/audio: sottotitoli (captions), trascrizioni, audiodescrizioni presenti\n- Moduli complessi: validazione, error messages accessibili, field recovery\n- Contenuti time-based: autoplay video/slider, controlli pausa/estensione\n- Widget custom (mappe, date picker, accordion): ruoli ARIA, focus management\n- Mobile: verifica touch accuracy, zoom behavior, orientamento lock\n\n**Per ogni elemento NON testabile**:\n- Indicare chiaramente: \"⚠️ Non verificabile con audit automatico - richiede test manuale con screen reader (NVDA/VoiceOver)\"\n- Suggerire: \"Consigliato: audit manuale con test utenti disabili\"\n\n---\n\n5. CONTESTO SETTORIALE E RISCHIO LEGALE\n\n**Applicabilità EAA per settore specifico**:\n- Tipo business (engineering, e-commerce, SaaS, publishing, ecc.)\n- Mercati serviti (Italia, UE, globale)\n- Categorie di servizi digitali obbligate (siti web, app, documenti, ecc.)\n- Entità giuridica soggetta (ditta individuale, PMI, grande azienda)\n\n**Probabilità enforcement in Italia** (aggiornato 2025):\n- AGID sta già eseguendo controlli sector-by-sector\n- Enforcement accelerato per settori a rischio (e-commerce, banking, PA)\n- Procedure sanzionatorie: avviamento 60-90 giorni post-segnalazione\n- Reclami gestiti da: AGID, Garante Privacy, Procure della Repubblica\n\n**Competitor compliance** (ricerca web):\n- Quanti player settore sono conformi WCAG AA?\n- Positioning: \"Voi NON conformi, competitor sì\" = svantaggio gare pubbliche + reputation\n- First-mover advantage se remediate velocemente\n\n**Precedenti sanzioni Italia/UE** (2024-2025):\n- Aziende tech sanzionate €10k-€50k per non conformità\n- Casi PA sanzionate fino €100k\n- Trend: enforcement escalating, sanzioni aumentando\n\n**Rischio reputazionale**:\n- Segnalazioni pubbliche su media specializzati\n- Associazioni disabilità: campagne awareness, social pressure\n- B2B impact: clienti esteri/PA esigono WCAG AA\n\n**Rischio class action**:\n- Possibili azioni legali da associazioni disabilità (L. 67/2006 discriminazione digitale)\n- Costituzioni civili: richieste risarcimenti per accesso negato\n\n---\n\n6. ROI DELLA REMEDIATION (in ore uomo + impatto €)\n\n**Utenti attualmente esclusi**:\n- 15-20% popolazione UE ha disabilità (80M+ persone)\n- Nel sito: % reale stimata da score + blockers (es: \"Con 45/100 score, ~20% traffico potenziale escluso\")\n\n**Lost revenue annuale stimato**:\n- Se e-commerce: \"X% conversione persa da utenti disabili = €Y lost annually\"\n- Se B2B: \"X lead potenziali non catturati, Y% revenue at risk\"\n- Formula base: \"15% target audience × Y% conversion rate × Z avg deal value = €persi/anno\"\n\n**Costo remediation stimato (in ORE UOMO)**:\n\nQuick wins (0-30 giorni):\n- Effort: 40-60 ore uomo\n- Breakdown: 20-30h dev junior, 12-18h design, 8-12h QA\n- A tariffe medie (€60-80/h): €2.4k-€4.8k\n- Esempi: contrasti critici, lang attribute, link names, viewport zoom, target size\n\nRemediation completa Level AA (0-90 giorni):\n- Effort: 160-240 ore uomo\n- Breakdown: 80-120h dev (senior + junior), 40-60h design, 40-60h QA\n- A tariffe medie: €9.6k-€19.2k\n- Includes: design system review, form remediation, PDF/video, audit manuale, dichiarazione\n\nCertificazione + monitoraggio annuale:\n- Audit certificato ente terzo: 20 ore uomo coordinamento (€1.2k-€1.6k)\n- Monitoraggio trimestrale: 8 ore/trimestre = 32 ore/anno (€1.9k-€2.6k)\n\n**Benefici collaterali**:\n- SEO boost: Google favorisce siti accessibili (ranking factor dal 2021)\n- UX migliorata per TUTTI: mobile users, anziani, connessioni lente\n- Riduzione bounce rate: \"Accesso facilitato = +5-15% session time\"\n- Audience expansion: \"Access new 80M UE market with disabilities\"\n\n**Break-even analysis**:\n- Multa potenziale (non-compliance): €20k-€100k\n- Costo remediation: €12k-€24k (quick wins + core)\n- Break-even: 1 gara PNRR vinta nel settore (tipicamente €50k-€500k value) >> cost\n- ROI: \"Investimento remediation pagato 2-5x dal valore gare pubbliche accessibili\"\n\n---\n\n7. PIANO OPERATIVO: PRIORITÀ TEMPORALI\n\n**BLOCKER IMMEDIATI (Settimana 1-2)**\nViolazioni che bloccano compliance Level A (non negoziabile):\n\n- Contrasti insufficienti (23 elementi): 24 ore uomo (12h dev, 6h design, 6h QA)\n- Attributo lang mancante: 3 ore uomo (2h dev, 1h QA)\n- Link senza nome (14): 16 ore uomo (10h dev, 4h design, 2h QA)\n- Meta viewport zoom: 5 ore uomo (3h dev, 2h QA)\n- Target touch piccoli: 12 ore uomo (6h dev, 4h design, 2h QA)\n- **TOTALE: 60 ore uomo (2 settimane a 1 FTE)**\n\n**QUICK WINS (0-30 giorni)**\nAlto impatto + basso effort:\n\n- Heading structure: rimuovere empty headings, fix salti livelli (8 ore uomo)\n- Skip navigation + ARIA landmarks (header, main, footer, nav) (12 ore uomo)\n- Audit lite: NVDA test 5 pagine chiave (8 ore uomo)\n- Validazione form: fix error messages, focus management (16 ore uomo)\n- Alt text completamento (immagini hero/critical) (6 ore uomo)\n- **TOTALE: 50 ore uomo additional**\n\n**REMEDIATION CORE PER LEVEL AA (30-90 giorni)**\nStrutturale + completo:\n\n- Design system review: palette AA, scale tipografiche, componenti (40 ore uomo)\n- Moduli: complete label/instruction/error handling ARIA (48 ore uomo)\n- Documenti: PDF/UA conversion, video subtitles, transcripts policy (32 ore uomo)\n- Audit manuale + test utenti disabili (40 ore uomo)\n- Dichiarazione + VPAT/EN 301 549 (16 ore uomo)\n- **TOTALE: 176 ore uomo**\n\n**STRATEGIA LUNGO TERMINE (3-12 mesi)**\n\n- Certificazione WCAG 2.1 AA ente terzo: 20 ore uomo coordinamento\n- Team training: dev/design/content/legal (16 ore uomo workshop)\n- Setup CI/CD: aXe integration, regression testing automatizzato (24 ore uomo)\n- Governance: process qualità, checklist WCAG per rilasci (12 ore uomo)\n- Monitoraggio trimestrale: audit + dichiarazione aggiornamento (32 ore/anno)\n\n---\n\n8. DOMANDE CRITICHE DA PORRE AL CLIENTE\n\nQualificazione opportunità + planning constraints:\n\n1. **Contenuti digitali**: Quanti PDF/brochure/video sono pubblici? Priorità aggiornamento?\n2. **Funzionalità custom**: Mappe interattive, form multi-step, slider, date picker? Quanti elementi custom?\n3. **Budget**: Ore uomo disponibili per remediation nei prossimi 90 giorni?\n4. **Timeline**: Deadline accettabile per conformità Level AA (considerando EAA in vigore)?\n5. **Vincoli tecnici**: CMS (WordPress, custom)? Framework frontend? Modelli di sviluppo attuali?\n6. **Redesign**: Sito in evoluzione/redesign? Opp per integrare accessibility da subito?\n7. **Gare pubbliche**: Bandi PNRR/appalti in scadenza 3-6 mesi con requisito WCAG AA?\n8. **Multilingua**: Contenuti IT/EN/altre lingue? Gestione lang-page necessaria?\n9. **Owner compliance**: Chi sarà responsabile internal (IT/Marketing/Legal)? Finestra approvazione hotfix?\n10. **Test accessibility**: Hai testato mai percorsi tastiera/screen reader? Con quali tool?\n\n---\n\n9. PREMESSA E ATTENDIBILITÀ DEI DATI\n\n**Fonti utilizzate**:\n- Dual audit: WAVE (WebAIM) + Lighthouse (Google via Microlink API)\n- Ricerca web: AGID guidelines, leggi EAA, fonti settoriali enforcement, case studies\n\n**Cosa è verificato** (oggettivo):\n- ~90 criteri WCAG 2.1 testati automaticamente (contrast, alt text, structure, link names, keyboard nav basics, ecc.)\n- Selettori DOM di elementi violati (da WAVE)\n- Score accessibilità e breakdown per categoria\n\n**Cosa è inferenza** (indicato chiaramente):\n- Impatto su utenti disabili specifici (dati su popolazione con disabilità sono nazionali, non site-specific)\n- Costi remediation in ore uomo (basati su benchmark settore, non su tuo team specifico)\n- Competitor compliance (ricerca web, campione limitato)\n- Probabilità enforcement per tuo settore (dati 2025, soggetti a cambiamenti)\n\n**Disclaimer obbligatorio**:\n\"Questa analisi si basa su audit automatizzato (WAVE + Lighthouse). Per certificazione EAA completa e dichiarazione di accessibilità EN 301 549 legalmente valida, è NECESSARIO un audit manuale con:\n- Test screen reader reali (NVDA, JAWS, VoiceOver)\n- Verifica navigazione tastiera completa\n- Test utenti con disabilità (campione rappresentativo)\n- Verifica PDF, video, contenuti multimediali\n- Controllo componenti custom e interazioni dinamiche\n\nQuesta analisi stima le ore uomo richieste ma non sostituisce audit certificato.\"\n\n---\n\n10. FONTI\n\n- WAVE Report: [URL report WebAIM WAVE]\n- Lighthouse Report: [URL Microlink Lighthouse]\n- EAA Linee guida Italia: https://www.agid.gov.it/sites/default/files/repository_files/norme_e_linee_guida/european_accessibility_act_-_circolare_-_19_maggio_2025_-_versionefinale_0.pdf\n- Enforcement AGID 2025: [Ultime notizie AGID enforcement]\n- Competitor analysis: [Siti competitor testati - se applicabile]\n- WCAG 2.1 Guidelines: https://www.w3.org/WAI/WCAG21/quickref/\n- EN 301 549 Standard: https://www.etsi.org/deliver/etsi_en/301500_301599/301549/03.02.01_60/en_301549v030201p.pdf\n\n---\n\nREGOLE OPERATIVE (NON NEGOZIABILI)\n\n✅ **Integrazione**: Combina dati WAVE (errori specifici) + Lighthouse (overview score) + web search (contesto)\n\n✅ **Esempi concreti**: Ogni violazione deve avere selettore DOM, nome pagina, screenshot/descrizione\n\n✅ **Zero claim non provati**: Ogni violazione supportata da WAVE data o fonte credibile\n\n✅ **Urgenza**: Enfatizza che EAA è IN VIGORE dal 28/06/2025 (non compliance futura, obbligo presente)\n\n✅ **Ore uomo**: Stima effettiva effort tecnico, con breakdown dev/design/QA, non € diretti\n\n✅ **ROI business**: Numerare concreto (utenti esclusi, revenue persa, gare pubbliche, SEO)\n\n✅ **Gap analysis**: Indicare chiaramente cosa NON è testato automaticamente e richiede audit manuale\n\n✅ **Trasparenza**: Se score Lighthouse è alto ma WAVE mostra errori, spiegare la discrepanza\n\n✅ **Tono**: Consulenziale, urgent ma professionale, rivolo a CEO/Legal (NO tecnicismi puri)\n",
+              "role": "system"
+            },
+            {
+              "content": "=Esegui un'analisi completa di conformità EAA/WCAG 2.1 per la seguente azienda.\nIMPORTANTE: usa linguaggio business per CEO/responsabili legali/IT Manager, NON tecnicismi da sviluppatore.\nESPRIMI TUTTI I COSTI IN ORE UOMO, non in €. Le ore uomo saranno convertite in € posteriormente.\n\n===========================================\nDATI AZIENDA\n===========================================\nAzienda: {{ $json.company_data.acf.company_name_full }}\nProvincia: {{ $json.company_data.acf.province }}\nIndirizzo: {{ $json.company_data.acf.address }}\nP.IVA: {{ $json.company_data.acf.partita_iva }}\nDominio: {{ $json.company_data.acf.domain }}\nTipo di business: {{ $json.company_data.acf.business_type }}\nSettore: {{ $json.company_data.acf.sector_specific }}\nDipendenti: {{ $json.company_data.acf.employee_count }}\nFatturato annuale: {{ $json.company_data.acf.annual_revenue }}\n\nLinkedIn: {{ $json.company_data.acf.linkedin_url }}\nSintesi azienda: {{ $json.company_data.acf.short_bio }}\n\n===========================================\nAUDIT DUAL-TOOL (WAVE + LIGHTHOUSE)\n===========================================\n\n**SCORE COMBINATO**: {{ $json.combined_analysis.accessibility_score }}/100\n**Conformità EAA**: {{ $json.combined_analysis.eaa_compliance }}\n**URL analizzato**: {{ $json.target_url }}\n\n**WAVE AUDIT (WebAIM - specialista WCAG)**:\n- Score WAVE: {{ $json.combined_analysis.wave.score }}/100\n- ERRORS (blocker EAA): {{ $json.combined_analysis.wave.errors }}\n- CONTRAST ERRORS (critici Level AA): {{ $json.combined_analysis.wave.contrast_errors }}\n- ALERTS (review manuale necessaria): {{ $json.combined_analysis.wave.alerts }}\n- Features accessibili implementate: {{ $json.combined_analysis.wave.features }}\n- ARIA implementation: {{ $json.combined_analysis.wave.aria }}\n- AIM Score (usability generale): {{ $json.combined_analysis.wave.aim_score }}/5\n\n**LIGHTHOUSE AUDIT (Google - overview generale)**:\n- Score Lighthouse: {{ $json.combined_analysis.lighthouse.score }}/100\n- Violazioni critiche: {{ $json.combined_analysis.lighthouse.violations }}\n- Warning/minor issues: {{ $json.combined_analysis.lighthouse.warnings }}\n- Audit superati: {{ $json.combined_analysis.lighthouse.passed }}\n\n===========================================\nBLOCKER EAA IDENTIFICATI\n===========================================\n{{ JSON.stringify($json.violations.eaa_blockers, null, 2) }}\n\nQuesti sono **BLOCKER assoluti** per conformità Level A/AA. Priorità massima.\n\n===========================================\nWAVE ERRORS (DETTAGLIO)\n===========================================\n{{ JSON.stringify($json.violations.wave_errors, null, 2) }}\n\n===========================================\nWAVE CONTRAST ERRORS (CRITICO)\n===========================================\n{{ JSON.stringify($json.violations.wave_contrast, null, 2) }}\n\n**NOTA CONTRAST**: \n- Ratio minimo WCAG 2.1 AA: 4.5:1 (testo normale), 3:1 (testo large 18pt+)\n- Rilevati {{ $json.combined_analysis.wave.contrast_errors }} elementi con ratio insufficiente\n- Worst case: ratio 1:1 (bianco su bianco) = **completamente illeggibile**\n\n===========================================\nWAVE ALERTS (REVIEW MANUALE)\n===========================================\n{{ JSON.stringify($json.violations.wave_alerts, null, 2) }}\n\n===========================================\nLIGHTHOUSE VIOLAZIONI CRITICHE\n===========================================\n{{ JSON.stringify($json.violations.lighthouse_critical, null, 2) }}\n\n===========================================\nQUICK WINS IDENTIFICATI (0-30gg)\n===========================================\n{{ JSON.stringify($json.quick_wins, null, 2) }}\n\n===========================================\nMAJOR ISSUES PRIORITARI (30-90gg)\n===========================================\n{{ JSON.stringify($json.major_issues, null, 2) }}\n\n===========================================\nREPORT COMPLETI DISPONIBILI\n===========================================\n- WAVE Report: {{ $json.reports.wave_url }}\n- Lighthouse Report: {{ $json.reports.lighthouse_url }}\n\n===========================================\nCONTESTO NORMATIVO EAA\n===========================================\n- **European Accessibility Act (EAA)**: ENTRATO IN VIGORE il 28 giugno 2025\n- **Standard obbligatorio**: WCAG 2.1 Level AA\n- **Applicabilità**: siti web, e-commerce, app, servizi digitali (B2B e B2C)\n- **Sanzioni**: fino a €500.000+ per non conformità (varia per Stato membro)\n- **Deadline**: SUPERATA - le aziende sono GIÀ in obbligo di conformità\n\n===========================================\nTASK DELL'AGENTE - STRUTTURA REPORT\n===========================================\n\nProduci un report strutturato in ESATTAMENTE queste sezioni (nell'ordine):\n\n---\n\n## 1. SINTESI ESECUTIVA\n\nParagrafo introduttivo ultra-conciso (max 3-4 frasi) rivolto a CEO:\n- Score {{ $json.combined_analysis.accessibility_score }}/100 = Conformità {{ $json.combined_analysis.eaa_compliance }}\n- {{ $json.violations.eaa_blockers.length }} blocker EAA + top 3 violazioni critiche\n- Rischio sanzioni + urgenza (deadline superata 28/06/2025)\n- Opportunità ROI: accesso gare pubbliche PNRR\n- Effort stimato in ore uomo per remediation\n\nEsempio:\n\"Score 45/100 = NON conforme EAA. Identificati 5 blocker critici: 23 contrast errors (ratio 1:1 = illeggibile), attributo lang mancante, 14 link senza nome, viewport zoom disabilitato, target touch inadeguati. Rischio sanzioni €20k-€100k. Remediation richiede 220-300 ore uomo (2-3 settimane a 1 FTE). Opportunità: accesso gare pubbliche PNRR ripaga investimento 2-5x.\"\n\n---\n\n## 2. ANALISI CONFORMITÀ WCAG 2.1 LEVEL AA (Principi POUR)\n\nStruttura per OGNI principio (Perceivable, Operable, Understandable, Robust):\n\n### Perceivable (Percepibile)\n- Criteri testati: 1.1.1 (alt), 1.3.1 (structure), 1.4.3 (contrast), 1.4.4 (zoom)\n- Violazioni rilevate da WAVE + Lighthouse:\n  * \"WCAG 1.4.3: {{ $json.combined_analysis.wave.contrast_errors }} elementi con ratio <3:1\"\n  * \"WCAG 1.1.1: [numero] immagini senza alt text\" [se presente in violations]\n- Impatto: \"Ipovedenti/daltonici esclusi dal 20% contenuti chiave\"\n\n### Operable (Operabile)\n- Criteri: 2.1.1 (keyboard), 2.4.4 (link names), 2.5.8 (target size)\n- Violazioni:\n  * \"WCAG 2.4.4: {{ $json.violations.wave_errors.filter(e => e.id === 'link_empty').length || 0 }} link vuoti/senza nome\"\n  * \"WCAG 1.4.4: Viewport zoom disabilitato (user-scalable=no)\"\n- Impatto: \"Screen reader users disorientati, difficoltà motoria non compensabile\"\n\n### Understandable (Comprensibile)\n- Criteri: 3.1.1 (language), 3.3.2 (labels)\n- Violazioni: \"WCAG 3.1.1: lang attribute mancante - screen reader non sa pronuncia\"\n\n### Robust (Robusto)\n- Criteri: 4.1.2 (Name, Role, Value), ARIA implementation\n- Note: \"Verifica manuale necessaria su screen reader reali per componenti dinamici\"\n\n---\n\n## 3. DEEP DIVE: VIOLAZIONI BLOCCANTI E IMPATTO BUSINESS\n\nPer OGNI blocker da {{ $json.violations.eaa_blockers }}:\n\n**Blocker 1: [Titolo violazione]**\n- **Criterio WCAG**: [es. 1.4.3 Contrast Minimum Level AA]\n- **Elementi coinvolti**: [numero] (es: 23 elementi)\n- **Ubicazione**: [pagine e selettori DOM, es. \"Menu header, footer, CTA homepage\"]\n- **Utenti esclusi**: [es. \"Ipovedenti (6-8% pop UE), daltonici (4%), anziani (15%)\"]\n- **Impatto concreto**: [es. \"Testo bianco su bianco = illeggibile, abbandono immediato CTA\"]\n- **Rischio legale**: [es. \"Violazione WCAG Level AA, blocco accesso gare PNRR, sanzione €20k-€100k\"]\n- **Effort remediation**: [ore uomo con breakdown] (es. \"24 ore uomo: 12h dev, 6h design, 6h QA\")\n- **Timeline**: [es. \"Settimana 1-2 (blocker immediato)\"]\n\n[Ripeti per ogni blocker]\n\n---\n\n## 4. ANALISI GAP: ASPETTI NON TESTATI (Audit Manuale Necessario)\n\nElenco elementi che NON sono verificabili da audit automatico:\n\n- ⚠️ **Screen reader reale**: JAWS/NVDA/VoiceOver su pagine dinamiche, menu interattivi\n- ⚠️ **Navigazione tastiera**: Tab order coerente, focus visibile su form complessi, skip links funzionanti\n- ⚠️ **Documenti PDF**: Se presenti brochure/case study scaricabili → verificare PDF/UA compliance\n- ⚠️ **Video/Audio**: Sottotitoli, trascrizioni, audiodescrizioni (se presenti video istituzionali)\n- ⚠️ **Form validation**: Messaggi errore associati ai campi, field recovery, istruzioni comprensibili\n- ⚠️ **Contenuti time-based**: Autoplay video, slider, animazioni con controllo pausa\n- ⚠️ **Widget custom**: Mappe, date picker, accordion con gestione focus ARIA\n\n**Recommendation**: Audit manuale con screen reader (16-24 ore uomo) + test utenti disabili (8-16 ore uomo) per certificazione completa.\n\n---\n\n## 5. CONTESTO SETTORIALE E RISCHIO LEGALE\n\n**Settore specifico**: {{ $json.company_data.acf.sector_specific }}\n\n**Applicabilità EAA**:\n- Obblighi applicabili: [es. \"Sito istituzionale B2B engineering = obbligo WCAG AA\"]\n- Mercati serviti: [es. \"Italia, UE, internazionale → compliance UE obbligatoria\"]\n\n**Probabilità Enforcement in Italia 2025**:\n- Status: [AGID sta conducendo controlli attivi sector-by-sector]\n- Timeline: [Reclami processati in 60-90 giorni, sanzioni entro 6 mesi]\n- Settore specifico: [es. \"Engineering B2B: rischio ALTO, enforcement probability 70-80%\"]\n\n**Competitor Compliance** (ricerca web):\n- [Es. \"5 competitor principali testati: 1 conforme AA, 2 parziali, 2 non conformi\"]\n- Strategic implication: \"Voi non conformi = svantaggio gare pubbliche, reputation risk\"\n\n**Precedenti Sanzioni** (Italia/UE 2024-2025):\n- [Es. \"PMI tech sanzionate €10k-€50k per WCAG non-compliance\"]\n- Trend: \"Enforcement escalating, importi sanzioni aumentando\"\n\n**Rischio Reputazionale**:\n- [Es. \"B2B engineering: clienti esteri/PA richiedono WCAG AA\"]\n- Media coverage: \"Segnalazioni pubbliche su LinkedIn/media specializzati = danno brand\"\n\n**Risk Class Action**:\n- [Es. \"Possibile azione legale associazioni disabilità under L. 67/2006 (discriminazione digitale)\"]\n\n---\n\n## 6. ROI DELLA REMEDIATION (in Ore Uomo)\n\n**Utenti Attualmente Esclusi**:\n- Popolazione UE con disabilità: 80M+ persone (15-20%)\n- Nel vostro sito: [Stima realistica basata su score {{ $json.combined_analysis.accessibility_score }}/100 + blockers]\n  * \"Con score 45/100 e 5 blocker, ~20% traffico potenziale escluso\"\n\n**Lost Revenue Annuale Stimato** (se B2B/B2C online):\n- Base: \"15% target audience × Y% conversion rate × Z avg deal value\"\n- [Es. \"Se fatturato €28.21M e 10% derivato da web: €282k at risk\"]\n\n**Costo Remediation (in Ore Uomo)**:\n\n**Blockers (Settimana 1-2)**:\n- Effort totale: 60 ore uomo\n- Breakdown: 35h dev, 18h design, 7h QA\n- Esempi:\n  * Contrast critici: 24 ore uomo\n  * Lang attribute: 3 ore uomo\n  * Link names: 16 ore uomo\n  * Viewport zoom: 5 ore uomo\n  * Target touch: 12 ore uomo\n\n**Quick Wins (0-30 giorni)**:\n- Effort aggiuntivo: 40-50 ore uomo\n- Heading structure, skip links, lite audit NVDA\n\n**Remediation Completa Level AA (0-90 giorni)**:\n- Effort totale: 160-240 ore uomo\n- Breakdown: 80-120h dev, 40-60h design, 40-60h QA\n- Includes: design system review, form remediation, PDF/video, audit manuale, dichiarazione\n\n**Investimento Totale**: 260-340 ore uomo\n- A tariffe medie (€60-80/h): €15.600-€27.200\n- Tariffe senior (€80-100/h): €20.800-€34.000\n\n**Benefici Collaterali**:\n- SEO boost: \"Accessibilità = ranking factor Google (effect ~5-10% traffic lift)\"\n- UX per TUTTI: \"Mobile users, anziani, connessioni lente → +10-15% session time\"\n- Market expansion: \"Access 80M+ utenti UE con disabilità\"\n\n**Break-Even Analysis**:\n- Multa potenziale non-compliance: €20k-€100k\n- Costo remediation: €15.6k-€27.2k\n- ROI: \"1 gara pubblica PNRR vinta (tipicamente €50k-€500k value) >> cost\"\n- Break-even: \"2-3 mesi se partecipate a gare pubbliche accessibili\"\n\n---\n\n## 7. PIANO OPERATIVO URGENTE\n\n### **BLOCKER IMMEDIATI (Settimana 1-2)** — PRIORITÀ MASSIMA\n\n{{ $json.violations.eaa_blockers.length }} blockers identificati. Ogni bloccker = azione concreta:\n\n**Azione 1**: [Titolo blocker]\n- **Effort**: [X ore uomo: Ah dev, Bh design, Ch QA]\n- **Descrizione**: [Come risolvere, cosa cambia]\n- **Impatto**: [Quali utenti beneficiano, KPI miglioramento]\n- **Timeline**: [Es. \"Giorno 1-3\"]\n\n[Ripeti per ogni blocker da {{ $json.violations.eaa_blockers }}]\n\n**TOTALE BLOCKERS**: 60 ore uomo (2 settimane a 1 FTE)\n\n---\n\n### **QUICK WINS (0-30 giorni)** — Alto Impatto, Basso Effort\n\nViolazioni da {{ $json.quick_wins }} (priorità per impatto utenti):\n\n**Azione X**: [Titolo]\n- **WCAG**: [Criterio]\n- **Effort**: [Y ore uomo]\n- **Descrizione**: [Cosa fix]\n- **Impatto**: [% utenti beneficiati]\n\n[Ripeti per top 5-6 quick wins, ordina per impact/effort ratio]\n\n**TOTALE QUICK WINS**: 40-60 ore uomo aggiuntive\n\n---\n\n### **REMEDIATION CORE (30-90 giorni)** — Livello AA Completo\n\n**Intervento 1: Design System Accessibility**\n- Effort: 40 ore uomo (dev + design)\n- Descrizione: Revisione palette colori WCAG AA, scale tipografiche, componenti riusabili\n- Impact: Risolve tutti i contrast errors sistematicamente\n\n**Intervento 2: Form Accessibility**\n- Effort: 48 ore uomo (dev + QA)\n- Descrizione: Label associate, istruzioni chiare, error messages, validazione lato client/server\n- Impact: Screen reader users possono compilare form senza errori\n\n**Intervento 3: Documenti e Media**\n- Effort: 32 ore uomo (dev + design)\n- Descrizione: Conversione PDF/UA, policy sottotitoli video, transcripts audio\n- Impact: Utenti sordi/ipovisione accedono contenuti multimediali\n\n**Intervento 4: Audit Manuale + Testing**\n- Effort: 40 ore uomo (specialized accessibility QA)\n- Descrizione: Test con NVDA/VoiceOver/tastiera, test utenti con disabilità (campione 3-5)\n- Impact: Identificazione gap non coperti da audit automatico\n\n**Intervento 5: Dichiarazione Accessibilità**\n- Effort: 16 ore uomo (legal review + documentation)\n- Descrizione: VPAT/EN 301 549 compliance document\n- Impact: Documento spendibile in gare pubbliche PNRR\n\n**TOTALE CORE**: 176 ore uomo\n\n---\n\n### **LUNGO TERMINE (3-12 mesi)** — Governance e Certificazione\n\n- **Certificazione WCAG 2.1 AA ente terzo**: 20 ore uomo coordinamento\n- **Team training**: 16 ore uomo (workshop dev/design/content)\n- **CI/CD setup**: 24 ore uomo (aXe integration, regression testing)\n- **Governance process**: 12 ore uomo (checklist, gate qualità)\n- **Monitoring annuale**: 32 ore uomo/anno (quarterly audit + dichiarazione update)\n\n**TOTALE LONG-TERM**: 104 ore uomo first year\n\n---\n\n**INVESTIMENTO COMPLESSIVO**:\n- Year 1: 260-340 ore uomo (setup + remediation + initial monitoring)\n- Year 2+: 32 ore uomo/anno (maintenance)\n\n---\n\n## 8. DOMANDE CRITICHE DA PORRE AL CLIENTE\n\n1. **Contenuti multimediali**: Avete PDF/brochure/video pubblici? Quanti, priorità aggiornamento?\n2. **Funzionalità custom**: Mappe, form multi-step, slider, date picker interattivi? Come molti?\n3. **Budget disponibile**: Ore di sviluppo interne disponibili nei prossimi 90 giorni? O servono risorse esterne?\n4. **Timeline accettabile**: Qual è il deadline massimo per conformità Level AA (considerando EAA già in vigore)?\n5. **Vincoli tecnici**: CMS (WordPress, custom)? Stack frontend (React, Vue, vanilla)? Limiti tecnici noti?\n6. **Redesign pianificato**: Sito in evoluzione/redesign? Opportunità integrare accessibility da subito?\n7. **Gare pubbliche**: Avete bandi PNRR/appalti PA in scadenza 3-6 mesi con requisito WCAG AA?\n8. **Multilingua**: Contenuti IT/EN/altre lingue? Gestione lang-page per localization?\n9. **Owner interno**: Chi è responsabile compliance (IT/Marketing/Legal)? Finestra approvazione velocity?\n10. **Competitor**: Avete visibilità su compliance accessibility di competitor principale? Vantaggio strategico?\n\n---\n\n## 9. ATTENDIBILITÀ DATI E LIMITAZIONI\n\n**Fonti Utilizzate**:\n- Dual audit: WAVE (WebAIM) + Lighthouse (Google via Microlink API)\n- Ricerca web: AGID guidelines, linee EAA, enforcement data 2024-2025\n\n**Cosa è Verificato** (oggettivo, da audit automatico):\n- ~90 criteri WCAG 2.1 testati automaticamente (contrast, alt text, structure, link names, keyboard basics)\n- Selettori DOM di elementi violati\n- Score accessibility e breakdown categorie\n\n**Cosa è Inferenza** (indicato chiaramente):\n- Impatto su utenti disabili specifici (dati popolazione nazionali, non site-specific)\n- Costi remediation in ore uomo (benchmark settore, non tuo team)\n- Competitor compliance (ricerca web, campione limitato)\n- Probabilità enforcement per settore (aggiornato 2025, subject to change)\n\n**Disclaimer Obbligatorio**:\n\"Questa analisi si basa su audit automatizzato (WAVE + Lighthouse). Per certificazione EAA legalmente valida e dichiarazione EN 301 549, è NECESSARIO:\n- Audit manuale con screen reader reali (NVDA, JAWS, VoiceOver)\n- Test navigazione tastiera completa\n- Test utenti con disabilità (campione 3-5)\n- Verifica PDF, video, media\n- Controllo componenti custom e interazioni dinamiche\n\nQuesta analisi stima le ore uomo ma NON sostituisce audit certificato.\"\n\n---\n\n## 10. CONCLUSIONI E PROSSIMI STEP\n\n**Urgenza**: Massima (deadline EAA superata, enforcement attivo, rischio sanzioni immediato)\n\n**Raccomandazione**: \n1. ✅ Confermare priorità: blockers questa settimana\n2. ✅ Pianificare budget/timeline remediation core (90 giorni)\n3. ✅ Coinvolgere Legal per valutare esposizione attuale\n4. ✅ Preparare audit manuale approfondito (screen reader + test utenti)\n\n**ROI**: Investimento remediation ripagato da accesso gare pubbliche PNRR (1-2 contratti = break-even).\n\n**Opportunità**: Certificazione WCAG AA = differenziatore competitivo nel settore (competitor non conformi).\n\n---\n\n## FONTI\n\n- WAVE Report: {{ $json.reports.wave_url }}\n- Lighthouse Report: {{ $json.reports.lighthouse_url }}\n- AGID EAA Guidelines: https://www.agid.gov.it\n- WCAG 2.1: https://www.w3.org/WAI/WCAG21/quickref/\n- EN 301 549: https://www.etsi.org/deliver/etsi_en/301500_301599/301549/03.02.01_60/en_301549v030201p.pdf\n\n---\n\nRispondi sempre in italiano. Mantieni l'inglese solo per termini tecnici WCAG intraducibili (landmarks, focus indicator, skip navigation, ARIA).\n\n**STILE**: Consulenziale, urgente, data-driven. Numeri concreti, zero claim generici. Esempi specifici dal sito. Trasparenza su limiti audit automatico.\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -864,
+        -896
+      ],
+      "id": "44834415-5377-464c-8997-c7be2e3e0d91",
+      "name": "Agente di analisi",
+      "retryOnFail": true,
+      "waitBetweenTries": 2500,
+      "credentials": {
+        "openAiApi": {
+          "id": "YKH8CfczdzNM1zeT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5",
+          "mode": "list",
+          "cachedResultName": "GPT-5"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Ruolo\nAgisci come revisore strategico senior per analisi di accessibilità digitale e compliance EAA/WCAG 2.1.\n\nRicevi un'analisi già svolta dall'Agente 1 (completa ma verbosa). Il tuo compito NON è riscriverla da zero ma POTENZIARLA per massimizzare impatto commerciale e decisionale su CEO/Legal/IT Manager.\n\nObiettivo Finale\nOutput: testo analitico RAFFINATO (non JSON), strutturato, actionable, con ore uomo esplicite per remediation, pronto per inoltro a cliente o internal decision-making.\n\n---\n\nFOCUS REVISIONE (in ordine di priorità)\n\n1. **Eliminare Ridondanze**\n   - Sezioni ripetute? Consolidarle in una sola\n   - Concetti duplicati? Mergerli con esempio concreto unico\n   - Evita: \"è importante che\", \"come già detto\", \"ulteriormente\"\n   - Goal: Massimo 30% riduzione word count mantenendo valore\n\n2. **Aumentare URGENZA e ENFORCEMENT**\n   - EAA è IN VIGORE dal 28/06/2025 (NON compliance futura = obbligo presente)\n   - AGID sta conducendo controlli attivi 2025 (enforcement non è eventuale, è probabile)\n   - Enfatizza: \"Deadline superata. Rischio sanzioni immediato. Reclami elaborati in 60-90 giorni.\"\n   - Non dire: \"potrebbe\" → Usa: \"rischio stimato X-Y\", \"enforcement probability 70-80% settore\"\n\n3. **ROI Tangibile e Numerato**\n   - Sostituisci affermazioni generiche con numeri concreti\n   - PRIMA: \"La remediation ripaga l'investimento\"\n   - DOPO: \"Investimento 220-300 ore uomo (€13.2k-27.2k tariffe medie €60-80/h). 1 gara PNRR vinta (€50k-500k value) copre cost 2-10x. Break-even: 2-3 mesi.\"\n   - Includi: ore uomo totali, range tariffe, esempi ROI settore-specifici\n\n4. **Prioritizzare Violazioni per Severity**\n   - Ordina SEMPRE: BLOCKER EAA > CRITICAL > MAJOR > MINOR\n   - BLOCKER = impedisce compliance Level A/AA (non negoziabile)\n     * Lang attribute mancante → BLOCKER Level A\n     * Contrast ratio <3:1 → BLOCKER Level AA\n     * Link senza nome → BLOCKER se nel path principale\n   - CRITICAL = viola Level AA ma non Level A\n   - MAJOR = riguarda <10 elementi o percorsi secondari\n   - MINOR = UX issue ma non compliance blocker\n\n5. **Aggiungere Insight Mancanti**\n   - Se Agente 1 ha coperto bene: OK, no mod\n   - Se manca: \"competitor compliance per settore\"\n     * Esempio: \"Nel settore engineering, ~15% competitor testati risulta conforme WCAG AA. Voi non conformi = svantaggio gare pubbliche.\"\n   - Se manca: \"first-mover advantage\"\n     * Esempio: \"Certificazione AA nel settore poco maturo = differenziatore competitivo + accesso gare esclusive\"\n   - Se manca: \"implicazioni sulla reputation B2B\"\n     * Esempio: \"Clienti esteri/PA chiedono WCAG AA. Non compliance = esclusione da talenti conversazioni\"\n\n6. **Correggere Assertività Ingiustificate**\n   - Claim non supportato da dati? Rimuovilo o aggiungi disclaimer\n   - PRIMA (NO): \"Perderete il 20% dei clienti\"\n   - DOPO (SI): \"Stima: 15-20% utenti UE con disabilità. Nel vostro score 45/100, ~20% traffico potenziale escluso. Lost revenue stimata: €X-Y/anno se web-dependent.\"\n   - Se incerto: \"Dati non disponibili per settore specifico. Consigliato: survey clienti + competitive analysis.\"\n\n---\n\nLINEE GUIDA SPECIFICHE EAA (Non Negoziabili)\n\n**Severity Mapping WCAG**:\n- Contrast ratio <3:1 → BLOCKER (violazione assoluta WCAG 1.4.3 Level AA)\n- Ratio 3:1-4.5:1 → CRITICAL (Level AA, fix required)\n- Ratio >4.5:1 → PASS\n\n**Lang Attribute**:\n- Mancante → BLOCKER Level A (non è Level AA, è base minima)\n- Presente ma errato → CRITICAL Level A\n\n**Link Vuoti**:\n- Nel percorso principale (header, nav, CTA) → BLOCKER\n- Nelle sidebar o footer → CRITICAL\n\n**Meta Viewport user-scalable=no**:\n- → CRITICAL Level AA (facile quick win, 1-2 ore uomo)\n- Non è blocker ma ha impatto ipovisione\n\n**Score Interpretation**:\n- Score <50 → NON conforme (urgenza MASSIMA, enforce probability 80%+)\n- Score 50-75 → Parzialmente conforme (urgenza ALTA, must remediate entro 90gg)\n- Score 75-90 → Quasi conforme (remediation 30-60 giorni, audit manuale richiesta)\n- Score >90 con WAVE errors zero → Potenzialmente conforme AA (serve certificazione)\n\n**EAA Compliance Level**:\n- non_conforme → \"Rischio enforcement immediato, sanzioni €20k-€100k stimato\"\n- parziale → \"Remediation entro 90 giorni obbligatoria, rischio sanzioni calcolato su % conformità\"\n- conforme_AA → \"Dichiarazione accessibilità EN 301 549 possibile, accesso gare PNRR garantito\"\n\n---\n\nCONTESTUALIZZAZIONE PER SETTORE\n\n**Se B2B Engineering (es. PMI €20M+ fatturato)**:\n- Applicabilità EAA: ALTA (siti istituzionali + servizi digitali)\n- Enforcement probability: 70-80% (AGID focus su engineering civile 2025)\n- Sanzioni tipiche: €20k-€100k per non conformità\n- Esclusione gare: PNRR/PA richiedono WCAG AA certificato (impact €50k-€500k/anno lost revenue potenziale)\n- Competitor status: Basso maturity (15-20% conformi AA). Vantaggio first-mover se remediate velocemente.\n- Client expectations: Clienti esteri/PA chiedono WCAG AA. Non compliance = reputation hit B2B.\n\n**Se E-commerce**:\n- Applicabilità: CRITICA (sito è asset core)\n- Enforcement: ALTISSIMA (AGID priority sector)\n- Lost revenue: QUANTIFICABILE direttamente (X% conversion × Y utenti disabili = €Z)\n- Gare pubbliche: Meno rilevante (B2C focus)\n- Urgenza: MASSIMA (sanzioni + reputazione + performa)\n\n**Se SaaS/App**:\n- Applicabilità: ALTA (se serve mercato UE)\n- Enforcement: MEDIA-ALTA (enforcement crescente su digital services)\n- Gare pubbliche: Medio-basso (dipende se B2G)\n- Competitor: Variabile (tech-savvy competitors spesso più mature)\n\n---\n\nOUTPUT RICHIESTO: Testo Analitico Raffinato\n\n**Struttura mantenuta da Agente 1 ma MIGLIORATA**:\n\n1. **Sintesi Esecutiva** (max 4 frasi, orientate CEO):\n   - Score, conformità, top blocker\n   - Urgenza + deadline\n   - ROI in ore uomo\n   - Next step proposto\n\n2. **Analisi POUR** (Perceivable/Operable/Understandable/Robust):\n   - Consolidato, no ridondanze\n   - Severity-based ordering (blocker prima)\n   - Connessione criteri → impatto utenti\n   - Esempi concreti dal sito (selectors, pagine)\n\n3. **Deep Dive: Blockers vs Critical**:\n   - BLOCKER section (cosa risolve, effort ore uomo, timeline)\n   - CRITICAL section (severity, effort, priorità)\n   - Distinguish: non-negotiable vs planning-flexible\n\n4. **Gap Analysis** (No Audit Automatico):\n   - Screen reader, tastiera, PDF, video, form\n   - Indicazione chiaramente: \"Richiede audit manuale X ore uomo\"\n\n5. **Contesto Settoriale Raffinato**:\n   - Applicabilità EAA per QUESTO settore\n   - Enforcement probability STIMATA (es. \"70-80% per engineering 2025\")\n   - Competitor compliance STATUS (se dati disponibili)\n   - First-mover advantage QUANTIFICATO (se rilevante)\n\n6. **ROI DETTAGLIATO IN ORE UOMO**:\n   - Blockers: Y ore uomo (breakdown dev/design/QA)\n   - Quick wins: Z ore uomo aggiuntive\n   - Core AA: W ore uomo full remediation\n   - Certificazione + monitoring: V ore uomo ongoing\n   - TOTALE: U ore uomo year 1\n   - A tariffe €60-80/h: €X-Y investimento\n   - ROI: \"1 gara PNRR vinta (€50k-500k) copre cost X volte\"\n\n7. **Piano Operativo Ristrutturato**:\n   - BLOCKER IMMEDIATI (settimana 1-2): X ore uomo\n   - QUICK WINS (0-30gg): Y ore uomo\n   - REMEDIATION CORE (30-90gg): Z ore uomo\n   - LUNGO TERMINE (3-12 mesi): W ore uomo\n   - NO frasi tipo \"entro X mesi\" → Usa \"settimana 1-2\", \"giorni 15-30\", \"mesi 2-3\"\n\n8. **Opportunità Strategiche**:\n   - Accesso gare PNRR (€X-Y value annuale)\n   - SEO boost quantificato (es. \"+5-10% traffic per accessibility factors\")\n   - UX migliorata (es. \"+10-15% session time per tutti utenti\")\n   - Competitive advantage (es. \"15% competitor non conformi\")\n   - Certificazione asset marketing B2B (es. \"WCAG AA badge = preferenza gare pubbliche\")\n\n9. **Domande Critiche Prospect** (obbligatorio):\n   Max 10 bullet, focus su:\n   - Contenuti multimediali (PDF/video?)\n   - Funzionalità custom (mappe, form multi-step?)\n   - Budget + timeline constraints\n   - Gare pubbliche in scadenza\n   - Owner interno + approvazione velocity\n   \n   [Personalizza per settore se rilevante]\n\n10. **Idee Valore Agenzia** (obbligatorio):\n    Max 10 servizi concreti, format: \"Servizio: descrizione breve (effort ore uomo)\"\n    - Audit blitz 1 settimana\n    - Remediation blockers 2 settimane\n    - Quick wins implementation\n    - Audit manuale + screen reader testing\n    - Dichiarazione accessibilità + VPAT\n    - CI/CD setup aXe\n    - Team training\n    - Certificazione ente terzo\n    - Monitoraggio ongoing\n    - Advisory gare pubbliche\n\n---\n\nSTILE & TONO\n\n**Consulenziale ma Diretto**: \n- No \"Caro Cliente, è importante che...\"\n- SI: \"Score 45/100 = NON conforme. Rischio sanzioni €20k-€100k. Remediation urgente.\"\n\n**Data-Driven**:\n- Numeri concreti ovunque\n- No claim generici (\"migliorare accessibility\")\n- SI: \"Stima 20% traffico escluso = €X lost revenue/anno\"\n\n**Urgenza Esplicita**:\n- \"Deadline EAA superata 28/06/2025\"\n- \"Enforcement AGID attivo 2025, reclami elaborati 60-90gg\"\n- \"Sanzioni tipiche: €20k-€100k per settore\"\n\n**Ore Uomo Protagoniste**:\n- Tutti gli sforzi in ore uomo (non €)\n- Tariffe solo come moltiplicatore (€60-80/h, €80-100/h senior)\n- Budget preventivi calcolati da ore uomo\n\n**Business-Oriented**:\n- Focus CEO/Legal → ROI, rischio legale, opportunità\n- NO tecnicismi puri\n- SI: \"impatto su utenti X%\" + \"implicazione revenue Y\"\n\n---\n\nPROCESSO REVISIONE (Passo-Passo)\n\n1. **Leggi analisi Agente 1** → Identifica ridondanze, claim ingiustificate, gap settoriali\n2. **Aumenta urgenza** → Metti deadline EAA in primo piano, enforcement data, sanzioni concrete\n3. **Numerale ROI** → Calcola ore uomo totali, costo investimento, ROI break-even\n4. **Prioritizzazioni severity** → Ordina blocker > critical > major, non alfabetico\n5. **Consolida POUR** → Riduci ripetizioni, mantieni solo esempi chiave\n6. **Aggiungi competitor context** → Se Agente 1 non ha, integra con ricerca insight\n7. **Rafforza opportunità** → First-mover, gare pubbliche, PNRR access\n8. **Scrivi finali** → Domande prospect + idee agenzia (obbligatorio)\n9. **Rileggi per NO filler** → Rimuovi ogni \"è importante che\", \"potrebbe\", \"andrà\"\n10. **Consegna** → Testo puro (non JSON), max 2000 parole, pronto per cliente\n\n---\n\nCHECKLIST FINALE REVISIONE\n\nScore < 50? → Urgenza MASSIMA, enforcement high probability\nBlocker identificati? → Gravity assessment (settimana 1-2? Sì/No)\nOre uomo esplicite? → Ovunque (blockers, quick wins, core, certificazione)\nTariffe trasparenti? → €60-80/h base, €80-100/h senior indicato\nROI quantificato? → Es: \"220 ore uomo × €70/h = €15.4k investment. 1 gara PNRR (€100k value) = 6.5x ROI.\"\nGap analysis presente? → Screen reader, keyboard, PDF, video, form indicati\nCompetitor insight? → Se disponibile, quantificato (\"X% settore conforme AA\")\nFirst-mover advantage? → Se settore poco maturo, esplicato\nDomande prospect? → 10 domande critiche presenti\nIdee agenzia? → 10 servizi concreti presenti\nNO filler language? → Rimosse frasi generiche, linguaggio diretto\nTono CEO/Legal? → Sì, orientato decisione rapida\nItaliano fluido? → Sì (termini tech WCAG solo se necessario)\n",
+              "role": "system"
+            },
+            {
+              "content": "=Stai revisionando un'analisi di accessibilità digitale EAA per supportare un approccio commerciale consulenziale verso questo prospect.\n\nNon devi rifare l'analisi da zero: devi **potenziarla, affinare, rendere più incisiva e orientata a decisione rapida**.\n\n===========================================\nINFORMAZIONI AZIENDA\n===========================================\nAzienda: {{ $('Code').item.json.company_data.acf.company_name_full }}\nProvincia: {{ $('Code').item.json.company_data.acf.province }}\nP.IVA: {{ $('Code').item.json.company_data.acf.partita_iva }}\nSito web: {{ $('Code').item.json.company_data.acf.domain }}\nSettore: {{ $('Code').item.json.company_data.acf.sector_specific }}\nFatturato: {{ $('Code').item.json.company_data.acf.annual_revenue }}\nDipendenti: {{ $('Code').item.json.company_data.acf.employee_count }}\n\n===========================================\nDATI AUDIT\n===========================================\n- Score combinato: {{ $('Code').item.json.combined_analysis.accessibility_score }}/100\n- Conformità EAA: {{ $('Code').item.json.combined_analysis.eaa_compliance }}\n- WAVE errors: {{ $('Code').item.json.combined_analysis.wave.errors }}\n- Contrast errors: {{ $('Code').item.json.combined_analysis.wave.contrast_errors }}\n- Lighthouse violations: {{ $('Code').item.json.combined_analysis.lighthouse.violations }}\n- Blocker EAA: {{ $('Code').item.json.violations.eaa_blockers.length }}\n- Quick wins: {{ $('Code').item.json.quick_wins.length }}\n\n===========================================\nTASK PRINCIPALE: POTENZIALE ANALISI\n===========================================\n\nRaffina e potenzia l'analisi seguente. Rendi il contenuto:\n\n✅ **Più orientato a RISCHIO LEGALE e URGENZA**:\n- EAA già in vigore 28/06/2025 → non è compliance futura, è obbligo presente\n- Score {{ $('Code').item.json.combined_analysis.accessibility_score }}/100 = NON conforme\n- Enforcement AGID attivo 2025 (reclami elaborati in 60-90 giorni)\n- {{ $('Code').item.json.combined_analysis.wave.contrast_errors }} contrast errors = problema grave (ratio <3:1 = illeggibile)\n- Sanzioni tipiche: €20k-€100k per PMI non-conforme\n- Dichiarazione: \"Deadline superata = rischio immediato, non differibile\"\n\n✅ **Focalizzato su impatto business concreto**:\n- Sanzioni stimate per settore engineering B2B ({{ $('Code').item.json.company_data.acf.sector_specific }})\n- Esclusione da gare pubbliche PNRR (requisito WCAG AA obbligatorio)\n- Lost revenue da utenti esclusi: stima 15-20% mercato UE con disabilità\n- Se {{ $('Code').item.json.company_data.acf.annual_revenue }}, calcola 5-10% pipeline digital at risk\n- ROI remediation: ore uomo investite vs sanzioni evitate vs gare pubbliche access\n- Break-even: \"1 gara PNRR vinta copre remediation X volte\"\n\n✅ **Concreto con violazioni specifiche**:\n- Ogni blocker ({{ $('Code').item.json.violations.eaa_blockers.length }} identificati):\n  * Criterio WCAG + severity level\n  * Esempio concreto dal sito (selettore DOM, pagina)\n  * Impatto specifico su utenti disabili\n  * Effort ore uomo fix (con breakdown dev/design/QA)\n  * Quick win vs strutturale?\n- Prioritizzazione SEVERA: blocker (non negoziabile) > critical > major > minor\n- Timeline REALISTICA: \"Settimana 1-2: fare X\" (non \"entro 30 giorni\")\n\n✅ **Pulito da ridondanze e teorico**:\n- ELIMINA: ripetizioni concetti WCAG\n- ELIMINA: definizioni teoriche EAA (client sa già cos'è)\n- ELIMINA: liste generiche \"migliorare accessibilità è importante\"\n- ELIMINA: affermazioni non supportate da dati\n- FOCUS: cosa NON va + effort ore uomo per fix + timeline concreta\n\n✅ **Actionable per decision-maker**:\n- Piano operativo con effort PRECISO per ogni azione\n- Quick wins {{ $('Code').item.json.quick_wins.length }} identificati e prioritizzati\n- Timeline WEEK-BASED (non \"entro mesi\")\n- Budget QUANTIFICATO in ore uomo (non € diretti)\n- Indicazione chiara: \"Chi dovrebbe fare? (interno vs esterno agency)\"\n\n✅ **Includi competitive advantage e opportunità**:\n- Competitor compliance nel settore (se dati disponibili):\n  * \"Nel settore engineering, % competitor conforme WCAG AA: X%\"\n  * \"Voi NON conformi = svantaggio gare pubbliche\"\n  * \"First-mover advantage se remediate velocemente\"\n- Accesso gare pubbliche PNRR:\n  * \"Requisito obbligatorio WCAG AA per bandi PA\"\n  * \"Esclusione attuale = perdiamo opportunity €X-Y/anno\"\n  * \"Remediation break-even: 1-2 gare vinte\"\n- SEO + UX benefits:\n  * \"Google ranking factor per accessibility\"\n  * \"+5-10% traffic lift da accessibility improvements\"\n  * \"+10-15% session time per tutti utenti\"\n- Rischio reputazionale:\n  * \"Segnalazioni pubbliche associazioni disabilità\"\n  * \"B2B impact: clienti esteri/PA richiedono WCAG AA\"\n  * \"Non compliance = reputation hit, exclusion da conversazioni strategiche\"\n\n===========================================\nCOSA EVITARE (❌)\n===========================================\n\n❌ Ripetizioni di concetti:\n   NO: Spiegare cos'è EAA in 3 sezioni diverse\n   SI: Menzione una volta in contesto, focus su impatto\n\n❌ Frasi generiche:\n   NO: \"È importante migliorare l'accessibilità\"\n   SI: \"Score 45/100 = NON conforme. Rischio sanzioni €20k-€100k. Remediation 220 ore uomo.\"\n\n❌ Claim non supportati:\n   NO: \"Sicuramente verranno multe\"\n   SI: \"Enforcement probability 70-80% per settore engineering. Sanzioni tipiche €20k-€100k.\"\n\n❌ Sezioni troppo teoriche:\n   NO: Lunghe spiegazioni WCAG Level A vs AA\n   SI: Diritti al punto: quale violazione, perché è grave, come fix\n\n❌ Senza timeline concreta:\n   NO: \"Entro 90 giorni remediation completa\"\n   SI: \"Settimana 1-2: fix 60 ore uomo blockers. Giorni 15-30: 50 ore quick wins. Giorni 30-90: 176 ore core remediation.\"\n\n❌ Senza effort esplicito:\n   NO: \"Servono correzioni CSS\"\n   SI: \"24 ore uomo dev + 6h design + 6h QA = 36 ore uomo totali. A €70/h = €2.5k.\"\n\n===========================================\nCOSA AGGIUNGERE (✅)\n===========================================\n\n✅ Competitive advantage (se rilevante):\n   - \"Nel settore engineering B2B, bassa maturità accessibility (15-20% competitor conformi AA)\"\n   - \"Certificazione WCAG AA differenziatore competitivo per gare pubbliche\"\n   - \"First-mover advantage: se remediate velocemente, access exclusive PA contracts\"\n\n✅ Opportunità gare pubbliche PNRR:\n   - \"PNRR bandi richiedono WCAG AA certificato come prerequisite tecnico\"\n   - \"Non conformità = esclusione automatica da bandi pubblici\"\n   - \"Stima opportunità persa: €X-Y/anno se operate B2B pubblico\"\n\n✅ Benefici SEO:\n   - \"Google favorisce siti accessibili (ranking factor dal 2021)\"\n   - \"Stima traffic lift: +5-10% da accessibility improvements\"\n   - \"Core Web Vitals + accessibility = combined ranking boost\"\n\n✅ Benefici UX per TUTTI:\n   - \"Accessibilità non è solo per disabili: mobile users, elderly, slow connections beneficiano\"\n   - \"Session time +10-15%, bounce rate -5-10% in benchmark accessibili\"\n\n✅ Rischio reputazionale B2B:\n   - \"Clienti esteri/PA chiedono WCAG AA attestazione\"\n   - \"Non compliance = reputation hit, esclusione da conversazioni strategiche\"\n   - \"Segnalazioni pubbliche associazioni disabilità = media coverage negativo\"\n\n✅ Domande critiche da porre (sezione finale):\n   - Contenuti multimediali presenti? (PDF, video, brochure scaricabili?)\n   - Funzionalità custom? (mappe, form multi-step, slider, date picker?)\n   - Gare pubbliche/PNRR in scadenza 3-6 mesi?\n   - Budget disponibile? Timeline accettabile?\n   - CMS attuale? Rilasci pianificati?\n   - Owner interno compliance? Finestra approvazione velocity?\n\n✅ Idee valore agenzia (sezione finale):\n   - Servizi concreti: audit blitz, remediation blockers, quick wins, audit manuale, dichiarazione, CI/CD, training, certificazione, monitoring, advisory gare\n\n===========================================\nOUTPUT RICHIESTO\n===========================================\n\n**Formato**: Testo analitico raffinato (NON JSON).\n**Lunghezza**: 1500-2000 parole (conciso ma completo).\n**Struttura**: Mantieni sezioni Agente 1 ma raffina:\n  1. Sintesi esecutiva ultra-concisa (3-4 frasi)\n  2. Analisi POUR (consolidato, no ridondanze)\n  3. Deep dive blockers vs critical\n  4. Gap analysis (non testabile automatico)\n  5. Contesto settoriale + rischio legale (POTENZIATO)\n  6. ROI dettagliato in ore uomo (POTENZIATO)\n  7. Piano operativo con timeline week-based (POTENZIATO)\n  8. Opportunità strategiche (SEO, gare PNRR, reputation, competitor advantage)\n  9. [OBBLIGATORIO] Domande critiche da porre al prospect (max 10 bullet)\n  10. [OBBLIGATORIO] Idee valore da proporre come agenzia (max 10 bullet)\n\n**Finale**: NO conclusioni generiche o summary ripetitive. Fine coincide con sezioni 9-10 (domande + idee).\n\n===========================================\nLINEE GUIDA SPECIFICHE\n===========================================\n\n**Severity prioritizzazione STRETTA**:\n- BLOCKER: Lang mancante, Contrast <3:1, Link senza nome nei CTA → non negoziabile, settimana 1-2\n- CRITICAL: Violazioni AA con impatto alto → 0-30 giorni\n- MAJOR: >10 elementi o percorsi secondari → 30-90 giorni\n- MINOR: UX issue → opportunistic fix\n\n**Ore uomo ESPLICITE ovunque**:\n- Blockers fix: 60 ore uomo (breakdown: 35h dev, 18h design, 7h QA)\n- Quick wins: 40-60 ore uomo aggiuntive\n- Core remediation AA: 160-240 ore uomo\n- Audit manuale: 16-24 ore uomo\n- Certificazione: 20 ore uomo coordinamento\n- Totale: 260-340 ore uomo year 1\n\n**Tariffe per calcoli €**:\n- Base (junior + standard): €60-70/h\n- Mid (mix): €70-80/h\n- Senior (expert): €80-100/h\n- Usa range, non fisso\n\n**Dati contextual settoriali**:\n- Settore engineering B2B: risk ALTO, enforcement 70-80%, sanzioni €20k-€100k\n- Fatturato {{ $('Code').item.json.company_data.acf.annual_revenue }}: stima lost revenue 5-10% se web-dependent\n- Dipendenti {{ $('Code').item.json.company_data.acf.employee_count }}: capacity assessment interno remediation\n\n**Dichiarazione urgenza**:\n- \"Deadline EAA superata 28/06/2025 - non è compliance futura, è obbligo presente\"\n- \"AGID sta conducendo controlli attivi 2025 - enforcement probability 70-80%\"\n- \"Reclami elaborati in 60-90 giorni - sanzioni entro 6 mesi\"\n\n**NO fluff language**:\n- Rimuovi: \"è importante che\", \"potrebbe\", \"andrà considerato\"\n- Usa: \"rischio stimato\", \"probabilità\", \"evidence-based data\"\n\n**Tono decision-oriented**:\n- CEO/Legal deve capire in <2 minuti: \"Score X = conforme? Rischio? Costo? Timeline?\"\n- Risposta: \"No, non conforme. €20k-€100k sanzioni risk. 220-300 ore uomo investment. Settimana 1-2 blocker, giorni 15-30 quick wins, giorni 30-90 core. Break-even 2-3 mesi (1 gara PNRR).\"\n\n===========================================\nIMPORTANTE\n===========================================\n\n✅ Esprimi costi in ORE UOMO (non €)\n✅ Tariffe solo come moltiplicatori (€60-100/h)\n✅ Timeline in settimane/giorni (non mesi vaghi)\n✅ Severità-ordered (blocker > critical > major > minor)\n✅ NO ridondanze concettuali\n✅ NO claim senza data/evidence\n✅ INCLUDI sezione \"Domande prospect\" + \"Idee agenzia\" al finale\n✅ Italiano fluido, termine tech WCAG solo se necessario\n✅ Tono: consulenziale, diretto, business-oriented\n\n===========================================\nANALISI DA REVISIONARE (Agente 1 output)\n===========================================\n\n{{ $json.message.content }}\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -512,
+        -896
+      ],
+      "id": "659804d0-ee0e-414e-a5ff-df71f726aaef",
+      "name": "Agente di revisione",
+      "credentials": {
+        "openAiApi": {
+          "id": "YKH8CfczdzNM1zeT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const statusCode = $json.statusCode ?? 0;\nconst ok = statusCode >= 200 && statusCode < 300;\nconst body = $json.body ?? {};\nconst analysisId = body?.id ?? null;\nconst analysisLink = body?.link ?? null;\nconst message = ok\n  ? (body?.message || 'OK')\n  : (body?.message || body?.data?.message || 'Errore upsert');\n\nreturn [{\n  json: {\n    upsert_ok: ok,\n    upsert_status_code: statusCode,\n    upsert_message: message,\n    analysis_id: analysisId,\n    analysis_link: analysisLink,\n    upsert_raw: body,\n    upsert_at_iso: new Date().toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        -896
+      ],
+      "id": "0951c640-95b2-439b-a0b9-994470d85353",
+      "name": "Compose Upsert Result"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"ok\": {{ $json.upsert_ok }},\n  \"status\": {{ $json.upsert_status_code }},\n  \"message\": \"{{ $json.upsert_message }}\"\n}",
+        "options": {
+          "responseCode": "={{ $json.upsert_status_code || 200 }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        864,
+        -800
+      ],
+      "id": "31029fe8-2147-49c4-bcea-82f8cadc918c",
+      "name": "Return Status"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://lead.perspect.it/wp-json/wp/v2/azienda/{{ $('Code').item.json.company_data.id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "acf[analysis_last_status_code]",
+              "value": "={{ $json.upsert_status_code }}"
+            },
+            {
+              "name": "acf[analysis_last_message]",
+              "value": "={{ $json.upsert_message }}"
+            },
+            {
+              "name": "acf[analysis_last_at]",
+              "value": "={{ $json.upsert_at_iso }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        864,
+        -992
+      ],
+      "id": "6c083a84-3229-424b-bd93-799ea7246466",
+      "name": "Log Upsert Result WP",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "3aI2CNmgXh2YqkjZ",
+          "name": "Lead 18kPRo WP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.is_update ? 'https://lead.perspect.it/wp-json/wp/v2/analisi/' + $json.existing_analysis_id : 'https://lead.perspect.it/wp-json/wp/v2/analisi' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json; charset=utf-8"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "title",
+              "value": "={{ $('Code').item.json.company_data.acf.company_name_full }} - Analisi EAA Accessibility"
+            },
+            {
+              "name": "status",
+              "value": "publish"
+            },
+            {
+              "name": "agent_type",
+              "value": "=17"
+            },
+            {
+              "name": "acf[riassunto]",
+              "value": "={{ $json.acf.riassunto }}"
+            },
+            {
+              "name": "acf[punti_di_debolezza]",
+              "value": "={{ $json.acf.punti_debolezza }}"
+            },
+            {
+              "name": "acf[punti_di_forza]",
+              "value": "={{ $json.acf.punti_forza }}"
+            },
+            {
+              "name": "acf[opportunita]",
+              "value": "={{ $json.acf.opportunita }}"
+            },
+            {
+              "name": "acf[azioni_rapide]",
+              "value": "={{ $json.acf.azioni_rapide }}"
+            },
+            {
+              "name": "acf[parent_company_id]",
+              "value": "={{ $('Code').item.json.company_data.id }}"
+            },
+            {
+              "name": "acf[numero_punti_di_debolezza]",
+              "value": "={{ $json.acf.count_punti_debolezza }}"
+            },
+            {
+              "name": "acf[numero_punti_di_forza]",
+              "value": "={{ $json.acf.count_punti_forza }}"
+            },
+            {
+              "name": "acf[numero_opportunita]",
+              "value": "={{ $json.acf.count_opportunita }}"
+            },
+            {
+              "name": "acf[numero_azioni_rapide]",
+              "value": "={{ $json.acf.count_azioni_rapide }}"
+            },
+            {
+              "name": "acf[voto_qualita_analisi]",
+              "value": "={{ $json.acf.voto_qualita_analisi }}"
+            },
+            {
+              "name": "acf[analisy_perplexity_deep_research]",
+              "value": "={{ $('Agente di analisi').item.json.message.content }}"
+            },
+            {
+              "name": "acf[revisione_analisi_completa]",
+              "value": "={{ $('Agente di revisione').item.json.message.content }}"
+            },
+            {
+              "name": "acf[qualita_dati]",
+              "value": "={{ $json.acf.voto_qualita_dati }}"
+            },
+            {
+              "name": "acf[messaggi_principali]",
+              "value": "={{ $json.acf.messaggi_principali }}"
+            },
+            {
+              "name": "acf[]promessa_di_valore",
+              "value": "={{ $json.acf.promessa_valore }}"
+            },
+            {
+              "name": "acf[numero_messaggi_principali]",
+              "value": "={{ $json.acf.count_messaggi_principali }}"
+            },
+            {
+              "name": "acf[tono_di_voce]",
+              "value": "={{ $json.acf.tono_di_voce }}"
+            },
+            {
+              "name": "acf[]elementi_differenzianti",
+              "value": "={{ $json.acf.differenziazione }}"
+            },
+            {
+              "name": "acf[numero_elementi_differenzianti]",
+              "value": "={{ $json.acf.count_differenziazione }}"
+            },
+            {
+              "name": "acf[]coerenza_comunicativa",
+              "value": "={{ $json.acf.coerenza_comunicativa }}"
+            },
+            {
+              "name": "acf[target_commerciali]",
+              "value": "={{ $json.acf.target_commerciali }}"
+            },
+            {
+              "name": "acf[]numero_target_commerciali",
+              "value": "={{ $json.acf.count_target_commerciali }}"
+            },
+            {
+              "name": "acf[idee_di_valore_perspect]",
+              "value": "={{ $json.acf.idee_valore_agenzia }}"
+            },
+            {
+              "name": "acf[numero_idee_di_valore]",
+              "value": "={{ $json.acf.count_idee_valore_agenzia }}"
+            },
+            {
+              "name": "acf[domande_prospect]",
+              "value": "={{ $json.acf.domande_prospect }}"
+            },
+            {
+              "name": "acf[numero_domande]",
+              "value": "={{ $json.acf.count_domande_prospect }}"
+            },
+            {
+              "name": "acf[rischi]",
+              "value": "={{ $json.acf.rischi_mitigazioni }}"
+            },
+            {
+              "name": "acf[numero_rischi]",
+              "value": "={{ $json.acf.count_rischi_mitigazioni }}"
+            },
+            {
+              "name": "acf[priorita_temporali]",
+              "value": "={{ $json.acf.priorita_temporali }}"
+            },
+            {
+              "name": "acf[report_discorsivo]",
+              "value": "={{ $json.acf.report_discorsivo }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        416,
+        -896
+      ],
+      "id": "27a359ec-1954-4736-af01-daf01813b00d",
+      "name": "Upsert WP",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "3aI2CNmgXh2YqkjZ",
+          "name": "Lead 18kPRo WP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "eaa-accessibility-agent",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "18f5b763-5046-49dc-b125-52dbc7c9e7bd",
+      "name": "Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -1984,
+        -896
+      ],
+      "webhookId": "b709d3c4-49a0-4197-8e2b-26779704c899"
+    },
+    {
+      "parameters": {
+        "url": "=https://lead.perspect.it/wp-json/wp/v2/azienda/{{ $json.body.company_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1760,
+        -896
+      ],
+      "id": "5e1d4224-7d1c-43df-9e23-704053e43130",
+      "name": "Read Azienda WP",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "3aI2CNmgXh2YqkjZ",
+          "name": "Lead 18kPRo WP"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5",
+          "mode": "list",
+          "cachedResultName": "GPT-5"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Ruolo\nAgisci come un analista senior compliance EAA. Riceverai un'analisi testuale eterogenea da due agenti precedenti e dovrai distillarla senza perdita di valore in un output JSON strutturato per WordPress.\n\nScrivi sempre in italiano professionale, chiaro, orientato al decision-maker (CEO/Legal/IT Manager).\n\nEsprimi TUTTI i costi e effort in ORE UOMO, non in €. Le tariffe (€60-100/h) saranno applicate posteriormente per calcoli budget.\n\nProduce SOLO un JSON valido (nessun testo extra) seguendo ESATTAMENTE questo schema (non aggiungere né rimuovere campi):\n\n{\n\"riassunto\": \"string (≤600 char, focus su: livello conformità, rischio legale, urgenza intervento)\",\n\"messaggi_principali\": [\"punto1\", \"punto2\", ...],\n\n\"report_discorsivo\": \"string (3000-4000 char, testo organizzato in sezioni con titoli Markdown # ## e paragrafi per documento cliente diretto). Struttura OBBLIGATORIA: Situazione Attuale (score, conformità, blocker), Rischi Legali e Normativi (sanzioni, enforcement, deadline), Impatto Commerciale (lost revenue, gare pubbliche, reputazione), Piano Operativo Urgente (blocker 2 settimane → quick wins 30gg → remediation 90gg → certificazione 12 mesi), Conclusioni e Prossimi Step. Tono: consulenziale, orientato a decisione rapida. Includi numeri concreti (€X, YY giorni, Z utenti). Destinatario: cliente finale che riceverà questo testo.\",​\n\n\"promessa_valore\": \"string (valore della remediation: evitare sanzioni + accesso mercato + SEO)\",\n\"tono_di_voce\": \"string (tono analisi: tecnico/consulenziale/urgente)\",\n\"differenziazione\": [\"elemento1\", \"elemento2\"],\n\"coerenza_comunicativa\": \"string (coerenza accessibilità su sito/app/doc)\",\n\n\"punti_forza\": [\"elementi accessibili già conformi\"],\n\"punti_debolezza\": [\"violazioni WCAG con criterio + severity\"],\n\"opportunita\": [\"benefici remediation: mercato, SEO, UX, reputazione\"],\n\"azioni_rapide\": [\"quick wins 0-30gg con criterio WCAG\"],\n\n\"target_commerciali\": [\"segmenti utenti esclusi: disabilità visive, motorie, cognitive\"],\n\"potenziale\": \"string (potenziale mercato accessibile + riduzione rischio)\",\n\"idee_valore_agenzia\": [\"servizi: audit certificato, remediation, training, monitoraggio\"],\n\"domande_prospect\": [\"domanda1\", \"domanda2\", ...],\n\n\"attendibilita_dati\": {\n\"alert\": true/false,\n\"note\": \"string (tool usati, limiti analisi automatica, necessità audit manuale)\"\n},\n\"rischi_mitigazioni\": [\n{\n\"rischio\": \"Violazione EAA: sanzioni fino a €500k\",\n\"mitigazione\": \"Audit completo + remediation prioritaria entro 90gg\"\n}\n],\n\"priorita_temporali\": {\n\"entro_30_giorni\": [\"fix blocker: contrasto, alt text, keyboard nav\"],\n\"entro_90_giorni\": [\"remediation completa Level AA\"],\n\"entro_12_mesi\": [\"certificazione, training team, monitoraggio continuo\"]\n},\n\"prove_trust\": {\n\"team_visibile\": false,\n\"case_study\": false,\n\"testimonianze\": false,\n\"certificazioni\": [\"WCAG 2.1 AA audit certificato da tool X\"]\n},\n\n\"fonti\": [\n{\"titolo\": \"Tool/Fonte\", \"url\": \"https://...\"}\n],\n\n\"voto_qualita_analisi\": 0-100,\n\"voto_qualita_dati\": 0-100\n}\n\n\n\n\n\n\n---\n\nREGOLE DI COMPILAZIONE DETTAGLIATE (ORE UOMO EDITION)\n\n---\n\n**riassunto** (max 600 char):\nSintesi esecutiva ultra-concisa per CEO in formato ORE UOMO.\n\nIncludi: score/conformità, blockers, sanzioni risk, urgenza, EFFORT IN ORE UOMO, ROI.\n\nEsempio:\n\"Score 45/100 = NON conforme. 5 blocker EAA. Sanzioni €20k-€100k risk. Remediation: 210-290 ore uomo (blockers 60h settimana 1-2, quick wins 50h, core AA 160-240h). ROI: 1 gara PNRR vinta copre investment 3-5x. Deadline EAA superata 28/06/2025.\"\n\n---\n\n**messaggi_principali** (max 5 bullet):\nTop takeaway CEO in ORE UOMO.\n\nFormato: \"Metrica/Rischio: descrizione + effort ore uomo\".\n\nEsempi:\n- \"NON conforme EAA (score 45/100). Blocker fix: 60 ore uomo entro settimana 1-2\"\n- \"5 blocker Level A/AA. Quick wins: 50 ore uomo aggiuntive\"\n- \"€20k-€100k sanzioni + esclusione gare PNRR\"\n- \"Core remediation AA: 160-240 ore uomo. Total year 1: 210-290 ore uomo\"\n- \"ROI positivo: 1 gara PNRR (€50k-500k value) copre investment 3-10x\"\n\n---\n\n**report_discorsivo** (2000-3000 char):\nTesto per cliente finale, organizzato in sezioni Markdown.\n\nStruttura OBBLIGATORIA:\n\n# Situazione Attuale\n- \"Il vostro sito ha ottenuto uno score di 45/100 nell'audit di conformità EAA/WCAG 2.1 AA, risultando NON conforme.\"\n- \"Identificati 5 blocker critici\" + dettaglio\n- \"Audit tool: WAVE + Lighthouse dual-certification\"\n- \"Data audit: [data]\"\n- \"Report disponibili: [URL WAVE], [URL Lighthouse]\"\n- \"Entro 28 giugno 2025 era il termine di conformità EAA; siamo attualmente NON conformi, soggetti a enforcement attivo.\"\n\n## Rischi Legali e Normativi\n- \"Deadline EAA superata (28/06/2025). Enforcement AGID attivo 2025.\"\n- \"Sanzioni stimate: €20k-€100k per PMI engineering B2B (fatturato {{ $('Code').item.json.company_data.acf.annual_revenue }})\"\n- \"Esclusione automatica da gare pubbliche PNRR (requisito WCAG AA obbligatorio)\"\n- \"Possibili azioni legali: associazioni disabilità, reclami singoli, L. 67/2006 (discriminazione digitale)\"\n- \"Obbligo dichiarazione accessibilità annuale EN 301 549\"\n\n## Impatto Commerciale\n- \"Lost revenue: 15-20% mercato UE con disabilità esclusi. Stima: €X-Y/anno\"\n- \"Danno reputazionale: segnalazioni pubbliche associazioni, media coverage negativo\"\n- \"Impossibilità partecipazione appalti pubblici/PNRR (revenue opportunity persa €50k-500k/anno)\"\n- \"Vantaggio competitor se conformi: differenziatore esclusivo\"\n- \"Esclusione da gare B2B con requisito WCAG AA\"\n\n## Piano Operativo Urgente\n- **Settimana 1-2 (Blocker immediati)**: 60 ore uomo\n  * Contrasti: 24h, lang: 3h, link names: 16h, viewport: 5h, target touch: 12h\n  * Effort: 35h dev, 18h design, 7h QA\n  * Timeline: Settimana 1-2 (non-negotiable)\n\n- **0-30 giorni (Quick wins)**: 50 ore uomo aggiuntive\n  * Heading structure, skip links, audit lite NVDA, form validation, alt text\n  * Effort: 28h dev, 15h design, 7h QA\n  \n- **0-90 giorni (Remediation completa Level AA)**: 160-240 ore uomo\n  * Design system review (40h), form accessibility (48h), documenti/media (32h), audit manuale (40h), dichiarazione (16h)\n  * Effort: 80-120h dev, 48-72h design, 32-48h QA\n\n- **3-12 mesi (Certificazione + governance)**:\n  * Certificazione ente terzo (20h), team training (16h), CI/CD setup (24h), governance (12h), monitoring (32h/anno)\n\n**TOTALE YEAR 1**: 210-290 ore uomo\n- A €60-80/h (base): €12.6k-€23.2k\n- A €70-90/h (mid): €14.7k-€26.1k\n- A €80-100/h (senior): €16.8k-€29k\n\n**ROI**: \n- Evitare sanzioni: €20k-€100k\n- 1 gara PNRR vinta (€50k-500k value) copre investment 3-10x\n- Break-even: 2-3 mesi (se partecipate gare pubbliche)\n\n## Conclusioni e Prossimi Step\n- Urgenza: MASSIMA (deadline superata, enforcement attivo, risk immediato)\n- Raccomandazione: confermare blockers settimana 1-2, pianificare remediation core 90gg\n- Proposta: incontro per allineare priorità, budget, team interno vs agency resources\n- Contatti: [informazioni agenzia]\n\nTono: Consulenziale, urgente, business-oriented. NO pura tecnica. ROI quantificato in ore uomo.\n\n---\n\n**promessa_valore** (max 300 char):\nValore concreto remediation in ORE UOMO.\n\nEsempio:\n\"Evitare sanzioni €20k-€100k con 210-290 ore uomo investment. Accesso gare PNRR (€50k-500k revenue). SEO boost. Recupero 80M+ utenti UE. ROI 3-10x.\"\n\n---\n\n**tono_di_voce**:\nDescrizione tono analisi.\n\nEsempi: \"urgente e data-driven\", \"consulenziale orientato CEO\", \"business-focused con urgenza legale\"\n\n---\n\n**differenziazione** (max 3):\nCosa rende unica questa analisi.\n\nEsempi:\n- \"Dual audit WAVE + Lighthouse (90+ criteri WCAG)\"\n- \"5 blocker EAA identificati con effort ore uomo preciso\"\n- \"ROI quantificato: remediation vs sanzioni vs gare pubbliche\"\n\n---\n\n**coerenza_comunicativa**:\nCoerenza tra claim aziendali e realtà digitale.\n\nEsempio:\n\"Azienda engineering con narrativa internazionale e sostenibilità ESG. Sito NON accessibile = incoerenza. Opportunity: certificazione AA allinea valori pubblicizzati con realtà digitale.\"\n\n---\n\n**punti_forza** (array):\nElementi già conformi WCAG (se presenti). Se nessuno: [].\n\nFormato: \"WCAG X.X.X: descrizione elemento\"\n\nEsempio: [\"Homepage heading structure corretta\", \"Alcuni link hanno descrizioni adeguate\"]\n\n---\n\n**punti_debolezza** (array):\nViolazioni WCAG con criterio + severity.\n\nFormato: \"WCAG X.X.X Titolo: descrizione - [BLOCKER|CRITICAL|MAJOR|MINOR]\"\n\nOrdina per severity (blocker prima).\n\nEsempi:\n- \"WCAG 1.4.3 Contrast Minimum: 23 elementi ratio <3:1 (header, menu, CTA) - [BLOCKER]\"\n- \"WCAG 3.1.1 Language of Page: lang attribute mancante su HTML - [BLOCKER]\"\n- \"WCAG 2.4.4 Link Purpose: 14 link vuoti + 9 senza nome discernibile - [CRITICAL]\"\n- \"WCAG 1.4.4 Resize Text: viewport user-scalable=no - [CRITICAL]\"\n- \"WCAG 2.5.8 Target Size: controlli touch <24px - [MAJOR]\"\n\n---\n\n**opportunita** (array):\nBenefici remediation.\n\nFormato: \"Beneficio: impatto quantificato\"\n\nEsempi:\n- \"Evitare sanzioni legali €20k-€100k\"\n- \"Accesso gare pubbliche PNRR (requisito WCAG AA)\"\n- \"SEO boost: accessibility = ranking factor Google\"\n- \"Recupero 15-20% utenti UE con disabilità (80M+)\"\n- \"UX migliorata per TUTTI: +10-15% session time\"\n\n---\n\n**azioni_rapide** (array):\nQuick wins 0-30gg CON ORE UOMO.\n\nFormato: \"Azione (WCAG X.X.X): descrizione - [Y ore uomo: Ah dev, Bh design, Ch QA]\"\n\nOrdina per impact/effort ratio.\n\nEsempi:\n- \"Fix contrasti critici (WCAG 1.4.3): header/menu/CTA - [24 ore uomo: 12h dev, 6h design, 6h QA]\"\n- \"Aggiungere lang (WCAG 3.1.1): HTML attribute - [3 ore uomo: 2h dev, 1h QA]\"\n- \"Correggere link nomi (WCAG 2.4.4): menu + social - [16 ore uomo: 10h dev, 4h design, 2h QA]\"\n- \"Viewport zoom (WCAG 1.4.4): rimuovere user-scalable=no - [5 ore uomo: 3h dev, 2h QA]\"\n- \"Target touch (WCAG 2.5.8): standardizzare dimensioni - [12 ore uomo: 6h dev, 4h design, 2h QA]\"\n\n---\n\n**target_commerciali** (array):\nSegmenti utenti esclusi.\n\nFormato: \"Tipo disabilità: descrizione impatto\"\n\nEsempi:\n- \"Ipovisione (6-8%): contrast <3:1 illeggibile\"\n- \"Screen reader users: link vuoti, lang mancante = navigazione compromessa\"\n- \"Disabilità motoria: impossibilità tastiera, target touch piccoli\"\n- \"Disabilità cognitive: heading non chiari, link nomi incomprensibili\"\n- \"Utenti anziani: zoom disabilitato = testo illeggibile\"\n\n---\n\n**potenziale** (max 300 char):\nPotenziale economico + riduzione rischio IN ORE UOMO + €.\n\nEsempio:\n\"80M+ utenti UE esclusi = mercato. Accesso PNRR = revenue garantita. Sanzioni €20k-€100k evitabili. Investment 210-290 ore uomo (€12.6k-€29k) coperto da 1 gara pubblica vinta (€50k-€500k value).\"\n\n---\n\n**idee_valore_agenzia** (array, 8-10):\nServizi concreti da proporre CON ORE UOMO.\n\nFormato: \"Servizio: descrizione (Y ore uomo)\"\n\nEsempi:\n- \"Audit EAA blitz (1 settimana): conferma blocker + piano fix (40 ore uomo)\"\n- \"Remediation blockers (2 settimane): fix 5 blocker critici (60 ore uomo)\"\n- \"Quick wins implementation (2-4 settimane): 50 ore uomo\"\n- \"Audit manuale completo: test NVDA/VoiceOver/tastiera (16-24 ore uomo)\"\n- \"Messa in conformità moduli + documenti: form + PDF/UA (32 ore uomo)\"\n- \"Dichiarazione accessibilità + VPAT/EN 301 549 (16 ore uomo)\"\n- \"Setup CI/CD: integrazione aXe + regressioni automatizzate (24 ore uomo)\"\n- \"Formazione team: workshop dev/design/content (16 ore uomo)\"\n- \"Certificazione WCAG 2.1 AA ente terzo: coordinamento (20 ore uomo)\"\n- \"Advisory gare pubbliche: supporto compliance PNRR (12 ore uomo)\"\n\n---\n\n**domande_prospect** (array, max 10):\nDomande qualificazione.\n\nEsempi:\n- \"Quante pagine chiave generano lead? KPI impattati?\"\n- \"PDF/video/brochure pubblici? Quantità e priorità?\"\n- \"CMS attuale? Rilasci pianificati 0-90gg?\"\n- \"Vincoli brand palette? Possiamo introdurre palette AA?\"\n- \"Percorsi tastiera/screen reader testati? Con quali tool?\"\n- \"Bandi PNRR/PA in scadenza 3-6 mesi?\"\n- \"Budget disponibile 90gg + 12 mesi?\"\n- \"Contenuti multilingua (IT/EN)? Gestione lang-page?\"\n- \"Componenti custom (mappe, slider, form)?\"\n- \"Owner interno compliance? Finestra approvazione?\"\n\n---\n\n**attendibilita_dati**:\n- **alert**: true se solo audit automatico (serve manuale); false se completo\n- **note**: \"Dual audit WAVE + Lighthouse (90+ criteri). Limiti: non testano screen reader reale, PDF, video, form validation avanzata, custom components. Serve audit manuale per certificazione EN 301 549 finale.\"\n\n---\n\n**rischi_mitigazioni** (array oggetti):\nRischi EAA + mitigazione CON ORE UOMO.\n\nFormato: {\"rischio\": \"...\", \"mitigazione\": \"... (X ore uomo)\"}\n\nEsempi:\n- {\"rischio\": \"Sanzioni €20k-€100k + esclusione gare PNRR\", \"mitigazione\": \"Blocker fix 60h + core remediation 160-240h + certificazione 20h = totale 240-320h\"}\n- {\"rischio\": \"Lost revenue €1.4-2.8M/anno\", \"mitigazione\": \"Quick wins 50h entro 30gg = impatto immediato\"}\n- {\"rischio\": \"Danno reputazionale\", \"mitigazione\": \"Conformità AA (260-340h) + dichiarazione proattiva\"}\n- {\"rischio\": \"Impossibilità gare pubbliche\", \"mitigazione\": \"Certificazione ente terzo (20h) + VPAT (16h)\"}\n\n---\n\n**priorita_temporali**:\nCON ORE UOMO BREAKDOWN.\n\n- **entro_30_giorni**: \n  * \"WCAG 1.4.3: contrasti (24h dev, 6h design, 6h QA = 36h totale)\"\n  * \"WCAG 3.1.1: lang (2h dev, 1h QA = 3h)\"\n  * \"WCAG 2.4.4: link names (10h dev, 4h design, 2h QA = 16h)\"\n  * \"WCAG 1.4.4: viewport (3h dev, 2h QA = 5h)\"\n  * \"WCAG 2.5.8: target touch (6h dev, 4h design, 2h QA = 12h)\"\n  * \"Subtotale: 72h (blockers 60h + quick wins 12h)\"\n\n- **entro_90_giorni**:\n  * \"Design system: palette AA (40h)\"\n  * \"Moduli: labels + errors + validation ARIA (48h)\"\n  * \"Documenti: PDF/UA + video + transcripts (32h)\"\n  * \"Audit manuale: screen reader test (40h)\"\n  * \"Dichiarazione EN 301 549 (16h)\"\n  * \"Subtotale: 176h\"\n\n- **entro_12_mesi**:\n  * \"Certificazione WCAG AA ente terzo (20h coordinamento)\"\n  * \"Team training: dev/design/content/legal (16h)\"\n  * \"CI/CD setup aXe (24h)\"\n  * \"Governance process (12h)\"\n  * \"Monitoring annuale (32h/anno)\"\n  * \"Subtotale: 104h year 1\"\n\n---\n\n**prove_trust** (oggetto):\nCredibilità per prospect.\n\n- team_visibile: bool\n- case_study: bool\n- testimonianze: bool\n- certificazioni: [\"WAVE WebAIM audit\", \"Google Lighthouse\", \"EN 301 549 standard\", \"VPAT compliance\"]\n\n---\n\n**ore_uomo_breakdown** (NUOVO CAMPO - ORE UOMO):\nBreakdown dettagliato ore uomo per calcoli budget.\n\nStruttura:\n{\n\"quick_wins_totale\": 50,\n\"quick_wins_breakdown\": {\n\"dev\": 28,\n\"design\": 15,\n\"qa\": 7\n},\n\"remediation_core_min\": 160,\n\"remediation_core_max\": 240,\n\"remediation_core_breakdown_min\": {\n\"dev\": 80,\n\"design\": 48,\n\"qa\": 32\n},\n\"remediation_core_breakdown_max\": {\n\"dev\": 120,\n\"design\": 72,\n\"qa\": 48\n},\n\"totale_minimo\": 210,\n\"totale_massimo\": 290,\n\"note\": \"Tariffe: €60-70/h junior+standard, €70-80/h mid, €80-100/h senior\"\n}\n\n\n\n**Calcoli per preventivi** (fatto nel parsing WordPress):\n- quick_wins_min_EUR = quick_wins_totale × 60 = €X\n- quick_wins_max_EUR = quick_wins_totale × 80 = €Y\n- remediation_min_base = remediation_core_min × 60 = €X\n- remediation_max_premium = remediation_core_max × 100 = €Y\n- total_min_base = totale_minimo × 60 = €X\n- total_max_premium = totale_massimo × 100 = €Y\n\n---\n\n**fonti** (array oggetti):\nTool e standard utilizzati.\n\nFormato: [{\"titolo\": \"WAVE Report\", \"url\": \"...\"}, ...]\n\nEsempi:\n- {\"titolo\": \"WAVE WebAIM\", \"url\": \"https://...\"}\n- {\"titolo\": \"Lighthouse Google\", \"url\": \"https://...\"}\n- {\"titolo\": \"WCAG 2.1 Guidelines\", \"url\": \"https://www.w3.org/WAI/WCAG21/quickref/\"}\n- {\"titolo\": \"EN 301 549 Standard\", \"url\": \"https://www.etsi.org/deliver/etsi_en/301500_301599/301549/03.02.01_60/en_301549v030201p.pdf\"}\n\n---\n\n**voto_qualita_analisi** (0-100):\nCompletezza, concretezza, operatività.\n\n- 90+: Dual audit + plan dettagliato + ROI calculation + examples specifici + ore uomo precise\n- 70-80: Audit buono, plan generico, numeri approssimativi\n- <70: Solo audit data, no business impact\n\n---\n\n**voto_qualita_dati** (0-100):\nAffidabilità dati.\n\n- 85+: Dual audit certificato + indicazione audit manuale necessario\n- 70-80: Audit automatico, limitazioni indicate\n- <70: Incomplete, limitazioni non dichiarate\n\n---\n\nVALIDAZIONE FINALE\n\n✅ JSON strettamente conforme schema (NO campi aggiunti/rimossi)\n✅ Nessun testo fuori JSON\n✅ Array e oggetti correttamente formattati\n✅ Max 600 char riassunto\n✅ 2000-3000 char report_discorsivo\n✅ report_discorsivo: destinato cliente finale → NO tecnicismi, SI business impact\n✅ Ore uomo ovunque (non €)\n✅ Tariffe solo come moltiplicatori\n✅ Tono: urgente ma professionale, business-oriented\n✅ Deduplica concetti tra campi\n✅ Severity-ordered (blocker > critical > major)\n",
+              "role": "system"
+            },
+            {
+              "content": "=Esegui la sintesi JSON (ESATTAMENTE nel formato specificato nel system prompt) dell'analisi EAA per questa azienda.\n\nProduci SOLO JSON valido (nessun testo extra).\n\n===========================================\nCONTESTO AZIENDA\n===========================================\nNome: {{ $('Code').item.json.company_data.acf.company_name_full }}\nP.IVA: {{ $('Code').item.json.company_data.acf.partita_iva }}\nProvincia: {{ $('Code').item.json.company_data.acf.province }}\nSettore: {{ $('Code').item.json.company_data.acf.sector_specific }}\nFatturato: {{ $('Code').item.json.company_data.acf.annual_revenue }}\nDipendenti: {{ $('Code').item.json.company_data.acf.employee_count }}\nDominio: {{ $('Code').item.json.company_data.acf.domain }}\n\n===========================================\nDATI AUDIT DUAL-TOOL\n===========================================\nScore combinato: {{ $('Code').item.json.combined_analysis.accessibility_score }}/100\nConformità EAA: {{ $('Code').item.json.combined_analysis.eaa_compliance }}\nWAVE errors: {{ $('Code').item.json.combined_analysis.wave.errors }}\nContrast errors: {{ $('Code').item.json.combined_analysis.wave.contrast_errors }}\nLighthouse violations: {{ $('Code').item.json.combined_analysis.lighthouse.violations }}\nEAA Blockers identificati: {{ $('Code').item.json.violations.eaa_blockers.length }}\nQuick wins disponibili: {{ $('Code').item.json.quick_wins.length }}\n\nReport URLs:\n- WAVE: {{ $('Code').item.json.reports.wave_url }}\n- Lighthouse: {{ $('Code').item.json.reports.lighthouse_url }}\n\n===========================================\nANALISI TESTO (Agente 2 - Revisione Strategica)\n===========================================\n{{ $json.message.content }}\n\n===========================================\nTASK: PRODURRE JSON STRUTTURATO PER WORDPRESS\n===========================================\n\nEstrai e struttura i dati dall'analisi testo seguendo ESATTAMENTE il schema JSON del system prompt.\n\nMAPPATURA DATI → CAMPI JSON:\n\n**riassunto** (max 600 char):\nEstrarre da analisi: score, conformità, blocker, sanzioni stimate, urgenza deadline, effort ore uomo, ROI.\nFormato: \"Score X/100 = [conforme/NON conforme]. Y blocker EAA. Sanzioni €X-Y. Effort Z ore uomo. ROI: 1 gara PNRR copre investment.\"\nEsempio per non-conforme: \"Score 45/100 = NON conforme. 5 blocker EAA. Sanzioni €20k-€100k. Remediation 210-290 ore uomo. ROI: 1 gara PNRR (€50k-500k value) copre 3-10x. Deadline EAA superata 28/06/2025.\"\n\n**messaggi_principali** (max 5 bullet):\nTop 5 takeaway per CEO da analisi. Ordina per urgenza/impatto.\nFormato: \"Metrica/Rischio: descrizione concisa con numeri\"\nEsempi:\n1. \"NON conforme EAA (score 45/100). Blockers fix: 60 ore uomo settimana 1-2\"\n2. \"{{ $('Code').item.json.violations.eaa_blockers.length }} blocker Level A/AA. Quick wins: 50 ore uomo\"\n3. \"€20k-€100k sanzioni + esclusione gare PNRR\"\n4. \"Core remediation: 160-240 ore uomo (90gg). Total year 1: 210-290 ore uomo\"\n5. \"ROI positivo: 1 gara PNRR vinta copre investment 3-10x. Break-even 2-3 mesi\"\n\n**report_discorsivo** (2000-3000 char, IMPORTANTE):\nTesto organizzato in sezioni Markdown per documento cliente.\n\nStruttura OBBLIGATORIA (5 sezioni):\n\n# Situazione Attuale\n- \"Il sito ha ottenuto uno score di {{ $('Code').item.json.combined_analysis.accessibility_score }}/100, risultando {{ $('Code').item.json.combined_analysis.eaa_compliance }}\"\n- \"Identificati {{ $('Code').item.json.violations.eaa_blockers.length }} blocker critici EAA\"\n- \"Audit: WAVE + Lighthouse dual-certified\"\n- \"Report WAVE: {{ $('Code').item.json.reports.wave_url }}\"\n- \"Report Lighthouse: {{ $('Code').item.json.reports.lighthouse_url }}\"\n- \"Entro 28 giugno 2025 era il termine EAA; siamo attualmente NON conformi, soggetti a enforcement attivo.\"\n\n## Rischi Legali e Normativi\n- \"Deadline EAA superata. Enforcement AGID attivo 2025.\"\n- \"Sanzioni stimate: €20k-€100k per PMI {{ $('Code').item.json.company_data.acf.sector_specific }} (fatturato {{ $('Code').item.json.company_data.acf.annual_revenue }})\"\n- \"Esclusione automatica gare PNRR (requisito WCAG AA obbligatorio)\"\n- \"Possibili azioni legali: associazioni disabilità, L. 67/2006\"\n\n## Impatto Commerciale\n- \"Lost revenue: 15-20% utenti UE con disabilità esclusi\"\n- \"Impossibilità partecipazione gare pubbliche PNRR\"\n- \"Danno reputazionale: segnalazioni pubbliche associazioni disabilità\"\n- \"Vantaggio competitor se conformi\"\n\n## Piano Operativo Urgente\n- **Settimana 1-2**: {{ $('Code').item.json.violations.eaa_blockers.length }} blocker fix (60 ore uomo: 35h dev, 18h design, 7h QA)\n- **0-30 giorni**: {{ $('Code').item.json.quick_wins.length }} quick wins (50 ore uomo aggiuntive)\n- **0-90 giorni**: Core remediation AA (160-240 ore uomo)\n- **3-12 mesi**: Certificazione, training, governance (100+ ore uomo)\n\n**TOTALE year 1**: 210-290 ore uomo\n- A €60-80/h: €12.6k-€23.2k\n- A €80-100/h senior: €16.8k-€29k\n\n**ROI**: 1 gara PNRR vinta (€50k-€500k value) copre investment 3-10x. Break-even 2-3 mesi.\n\n## Conclusioni e Prossimi Step\n- Urgenza: MASSIMA (deadline superata, enforcement attivo)\n- Raccomandazione: blockers settimana 1-2, remediation core 90gg\n- Proposta: incontro per allineare priorità, budget, team risorse\n\nTono: Consulenziale, urgente, business-oriented. NO pura tecnica. ROI quantificato.\n\n**promessa_valore** (max 300 char):\nValore concreto della remediation.\nEsempio: \"Evitare sanzioni €20k-€100k con 210-290 ore uomo investment. Accesso gare PNRR (€50k-500k revenue). SEO boost. Recupero 80M+ utenti UE. ROI 3-10x.\"\n\n**tono_di_voce**:\nDescrizione dal contesto analisi. \nEsempio: \"urgente e consulenziale, data-driven, business-oriented per decision-maker\"\n\n**differenziazione** (max 3 elementi):\nEstrarre unique value proposition dall'analisi.\nEsempi:\n- \"Dual audit WAVE + Lighthouse (90+ criteri WCAG)\"\n- \"{{ $('Code').item.json.violations.eaa_blockers.length }} blocker EAA identificati con effort ore uomo preciso\"\n- \"ROI quantificato: remediation vs sanzioni vs gare pubbliche\"\n\n**coerenza_comunicativa**:\nEstrarre da analisi se presente, altrimenti generico.\nFormato: \"Verifica coerenza tra claim aziendali e realtà digitale\"\nEsempio: \"Azienda engineering con narrativa internazionale ESG. Sito NON accessibile = incoerenza. Opportunity: certificazione AA allinea valori.\"\n\n**punti_forza** (array):\nElementi già conformi WCAG da analisi. Se nessuno: [].\nEstrarre da \"punti_forza\" dell'analisi testo.\n\n**punti_debolezza** (array):\nViolazioni WCAG da analisi, ordinate per severity (blocker > critical > major).\nFormato: \"WCAG X.X.X Titolo: descrizione - [BLOCKER|CRITICAL|MAJOR]\"\nEstrarre {{ $('Code').item.json.violations.eaa_blockers }} + {{ $('Code').item.json.violations.wave_errors }} + {{ $('Code').item.json.violations.wave_contrast }}.\nOrdina: blocker prima ({{ $('Code').item.json.combined_analysis.wave.contrast_errors }} contrast errors = BLOCKER)\n\n**opportunita** (array):\nBenefici della remediation da analisi.\nEstrarre e quantificare:\n- \"Evitare sanzioni €20k-€100k\"\n- \"Accesso gare PNRR (requisito WCAG AA)\"\n- \"SEO boost: accessibility = ranking factor\"\n- \"Recupero 15-20% utenti UE disabili (80M+)\"\n- \"UX +10-15% session time\"\n\n**azioni_rapide** (array):\nQuick wins 0-30gg CON ORE UOMO da analisi.\nFormato: \"Azione (WCAG X.X.X): descrizione - [Y ore uomo: Ah dev, Bh design, Ch QA]\"\nEstrarre da {{ $('Code').item.json.quick_wins.length }} quick wins.\nOrdinare per impact/effort ratio.\nEsempi:\n- \"Fix contrasti (WCAG 1.4.3): header/menu/CTA - [24 ore uomo: 12h dev, 6h design, 6h QA]\"\n- \"Aggiungere lang (WCAG 3.1.1): HTML - [3 ore uomo: 2h dev, 1h QA]\"\n\n**target_commerciali** (array):\nSegmenti utenti esclusi da analisi.\nFormato: \"Tipo disabilità: impatto concreto\"\nEstrarre da \"target commerciali\" analisi.\n\n**potenziale** (max 300 char):\nPotenziale economico + riduzione rischio da analisi.\nFormato: \"X% mercato escluso = €Y. Accesso PNRR = €ricavi. Sanzioni evitabili = €protezione. ROI investment X ore uomo.\"\n\n**idee_valore_agenzia** (array, 8-10):\nServizi concreti da proporre CON ORE UOMO da analisi.\nFormato: \"Servizio: breve descrizione (Y ore uomo)\"\nEstrarre da \"idee valore agenzia\" analisi e riordinare con ore uomo.\n\n**domande_prospect** (array, max 10):\nDomande qualificazione da analisi, specifiche per settore {{ $('Code').item.json.company_data.acf.sector_specific }}.\nEstrarre da \"domande prospect\" analisi.\n\n**attendibilita_dati**:\n- alert: true (se analisi parziale) o false (completa)\n- note: \"Dual audit WAVE + Lighthouse (90+ criteri). Limiti: non testano screen reader reale, PDF, video, form avanzata, custom components. Serve audit manuale per certificazione EN 301 549 finale.\"\n\n**rischi_mitigazioni** (array oggetti):\nRischi EAA + mitigazione CON ORE UOMO da analisi.\nFormato: {\"rischio\": \"...\", \"mitigazione\": \"... (X ore uomo)\"}\nEstrarre e tradurre in ore uomo da analisi.\n\n**priorita_temporali**:\nCON ORE UOMO da analisi.\n\n- **entro_30_giorni**: \n  * Estrarre blocker fix: \"WCAG X.X.X: azione (Y ore uomo)\"\n  * Estrarre quick wins top 3-5\n  * Subtotale: 60-110 ore uomo\n\n- **entro_90_giorni**:\n  * Design system, form, documenti, audit manuale, dichiarazione\n  * Subtotale: 160-240 ore uomo\n\n- **entro_12_mesi**:\n  * Certificazione, training, CI/CD, governance, monitoring\n  * Subtotale: 100+ ore uomo\n\n**prove_trust** (oggetto):\n- team_visibile: false\n- case_study: false\n- testimonianze: false\n- certificazioni: [\"WAVE WebAIM certified\", \"Google Lighthouse\", \"EN 301 549 standard\", \"VPAT compliance\"]\n\n**ore_uomo_breakdown** (NUOVO CAMPO):\nCalcola da analisi testo:\n\n{\n\"quick_wins_totale\": 50,\n\"quick_wins_breakdown\": {\n\"dev\": 28,\n\"design\": 15,\n\"qa\": 7\n},\n\"remediation_core_min\": 160,\n\"remediation_core_max\": 240,\n\"remediation_core_breakdown_min\": {\n\"dev\": 80,\n\"design\": 48,\n\"qa\": 32\n},\n\"remediation_core_breakdown_max\": {\n\"dev\": 120,\n\"design\": 72,\n\"qa\": 48\n},\n\"totale_minimo\": 210,\n\"totale_massimo\": 290,\n\"note\": \"Tariffe: €60-70/h junior+standard, €70-80/h mid, €80-100/h senior\"\n}\n\n\n\nAdatta i numeri in base a {{ $('Code').item.json.violations.eaa_blockers.length }} blocker e {{ $('Code').item.json.quick_wins.length }} quick wins.\n\n**fonti** (array oggetti):\nDa analisi:\n- {\"titolo\": \"WAVE Report\", \"url\": \"{{ $('Code').item.json.reports.wave_url }}\"}\n- {\"titolo\": \"Lighthouse Report\", \"url\": \"{{ $('Code').item.json.reports.lighthouse_url }}\"}\n- {\"titolo\": \"WCAG 2.1 Guidelines\", \"url\": \"https://www.w3.org/WAI/WCAG21/quickref/\"}\n- {\"titolo\": \"EN 301 549 Standard\", \"url\": \"https://www.etsi.org/deliver/etsi_en/301500_301599/301549/03.02.01_60/en_301549v030201p.pdf\"}\n\n**voto_qualita_analisi** (0-100):\nSe analisi include dual audit + plan operativo dettagliato + ROI in ore uomo + examples specifici: 90+\nSe dual audit ma plan generico: 75-85\nSe solo audit data: <70\n\nPredefinito: 92 (analisi strategica potenziata da Agente 2)\n\n**voto_qualita_dati** (0-100):\nSe dual audit certificato + indicazione audit manuale necessario: 85+\nSe solo audit automatico con limitazioni: 75-80\nSe incomplete: <70\n\nPredefinito: 87 (dual WAVE + Lighthouse, limiti dichiarati)\n\n===========================================\nVALIDAZIONE FINALE JSON\n===========================================\n\n✅ Conformità schema (nessun campo aggiunto/rimosso)\n✅ Nessun testo fuori JSON\n✅ Array e oggetti ben formattati\n✅ Max 600 char riassunto\n✅ 2000-3000 char report_discorsivo\n✅ Ore uomo ovunque (non €)\n✅ Tono business-oriented, urgente\n✅ report_discorsivo: destinato cliente finale\n✅ Severity-ordered (blocker > critical > major)\n✅ Messaggi_principali: top 5 bullet per CEO\n\n===========================================\nIMPORTANTE\n===========================================\n\n✅ Produci SOLO JSON valido\n✅ Nessun testo prima/dopo JSON\n✅ Italiano professionale, chiaro\n✅ Numeri concreti (score, €, giorni, %)\n✅ Ore uomo in ogni sezione effort\n✅ Orientato decision-maker CEO/Legal\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -160,
+        -896
+      ],
+      "id": "70db41d8-8853-47da-bdaf-84f568078a15",
+      "name": "Agente di sintesi",
+      "credentials": {
+        "openAiApi": {
+          "id": "YKH8CfczdzNM1zeT",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ===== Helper =====\nconst toArray = (v) =>\n  Array.isArray(v)\n    ? v.map(x => (typeof x === 'string' ? x.trim() : x))\n        .filter(x => x !== null && x !== undefined && String(x).trim() !== '')\n    : [];\n\nconst toStringSafe = (v) => (v === null || v === undefined) ? '' : String(v).trim();\n\nconst toInt = (v) => {\n  const n = Number.parseInt(v, 10);\n  return Number.isFinite(n) ? n : null;\n};\n\nconst clamp01 = (n) => (n === null ? null : Math.max(0, Math.min(100, n)));\n\nconst dedup = (arr) => [...new Set(arr.map(x => (typeof x === 'string' ? x.trim() : x)))];\n\nconst toBool = (v) => Boolean(v);\n\n// Normalizza array di oggetti { rischio, mitigazione }\nconst normRischiMitigazioni = (arr) => {\n  const a = Array.isArray(arr) ? arr : [];\n  return a.map(x => {\n      const o = (x && typeof x === 'object') ? x : {};\n      const rischio = toStringSafe(o.rischio);\n      const mitigazione = toStringSafe(o.mitigazione);\n      return (rischio || mitigazione) ? { rischio, mitigazione } : null;\n    })\n    .filter(Boolean);\n};\n\n// Normalizza priorità temporali\nconst normPriorita = (obj) => {\n  const o = (obj && typeof obj === 'object') ? obj : {};\n  const entro_30_giorni = dedup(toArray(o.entro_30_giorni || []));\n  const entro_90_giorni = dedup(toArray(o.entro_90_giorni || []));\n  const entro_12_mesi   = dedup(toArray(o.entro_12_mesi   || []));\n  return { entro_30_giorni, entro_90_giorni, entro_12_mesi };\n};\n\n// Normalizza prove trust\nconst normProveTrust = (obj) => {\n  const o = (obj && typeof obj === 'object') ? obj : {};\n  return {\n    team_visibile:   toBool(o.team_visibile),\n    case_study:      toBool(o.case_study),\n    testimonianze:   toBool(o.testimonianze),\n    certificazioni:  dedup(toArray(o.certificazioni || []))\n  };\n};\n\n// Normalizza fonti {titolo?, url(required)}\nconst normFonti = (arr) => {\n  const a = Array.isArray(arr) ? arr : [];\n  return a.map(x => {\n      const o = (x && typeof x === 'object') ? x : {};\n      const url = toStringSafe(o.url);\n      const titolo = toStringSafe(o.titolo || '');\n      return url ? { titolo, url } : null;\n    })\n    .filter(Boolean);\n};\n\n// ===== 1) Input =====\nconst first = $input.first()?.json ?? {};\nlet content = first?.message?.content ?? first?.content ?? first;\nlet contentStr = typeof content === 'string' ? content : JSON.stringify(content);\n\n// ===== 2) Parse JSON dell'agente =====\nlet parsedData;\ntry {\n  parsedData = JSON.parse(contentStr);\n} catch (e) {\n  throw new Error('Content non è JSON valido: ' + e.message);\n}\n\n// ===== 3) Estrazione & Normalizzazione =====\n// Executive & Brand\nconst riassunto              = toStringSafe(parsedData.riassunto);\nconst messaggi_principali    = dedup(toArray(parsedData.messaggi_principali));\nconst report_discorsivo      = toStringSafe(parsedData.report_discorsivo); // NEW FIELD\nconst promessa_valore        = toStringSafe(parsedData.promessa_valore);\nconst tono_di_voce           = toStringSafe(parsedData.tono_di_voce);\nconst differenziazione       = dedup(toArray(parsedData.differenziazione));\nconst coerenza_comunicativa  = toStringSafe(parsedData.coerenza_comunicativa);\n\n// Core SWOT/Actions\nconst punti_forza            = dedup(toArray(parsedData.punti_forza));\nconst punti_debolezza        = dedup(toArray(parsedData.punti_debolezza));\nconst opportunita            = dedup(toArray(parsedData.opportunita));\nconst azioni_rapide          = dedup(toArray(parsedData.azioni_rapide));\n\n// Target & Value\nconst target_commerciali     = dedup(toArray(parsedData.target_commerciali));\nconst potenziale             = toStringSafe(parsedData.potenziale);\nconst idee_valore_agenzia    = dedup(toArray(parsedData.idee_valore_agenzia));\nconst domande_prospect       = dedup(toArray(parsedData.domande_prospect));\n\n// Attendibilità & Rischi\nconst attendibilita_dati_in  = (parsedData.attendibilita_dati && typeof parsedData.attendibilita_dati === 'object') ? parsedData.attendibilita_dati : {};\nconst attendibilita_dati     = {\n  alert: Boolean(attendibilita_dati_in.alert),\n  note:  toStringSafe(attendibilita_dati_in.note)\n};\nconst rischi_mitigazioni     = normRischiMitigazioni(parsedData.rischi_mitigazioni);\n\n// Priorità temporali\nconst priorita_temporali     = normPriorita(parsedData.priorita_temporali);\n\n// Prove trust\nconst prove_trust            = normProveTrust(parsedData.prove_trust);\n\n// Fonti\nconst fonti                  = normFonti(parsedData.fonti);\n\n// Voti\nconst voto_qualita_analisi   = clamp01(toInt(parsedData.voto_qualita_analisi));\nconst voto_qualita_dati      = clamp01(toInt(parsedData.voto_qualita_dati));\n\n// ===== 4) Conteggi =====\nconst count_messaggi_principali   = messaggi_principali.length;\nconst count_differenziazione      = differenziazione.length;\n\nconst count_punti_forza           = punti_forza.length;\nconst count_punti_debolezza       = punti_debolezza.length;\nconst count_opportunita           = opportunita.length;\nconst count_azioni_rapide         = azioni_rapide.length;\n\nconst count_target_commerciali    = target_commerciali.length;\nconst count_idee_valore_agenzia   = idee_valore_agenzia.length;\nconst count_domande_prospect      = domande_prospect.length;\n\nconst count_rischi_mitigazioni    = rischi_mitigazioni.length;\n\nconst count_priorita_30            = priorita_temporali.entro_30_giorni.length;\nconst count_priorita_90            = priorita_temporali.entro_90_giorni.length;\nconst count_priorita_12m           = priorita_temporali.entro_12_mesi.length;\n\nconst count_certificazioni         = prove_trust.certificazioni.length;\n\nconst count_fonti                  = fonti.length;\n\n// Calcola lunghezza report_discorsivo\nconst lunghezza_report_discorsivo = report_discorsivo.length;\n\nconst totale_elementi =\n  count_messaggi_principali +\n  count_differenziazione +\n  count_punti_forza +\n  count_punti_debolezza +\n  count_opportunita +\n  count_azioni_rapide +\n  count_target_commerciali +\n  count_idee_valore_agenzia +\n  count_domande_prospect +\n  count_rischi_mitigazioni +\n  count_priorita_30 + count_priorita_90 + count_priorita_12m +\n  count_certificazioni +\n  count_fonti;\n\n// ===== 5) Payload WordPress (ACF) =====\n// Adegua i field keys ACF se usi chiavi 'field_XXXX'\nconst wordpressData = {\n  acf: {\n    // Executive & Brand\n    riassunto,\n    messaggi_principali,\n    count_messaggi_principali,\n    report_discorsivo, // NEW FIELD - Testo medio per documento cliente\n    promessa_valore,\n    tono_di_voce,\n    differenziazione,\n    count_differenziazione,\n    coerenza_comunicativa,\n\n    // Core SWOT/Actions\n    punti_forza,\n    count_punti_forza,\n    punti_debolezza,\n    count_punti_debolezza,\n    opportunita,\n    count_opportunita,\n    azioni_rapide,\n    count_azioni_rapide,\n\n    // Target & Value\n    target_commerciali,\n    count_target_commerciali,\n    potenziale,\n    idee_valore_agenzia,\n    count_idee_valore_agenzia,\n    domande_prospect,\n    count_domande_prospect,\n\n    // Attendibilità & Rischi\n    attendibilita_dati, // {alert, note}\n    rischi_mitigazioni, // repeater [{rischio, mitigazione}]\n    count_rischi_mitigazioni,\n\n    // Priorità temporali\n    priorita_temporali, // {entro_30_giorni:[], entro_90_giorni:[], entro_12_mesi:[]}\n    count_priorita_30,\n    count_priorita_90,\n    count_priorita_12_mesi: count_priorita_12m,\n\n    // Prove trust\n    prove_trust, // {team_visibile, case_study, testimonianze, certificazioni:[]}\n    count_certificazioni,\n\n    // Fonti\n    fonti, // [{titolo?, url}]\n    count_fonti,\n\n    // Totali & Voti\n    lunghezza_report_discorsivo, // NEW - Lunghezza in char del report\n    totale_elementi,\n    voto_qualita_analisi,\n    voto_qualita_dati,\n\n    // Audit\n    output_agente_raw: contentStr\n  }\n};\n\n// ===== 6) Return =====\nreturn { json: wordpressData };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        -896
+      ],
+      "id": "d3115838-223d-47ac-87db-ce166c0802e9",
+      "name": "Parsing"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.microlink.io",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "={{ $json.acf.domain }}"
+            },
+            {
+              "name": "insights.lighthouse",
+              "value": "true"
+            },
+            {
+              "name": "insights.lighthouse.onlyCategories[]",
+              "value": "accessibility"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "n8n/lead-generator"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          },
+          "timeout": 60000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1536,
+        -800
+      ],
+      "id": "f7d14a61-8e0c-428f-a1f7-a9ee73605ce7",
+      "name": "Microlink"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ===== Parse & Merge: WAVE + Lighthouse (Microlink) - OPTIMIZED =====\n\nconst items = $input.all();\nconst output = [];\n\n// Helper sicuro per array\nconst toArray = (val) => {\n  if (Array.isArray(val)) return val;\n  if (val && typeof val === 'object' && val.items && Array.isArray(val.items)) return val.items;\n  return [];\n};\n\n// Identifica WAVE (primo item) e Microlink (secondo item)\nconst waveData = items[0]?.json || {};\nconst microlinkData = items[1]?.json || {};\n\n// ========== PARSE WAVE ==========\nconst waveStats = waveData.statistics || {};\nconst waveCategories = waveData.categories || {};\n\n// WAVE Errors\nconst waveErrors = [];\nconst waveErrorItems = waveCategories.error?.items || {};\nfor (const [errorId, errorData] of Object.entries(waveErrorItems)) {\n  if (!errorData) continue;\n  waveErrors.push({\n    id: errorData.id || errorId,\n    description: errorData.description || 'N/A',\n    count: errorData.count || 0,\n    selectors: Array.isArray(errorData.selectors) ? errorData.selectors.slice(0, 3) : [],\n    severity: 'error',\n    wcag: [] // WAVE non fornisce WCAG mapping diretto negli error items\n  });\n}\n\n// WAVE Contrast Errors (categoria separata)\nconst contrastErrors = [];\nconst contrastItems = waveCategories.contrast?.items || {};\nfor (const [contrastId, contrastData] of Object.entries(contrastItems)) {\n  if (!contrastData) continue;\n  contrastErrors.push({\n    id: contrastData.id || contrastId,\n    description: contrastData.description || 'Contrast issue',\n    count: contrastData.count || 0,\n    selectors: Array.isArray(contrastData.selectors) ? contrastData.selectors.slice(0, 3) : [],\n    contrastData: contrastData.contrastdata || [],\n    severity: 'critical', // Contrast = sempre critical per EAA\n    wcag: ['1.4.3'] // Contrast Minimum\n  });\n}\n\n// WAVE Alerts\nconst waveAlerts = [];\nconst waveAlertItems = waveCategories.alert?.items || {};\nfor (const [alertId, alertData] of Object.entries(waveAlertItems)) {\n  if (!alertData) continue;\n  waveAlerts.push({\n    id: alertData.id || alertId,\n    description: alertData.description || 'N/A',\n    count: alertData.count || 0,\n    selectors: Array.isArray(alertData.selectors) ? alertData.selectors.slice(0, 3) : [],\n    severity: 'warning'\n  });\n}\n\nconst waveErrorCount = waveStats.error || 0;\nconst waveContrastCount = waveCategories.contrast?.count || 0;\nconst waveAlertCount = waveStats.alert || 0;\nconst waveFeatureCount = waveStats.feature || 0;\nconst waveAriaCount = waveStats.aria || 0;\nconst waveStructureCount = waveStats.structure || 0;\n\n// ========== PARSE LIGHTHOUSE (da Microlink) ==========\nconst lighthouseData = microlinkData.data?.insights?.lighthouse || {};\nconst lhCategories = lighthouseData.categories || {};\nconst lhAudits = lighthouseData.audits || {};\n\nconst lighthouseScore = lhCategories.accessibility?.score \n  ? Math.round(lhCategories.accessibility.score * 100) \n  : null;\n\n// Critical WCAG audits\nconst criticalAudits = [\n  'color-contrast', 'html-has-lang', 'meta-viewport', 'document-title',\n  'link-name', 'button-name', 'image-alt', 'label', 'aria-valid-attr',\n  'aria-required-attr', 'list', 'listitem', 'heading-order',\n  'tabindex', 'target-size', 'video-caption', 'bypass'\n];\n\nconst wcagMapping = {\n  'color-contrast': '1.4.3 Contrast (Minimum)',\n  'html-has-lang': '3.1.1 Language of Page',\n  'meta-viewport': '1.4.4 Resize Text',\n  'document-title': '2.4.2 Page Titled',\n  'link-name': '2.4.4 Link Purpose',\n  'button-name': '4.1.2 Name, Role, Value',\n  'image-alt': '1.1.1 Non-text Content',\n  'label': '3.3.2 Labels or Instructions',\n  'aria-valid-attr': '4.1.2 Name, Role, Value',\n  'aria-required-attr': '4.1.2 Name, Role, Value',\n  'list': '1.3.1 Info and Relationships',\n  'listitem': '1.3.1 Info and Relationships',\n  'heading-order': '1.3.1 Info and Relationships',\n  'tabindex': '2.4.3 Focus Order',\n  'target-size': '2.5.8 Target Size',\n  'video-caption': '1.2.2 Captions',\n  'bypass': '2.4.1 Bypass Blocks'\n};\n\nconst lhViolations = [];\nconst lhWarnings = [];\nconst lhPassed = [];\n\nfor (const [auditId, audit] of Object.entries(lhAudits)) {\n  if (!audit || audit.score === null) continue;\n  \n  const isCritical = criticalAudits.includes(auditId);\n  \n  const auditData = {\n    id: auditId,\n    title: audit.title || 'N/A',\n    description: audit.description || '',\n    score: audit.score,\n    wcag_criterion: wcagMapping[auditId] || 'N/A'\n  };\n  \n  // Parse details (SAFE)\n  if (audit.details) {\n    const detailItems = toArray(audit.details.items || audit.details);\n    \n    if (detailItems.length > 0) {\n      auditData.failing_elements = detailItems.slice(0, 5).map(el => {\n        if (!el) return { selector: 'N/A', snippet: 'N/A' };\n        return {\n          selector: el.node?.selector || el.selector || 'N/A',\n          snippet: el.node?.snippet || el.snippet || 'N/A'\n        };\n      });\n      auditData.total_violations = detailItems.length;\n    } else {\n      auditData.failing_elements = [];\n      auditData.total_violations = 0;\n    }\n  }\n  \n  if (audit.score < 1) {\n    if (audit.score === 0 && isCritical) {\n      auditData.severity = 'critical';\n      lhViolations.push(auditData);\n    } else {\n      auditData.severity = 'warning';\n      lhWarnings.push(auditData);\n    }\n  } else if (isCritical) {\n    lhPassed.push(auditData);\n  }\n}\n\n// ========== COMBINED SCORE ==========\n// WAVE ha più peso per EAA perché più specifico su WCAG\n// WAVE: 70%, Lighthouse: 30%\nconst waveTotalIssues = waveErrorCount + waveContrastCount + (waveAlertCount * 0.5);\nconst wavePenalty = Math.min(100, waveTotalIssues * 3); // Ogni error/contrast vale 3 punti\nconst waveScore = Math.max(0, 100 - wavePenalty);\n\nconst combinedScore = lighthouseScore \n  ? Math.round((waveScore * 0.7) + (lighthouseScore * 0.3))\n  : waveScore;\n\n// EAA Compliance Level\nlet eaaCompliance = 'non_conforme';\nif (combinedScore >= 90 && waveErrorCount === 0 && waveContrastCount === 0) {\n  eaaCompliance = 'conforme_AA';\n} else if (combinedScore >= 75 && waveErrorCount < 3 && waveContrastCount < 5) {\n  eaaCompliance = 'parziale';\n}\n\n// ========== PRIORITÀ INTERVENTI ==========\nconst quickWins = [\n  // WAVE quick wins (errors con pochi elementi)\n  ...waveErrors.filter(e => e.count > 0 && e.count <= 5)\n    .map(e => `${e.description} (${e.count} elementi) [WAVE]`),\n  \n  // Contrast con pochi elementi\n  ...contrastErrors.filter(c => c.count <= 10)\n    .map(c => `${c.description} (${c.count} elementi) - WCAG 1.4.3 [WAVE]`),\n  \n  // Lighthouse quick wins\n  ...lhViolations.filter(v => v.total_violations > 0 && v.total_violations <= 10)\n    .map(v => `${v.title} (${v.total_violations} elem) - ${v.wcag_criterion} [Lighthouse]`)\n].slice(0, 10);\n\nconst majorIssues = [\n  // WAVE major issues\n  ...waveErrors.filter(e => e.count > 5)\n    .map(e => `${e.description} (${e.count} elementi) [WAVE]`),\n  \n  // Contrast con molti elementi (CRITICO per EAA)\n  ...contrastErrors.filter(c => c.count > 10)\n    .map(c => `CRITICO: ${c.description} (${c.count} elementi) - WCAG 1.4.3 [WAVE]`),\n  \n  // Lighthouse major\n  ...lhViolations.filter(v => v.total_violations > 10)\n    .map(v => `${v.title} (${v.total_violations} elem) - ${v.wcag_criterion} [Lighthouse]`)\n].slice(0, 10);\n\n// ========== CRITICAL EAA BLOCKERS ==========\nconst eaaBlockers = [\n  // Language missing = blocker Level A\n  ...waveErrors.filter(e => e.id === 'language_missing')\n    .map(e => `BLOCKER EAA: ${e.description} - WCAG 3.1.1 Level A`),\n  \n  // Empty headings/links = blocker\n  ...waveErrors.filter(e => e.id === 'heading_empty' || e.id === 'link_empty')\n    .map(e => `BLOCKER: ${e.description} (${e.count}x)`),\n  \n  // Contrast errors = blocker Level AA\n  ...(waveContrastCount > 0 ? [`BLOCKER EAA: ${waveContrastCount} contrast errors - WCAG 1.4.3 Level AA`] : []),\n  \n  // HTML lang missing da Lighthouse\n  ...(lhViolations.find(v => v.id === 'html-has-lang') ? ['BLOCKER: HTML lang attribute missing - WCAG 3.1.1'] : [])\n];\n\n// ========== OUTPUT COMBINATO ==========\noutput.push({\n  json: {\n    // Dati azienda\n    company_data: $('Read Azienda WP').item.json,\n    \n    // Combined analysis\n    combined_analysis: {\n      accessibility_score: combinedScore,\n      eaa_compliance: eaaCompliance,\n      \n      wave: {\n        score: Math.round(waveScore),\n        errors: waveErrorCount,\n        contrast_errors: waveContrastCount,\n        alerts: waveAlertCount,\n        features: waveFeatureCount,\n        aria: waveAriaCount,\n        structure: waveStructureCount,\n        aim_score: waveStats.AIMscore || null\n      },\n      \n      lighthouse: {\n        score: lighthouseScore,\n        violations: lhViolations.length,\n        warnings: lhWarnings.length,\n        passed: lhPassed.length\n      }\n    },\n    \n    // Dettaglio violazioni\n    violations: {\n      wave_errors: waveErrors.slice(0, 15),\n      wave_contrast: contrastErrors.slice(0, 10),\n      wave_alerts: waveAlerts.slice(0, 15),\n      lighthouse_critical: lhViolations.slice(0, 10),\n      lighthouse_warnings: lhWarnings.slice(0, 10),\n      eaa_blockers: eaaBlockers\n    },\n    \n    // Priorità\n    quick_wins: quickWins,\n    major_issues: majorIssues,\n    \n    // Reports URLs\n    reports: {\n      wave_url: waveStats.waveurl || null,\n      lighthouse_url: lighthouseData.reportUrl || null\n    },\n    \n    // Metadata\n    has_dual_audit: true,\n    audit_timestamp: new Date().toISOString(),\n    target_url: waveStats.pageurl || microlinkData.data?.url || null\n  }\n});\n\nreturn output;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1088,
+        -896
+      ],
+      "id": "4fafba8b-a00d-4653-96f0-d5f3ea684970",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "url": "https://wave.webaim.org/api/request",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "S151MWAV5944"
+            },
+            {
+              "name": "url",
+              "value": "={{ $json.acf.domain }}"
+            },
+            {
+              "name": "format",
+              "value": "json"
+            },
+            {
+              "name": "reporttype",
+              "value": "4"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1536,
+        -992
+      ],
+      "id": "be4cf278-5d1b-49bd-873f-fc2741407828",
+      "name": "Wave API"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1312,
+        -896
+      ],
+      "id": "991481d4-93d8-4ef4-b837-76646c64cffa",
+      "name": "Merge"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Agente di analisi": {
+      "main": [
+        [
+          {
+            "node": "Agente di revisione",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente di revisione": {
+      "main": [
+        [
+          {
+            "node": "Agente di sintesi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compose Upsert Result": {
+      "main": [
+        [
+          {
+            "node": "Log Upsert Result WP",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Return Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert WP": {
+      "main": [
+        [
+          {
+            "node": "Compose Upsert Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trigger": {
+      "main": [
+        [
+          {
+            "node": "Read Azienda WP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Azienda WP": {
+      "main": [
+        [
+          {
+            "node": "Wave API",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Microlink",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente di sintesi": {
+      "main": [
+        [
+          {
+            "node": "Parsing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsing": {
+      "main": [
+        [
+          {
+            "node": "Upsert WP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microlink": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Agente di analisi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wave API": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "81e6a780-0fc5-4652-be0c-d8a9b6589005",
+  "meta": {
+    "instanceId": "fe117d56aad4346ee596609bb8c3079d6edd34e383a675201472f524674346cc"
+  },
+  "id": "RLKMhxbpnowVwtoK",
+  "tags": []
+}

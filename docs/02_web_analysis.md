@@ -2,6 +2,8 @@
 
 Il workflow **Lead Generator | Web Development** esegue un’analisi qualitativa e strategica del sito web aziendale, produce un report revisionato e lo salva su WordPress come post di tipo `analisi`. Il focus è su posizionamento, messaggi chiave, branding, trust, funnel di conversione, contenuti e opportunità per agenzie di comunicazione e marketing B2B.
 
+> Documentazione correlata: per l’audit di conformità EAA/WCAG consulta `docs/03_eaa_accessibility.md`.
+
 ## Descrizione Generale
 
 - Analisi automatica del dominio aziendale collegato alla scheda.
