@@ -215,18 +215,18 @@ $has_analisi = !empty($analisi_items);
 }
 
 :root {
-    --color-primary: #5b7fa6;
-    --color-primary-dark: #3d4f6f;
-    --color-primary-light: #8ba3c4;
+    --color-primary: #2c3e50;
+    --color-primary-dark: #1a252f;
+    --color-primary-light: #556270;
     --color-bg-light: #ffffff;
     --color-bg-medium: #f7f9fc;
     --color-bg-soft: #eef2f7;
-    --color-text-primary: #2a3f5f;
-    --color-text-secondary: #5a6b7e;
-    --color-text-tertiary: #8a95a8;
+    --color-text-primary: #1e272e;
+    --color-text-secondary: #4a5568;
+    --color-text-tertiary: #6c7a89;
     --color-border: #d4dce8;
     --color-border-light: #e8eef5;
-    --color-accent: #6b8ec4;
+    --color-accent: #556270;
     --spacing-xs: 8px;
     --spacing-sm: 16px;
     --spacing-md: 24px;
@@ -289,7 +289,7 @@ p, li {
 /* Company Header */
 .company-header {
     padding: var(--spacing-xl);
-    background: linear-gradient(135deg, #5b7fa6 0%, #6b8ec4 100%);
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
     color: #ffffff;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
@@ -747,7 +747,7 @@ p, li {
     left: 0;
     width: 18px;
     height: 18px;
-    background: var(--color-accent);
+    background: var(--color-primary);
     color: white;
     font-size: 10px;
     font-weight: 700;
@@ -760,7 +760,7 @@ p, li {
 
 /* Value Promise Box */
 .value-promise {
-    background: linear-gradient(135deg, #5b7fa6 0%, #6b8ec4 100%);
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
     color: #ffffff;
     border: 1px solid rgba(255, 255, 255, 0.1);
     padding: var(--spacing-lg);
