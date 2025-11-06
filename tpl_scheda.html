@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perspect | Company Profile - ACME Corp</title>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --color-primary: #5b7fa6;
+            --color-primary-dark: #3d4f6f;
+            --color-primary-light: #8ba3c4;
+            --color-bg-light: #ffffff;
+            --color-bg-medium: #f7f9fc;
+            --color-bg-soft: #eef2f7;
+            --color-text-primary: #2a3f5f;
+            --color-text-secondary: #5a6b7e;
+            --color-text-tertiary: #8a95a8;
+            --color-border: #d4dce8;
+            --color-border-light: #e8eef5;
+            --color-accent: #6b8ec4;
+            --spacing-xs: 8px;
+            --spacing-sm: 16px;
+            --spacing-md: 24px;
+            --spacing-lg: 40px;
+            --spacing-xl: 60px;
+        }
+
+        html, body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--color-bg-light);
+            color: var(--color-text-primary);
+            line-height: 1.6;
+        }
+
+        /* ===== TYPOGRAPHY ===== */
+        h1 {
+            font-size: 60px;
+            font-weight: 700;
+            letter-spacing: -1.2px;
+            line-height: 1.15;
+            margin: 0;
+            color: var(--color-text-primary);
+        }
+
+        h2 {
+            font-size: 38px;
+            font-weight: 700;
+            letter-spacing: -0.6px;
+            line-height: 1.2;
+            margin: 0 0 var(--spacing-md) 0;
+            color: var(--color-text-primary);
+        }
+
+        h3 {
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            line-height: 1.25;
+            margin: 0 0 var(--spacing-md) 0;
+            color: var(--color-text-primary);
+        }
+
+        h4 {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            line-height: 1.4;
+            color: var(--color-text-tertiary);
+            margin: 0 0 var(--spacing-sm) 0;
+        }
+
+        p, li {
+            font-size: 16px;
+            font-weight: 400;
+            line-height: 1.7;
+            color: var(--color-text-primary);
+        }
+
+        p.small-text {
+            font-size: 14px;
+            color: var(--color-text-tertiary);
+        }
+
+        /* ===== MAIN HEADER ===== */
+        header.main-header {
+            display: flex;
+            align-items: center;
+            padding: 20px var(--spacing-xl);
+            border-bottom: 1px solid var(--color-border-light);
+            background: var(--color-bg-light);
+        }
+
+        .header-logo {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: var(--color-primary);
+            margin-right: auto;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 48px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .header-nav a {
+            color: var(--color-text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .header-nav a:hover {
+            color: var(--color-primary);
+        }
+
+        /* ===== COMPANY HEADER ===== */
+        .company-header {
+            padding: var(--spacing-xl);
+            background: linear-gradient(135deg, #5b7fa6 0%, #6b8ec4 100%);
+            color: #ffffff;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .company-title-section {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: var(--spacing-xl);
+            margin-bottom: var(--spacing-xl);
+            align-items: flex-start;
+        }
+
+        .company-title-section h1 {
+            color: #ffffff;
+            font-size: 58px;
+        }
+
+        .company-subtitle {
+            font-size: 17px;
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 400;
+            letter-spacing: 0.2px;
+            margin-top: 10px;
+        }
+
+        .priority-badge {
+            text-align: right;
+            padding-top: 8px;
+        }
+
+        .priority-score {
+            font-size: 64px;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 6px;
+            color: #ffffff;
+        }
+
+        .priority-label {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.75);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 600;
+        }
+
+        .company-meta {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: var(--spacing-lg);
+            padding-top: var(--spacing-lg);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .meta-item-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .meta-item-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.98);
+        }
+
+        /* ===== TAB NAVIGATION ===== */
+        .tab-navigation {
+            display: flex;
+            border-bottom: 1px solid var(--color-border-light);
+            background: var(--color-bg-light);
+            padding: 0 var(--spacing-xl);
+            gap: 0;
+        }
+
+        .tab-btn {
+            flex: 0 0 auto;
+            padding: 16px 14px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            color: var(--color-text-secondary);
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            white-space: nowrap;
+            letter-spacing: 0.2px;
+            text-transform: capitalize;
+        }
+
+        .tab-btn:hover {
+            color: var(--color-primary);
+            background: var(--color-bg-medium);
+        }
+
+        .tab-btn.active {
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+            background: var(--color-bg-light);
+            font-weight: 700;
+        }
+
+        /* ===== TAB CONTENT ===== */
+        .tab-container {
+            display: none;
+            padding: var(--spacing-xl);
+            animation: fadeIn 0.3s ease-in;
+            background: var(--color-bg-light);
+        }
+
+        .tab-container.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(2px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== ANALYSIS OVERVIEW ===== */
+        .analysis-overview {
+            margin-bottom: var(--spacing-xl);
+            padding-bottom: var(--spacing-lg);
+        }
+
+        .overview-card {
+            background: var(--color-bg-medium);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+            border: 1px solid var(--color-border-light);
+            border-left: 4px solid var(--color-accent);
+        }
+
+        .summary-text {
+            font-size: 16px;
+            line-height: 1.75;
+            color: var(--color-text-primary);
+            margin-bottom: var(--spacing-lg);
+            font-weight: 500;
+        }
+
+        .overview-meta {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--spacing-lg);
+        }
+
+        .meta-badge {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .meta-badge-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            color: var(--color-text-tertiary);
+            font-weight: 700;
+        }
+
+        .meta-badge-value {
+            font-size: 17px;
+            color: var(--color-primary);
+            font-weight: 700;
+        }
+
+        /* ===== ACCORDION ===== */
+        .analysis-accordion {
+            margin: var(--spacing-xl) 0;
+            border: 1px solid var(--color-border-light);
+            background: var(--color-bg-light);
+            overflow: hidden;
+        }
+
+        .accordion-item {
+            border-bottom: 1px solid var(--color-border-light);
+        }
+
+        .accordion-item:last-child {
+            border-bottom: none;
+        }
+
+        .accordion-item:nth-child(odd) .accordion-header {
+            background: var(--color-bg-light);
+        }
+
+        .accordion-item:nth-child(even) .accordion-header {
+            background: var(--color-bg-medium);
+        }
+
+        .accordion-header {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 18px var(--spacing-lg);
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--color-text-primary);
+            transition: all 0.2s ease;
+            text-align: left;
+            letter-spacing: 0.2px;
+        }
+
+        .accordion-header:hover {
+            background: var(--color-bg-soft);
+        }
+
+        .accordion-header.active {
+            background: var(--color-bg-soft);
+        }
+
+        .accordion-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            font-size: 10px;
+            color: var(--color-primary);
+            font-weight: 700;
+            transition: transform 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .accordion-header.active .accordion-icon {
+            transform: rotate(90deg);
+        }
+
+        .accordion-title {
+            flex: 1;
+        }
+
+        .accordion-meta {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        .badge {
+            display: inline-block;
+            background: transparent;
+            color: var(--color-text-tertiary);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 3px 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            border: 1px solid var(--color-border);
+        }
+
+        .accordion-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .accordion-body.open {
+            max-height: 5000px;
+        }
+
+        .accordion-content {
+            padding: var(--spacing-lg);
+            background: var(--color-bg-light);
+            border-top: 1px solid var(--color-border-light);
+        }
+
+        /* ===== GRID LAYOUTS ===== */
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .grid-3col {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .grid-2x2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-lg);
+        }
+
+        @media (max-width: 1024px) {
+            .grid-2col,
+            .grid-2x2,
+            .company-meta {
+                grid-template-columns: 1fr;
+            }
+            .grid-3col {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* ===== SECTIONS WITHIN ACCORDION ===== */
+        .brand-section,
+        .commercial-section,
+        .swot-card,
+        .metric-card {
+            padding: var(--spacing-lg);
+            background: var(--color-bg-medium);
+            border: 1px solid var(--color-border-light);
+        }
+
+        .swot-card {
+            border-left: 3px solid var(--color-accent);
+        }
+
+        /* ===== LISTS ===== */
+        .numbered-list,
+        .bullet-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .numbered-list {
+            counter-reset: item;
+        }
+
+        .numbered-list li,
+        .bullet-list li {
+            padding: 9px 0 9px 26px;
+            position: relative;
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--color-text-secondary);
+        }
+
+        .numbered-list li:before {
+            content: counter(item);
+            counter-increment: item;
+            position: absolute;
+            left: 0;
+            width: 18px;
+            height: 18px;
+            background: var(--color-accent);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .bullet-list li:before {
+            content: "—";
+            position: absolute;
+            left: 0;
+            color: var(--color-text-tertiary);
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        /* ===== VALUE PROMISE BOX ===== */
+        .value-promise {
+            background: linear-gradient(135deg, #5b7fa6 0%, #6b8ec4 100%);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .value-promise h4 {
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .value-promise blockquote {
+            margin: 0;
+            font-size: 16px;
+            font-style: italic;
+            color: rgba(255, 255, 255, 0.95);
+            line-height: 1.75;
+            padding-left: 0;
+            font-weight: 500;
+        }
+
+        /* ===== TABLES ===== */
+        .risks-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--color-bg-light);
+        }
+
+        .risks-table th {
+            background: var(--color-bg-medium);
+            padding: 12px var(--spacing-lg);
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            color: var(--color-text-tertiary);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .risks-table td {
+            padding: 14px var(--spacing-lg);
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--color-text-secondary);
+            border-bottom: 1px solid var(--color-border-light);
+        }
+
+        .risks-table tr:nth-child(even) {
+            background: var(--color-bg-soft);
+        }
+
+        /* ===== TIMELINE ===== */
+        .timeline-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-lg);
+        }
+
+        .timeline-section {
+            padding: var(--spacing-lg);
+            background: var(--color-bg-medium);
+            border: 1px solid var(--color-border-light);
+        }
+
+        .timeline-section.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .timeline-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-top: 8px;
+        }
+
+        .contact-box {
+            background: var(--color-bg-light);
+            padding: var(--spacing-lg);
+            border-left: 3px solid var(--color-accent);
+        }
+
+        .contact-box p {
+            margin: 6px 0;
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--color-text-primary);
+        }
+
+        .contact-box strong {
+            color: var(--color-primary);
+            font-weight: 700;
+        }
+
+        /* ===== QUICK ACTIONS BAR ===== */
+        .quick-actions-bar {
+            display: flex;
+            gap: 12px;
+            padding: var(--spacing-lg) var(--spacing-xl);
+            background: linear-gradient(135deg, #5b7fa6 0%, #6b8ec4 100%);
+            color: #ffffff;
+            flex-wrap: wrap;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            padding: 12px 18px;
+            border: 1.5px solid rgba(255, 255, 255, 0.4);
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: transparent;
+            color: #ffffff;
+        }
+
+        .btn-primary {
+            background: rgba(255, 255, 255, 0.95);
+            color: var(--color-primary);
+            border-color: rgba(255, 255, 255, 0.95);
+        }
+
+        .btn-primary:hover {
+            background: rgba(255, 255, 255, 0.85);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* ===== FORM SECTIONS ===== */
+        .form-grid {
+            display: grid;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-field label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            color: var(--color-text-tertiary);
+            margin-bottom: 8px;
+        }
+
+        .form-field input,
+        .form-field textarea,
+        .form-field p {
+            font-size: 15px;
+            color: var(--color-text-primary);
+            line-height: 1.6;
+        }
+
+        .form-field input,
+        .form-field textarea {
+            padding: 12px var(--spacing-sm);
+            border: 1px solid var(--color-border);
+            background: var(--color-bg-medium);
+            font-family: inherit;
+        }
+
+        .form-field a {
+            color: var(--color-primary);
+            text-decoration: none;
+            font-weight: 600;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .form-field a:hover {
+            border-bottom-color: var(--color-primary);
+        }
+
+        /* ===== PROGRESS BARS ===== */
+        .coherence-meter {
+            margin-top: 12px;
+        }
+
+        .coherence-meter label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--color-text-tertiary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+        }
+
+        .progress-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        progress {
+            flex: 1;
+            height: 5px;
+            border-radius: 0;
+            border: none;
+            background: var(--color-border);
+            appearance: none;
+            -webkit-appearance: none;
+        }
+
+        progress::-webkit-progress-bar {
+            background: var(--color-border);
+        }
+
+        progress::-webkit-progress-value {
+            background: var(--color-accent);
+        }
+
+        progress::-moz-progress-bar {
+            background: var(--color-accent);
+        }
+
+        .progress-value {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--color-primary);
+            min-width: 38px;
+        }
+
+        /* ===== METRIC CARDS ===== */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        @media (max-width: 768px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .metric-card {
+            padding: var(--spacing-lg);
+            background: var(--color-bg-medium);
+            border: 1px solid var(--color-border-light);
+        }
+
+        .metric-card .metric-value {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--color-primary);
+            margin: 10px 0;
+        }
+
+        .metric-card .sub-text {
+            display: block;
+            font-size: 11px;
+            color: var(--color-text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            font-weight: 600;
+            margin-top: 6px;
+        }
+
+        /* ===== UTILITY ===== */
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .tone-text {
+            font-size: 15px;
+            color: var(--color-text-secondary);
+            line-height: 1.75;
+        }
+
+        .reason-box,
+        .message-box {
+            background: var(--color-bg-medium);
+            padding: var(--spacing-lg);
+            border: 1px solid var(--color-border-light);
+            border-left: 3px solid var(--color-accent);
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--color-text-secondary);
+        }
+
+        .services-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .services-list li {
+            padding: 8px 0 8px 26px;
+            position: relative;
+            font-size: 15px;
+            color: var(--color-text-secondary);
+            line-height: 1.7;
+        }
+
+        .services-list li:before {
+            content: "—";
+            position: absolute;
+            left: 0;
+            color: var(--color-text-tertiary);
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            h1 { font-size: 48px; }
+            h2 { font-size: 32px; }
+            h3 { font-size: 22px; }
+            p, li { font-size: 15px; }
+
+            header.main-header,
+            .company-header,
+            .tab-navigation,
+            .tab-container,
+            .quick-actions-bar {
+                padding-left: var(--spacing-lg);
+                padding-right: var(--spacing-lg);
+            }
+
+            .company-title-section {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-lg);
+            }
+
+            .company-title-main h1 {
+                font-size: 48px;
+            }
+
+            .company-meta {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-md);
+            }
+
+            .accordion-meta {
+                display: none;
+            }
+
+            .overview-meta {
+                grid-template-columns: 1fr;
+            }
+
+            .quick-actions-bar {
+                flex-direction: column;
+            }
+
+            .btn-primary,
+            .btn-secondary {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- MAIN HEADER -->
+    <header class="main-header">
+        <div class="header-logo">PERSPECT</div>
+        <nav class="header-nav">
+            <a href="#dashboard">Aziende</a>
+            <a href="#settings">Impostazioni</a>
+            <a href="#help">Aiuto</a>
+        </nav>
+    </header>
+
+    <!-- COMPANY HEADER -->
+    <div class="company-header">
+        <div class="company-title-section">
+            <div class="company-title-main">
+                <h1>ACME Corp</h1>
+                <p class="company-subtitle">Software Development Agency</p>
+            </div>
+            <div class="priority-badge">
+                <div class="priority-score">92</div>
+                <div class="priority-label">Priority Score</div>
+            </div>
+        </div>
+
+        <div class="company-meta">
+            <div class="meta-item">
+                <div class="meta-item-label">Città</div>
+                <div class="meta-item-value">Milano, Italy</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-item-label">Respiro</div>
+                <div class="meta-item-value">Nazionale</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-item-label">Dipendenti</div>
+                <div class="meta-item-value">15+</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-item-label">Fatturato</div>
+                <div class="meta-item-value">€2.1M</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-item-label">Stadio</div>
+                <div class="meta-item-value">Crescita</div>
+            </div>
+            <div class="meta-item">
+                <div class="meta-item-label">Settore</div>
+                <div class="meta-item-value">SaaS/Tech</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB NAVIGATION -->
+    <nav class="tab-navigation">
+        <button class="tab-btn active" data-tab="dati-minimi">Dati Minimi</button>
+        <button class="tab-btn" data-tab="anagrafica">Anagrafica</button>
+        <button class="tab-btn" data-tab="profilo">Profilo</button>
+        <button class="tab-btn" data-tab="economics">Economics</button>
+        <button class="tab-btn" data-tab="digital">Digital</button>
+        <button class="tab-btn" data-tab="qualifica">Qualifica</button>
+        <button class="tab-btn" data-tab="analysis">Analisi Perspect</button>
+    </nav>
+
+    <!-- TAB CONTENTS -->
+
+    <!-- TAB 1: DATI MINIMI -->
+    <div id="dati-minimi" class="tab-container">
+        <div class="grid-2col">
+            <div class="form-field">
+                <label>Ragione Sociale</label>
+                <input type="text" value="ACME Corp S.r.l." readonly />
+            </div>
+            <div class="form-field">
+                <label>Partita IVA</label>
+                <input type="text" value="IT12345678901" readonly />
+            </div>
+        </div>
+        <div class="form-field full-width">
+            <label>Dominio / Sito Web</label>
+            <input type="url" value="https://www.acmecorp.com" readonly />
+        </div>
+    </div>
+
+    <!-- TAB 2: ANAGRAFICA -->
+    <div id="anagrafica" class="tab-container">
+        <div class="form-field full-width">
+            <label>Descrizione / Bio</label>
+            <textarea readonly style="min-height: 110px;">Agenzia di sviluppo software specializzata in soluzioni B2B per PMI e startup. Fondata nel 2015, offre consulenza, sviluppo e manutenzione di piattaforme custom. Team esperto 10+ anni, portfolio cliente forte, crescita consistente YoY 20-23%.</textarea>
+        </div>
+
+        <div class="grid-3col">
+            <div class="form-field">
+                <label>Indirizzo</label>
+                <p>Via Roma 42</p>
+            </div>
+            <div class="form-field">
+                <label>Città</label>
+                <p>Milano</p>
+            </div>
+            <div class="form-field">
+                <label>Provincia</label>
+                <p>MI</p>
+            </div>
+        </div>
+
+        <div class="grid-2col">
+            <div class="form-field">
+                <label>Telefono</label>
+                <p>+39 02 1234 5678</p>
+            </div>
+            <div class="form-field">
+                <label>Email</label>
+                <p>info@acmecorp.com</p>
+            </div>
+        </div>
+
+        <div class="form-field full-width">
+            <label>LinkedIn</label>
+            <p><a href="https://linkedin.com/company/acmecorp" target="_blank">linkedin.com/company/acmecorp</a></p>
+        </div>
+    </div>
+
+    <!-- TAB 3: PROFILO -->
+    <div id="profilo" class="tab-container">
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <h4>Tipo Business</h4>
+                <p class="metric-value">Agenzia Software</p>
+            </div>
+            <div class="metric-card">
+                <h4>Settore Specifico</h4>
+                <p class="metric-value">SaaS / B2B Tech</p>
+            </div>
+            <div class="metric-card">
+                <h4>Dipendenti</h4>
+                <p class="metric-value">15-20 FTE</p>
+            </div>
+            <div class="metric-card">
+                <h4>Stadio Crescita</h4>
+                <p class="metric-value">Crescita</p>
+            </div>
+            <div class="metric-card">
+                <h4>Respiro Geografico</h4>
+                <p class="metric-value">Nazionale</p>
+            </div>
+            <div class="metric-card">
+                <h4>Maturità Digitale</h4>
+                <p class="metric-value">80 / 100</p>
+                <progress value="80" max="100"></progress>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 4: ECONOMICS -->
+    <div id="economics" class="tab-container">
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <h4>Fatturato</h4>
+                <p class="metric-value">€2.1M</p>
+                <span class="sub-text">anno 2024</span>
+            </div>
+            <div class="metric-card">
+                <h4>EBITDA %</h4>
+                <p class="metric-value">22%</p>
+                <span class="sub-text">stimato</span>
+            </div>
+            <div class="metric-card">
+                <h4>Budget Marketing</h4>
+                <p class="metric-value">€80K – €150K</p>
+                <span class="sub-text">annuale</span>
+            </div>
+        </div>
+
+        <div class="grid-2col">
+            <div class="form-field">
+                <label>Tier Budget</label>
+                <p><strong>Medium</strong></p>
+            </div>
+            <div class="form-field">
+                <label>Confidenza Dato</label>
+                <div class="coherence-meter">
+                    <div class="progress-container">
+                        <progress value="88" max="100"></progress>
+                        <span class="progress-value">88%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 5: DIGITAL & MEDIA -->
+    <div id="digital" class="tab-container">
+        <div class="form-field full-width">
+            <label>Social Links</label>
+            <ul class="bullet-list" style="margin-top: 10px;">
+                <li>LinkedIn: linkedin.com/company/acmecorp</li>
+                <li>Twitter: @acmecorptech</li>
+                <li>GitHub: github.com/acmecorp</li>
+            </ul>
+        </div>
+
+        <div style="margin-top: var(--spacing-xl);">
+            <h3 style="font-size: 18px; margin-bottom: var(--spacing-md);">Maturità Digitale: 80 / 100</h3>
+            <ul class="bullet-list">
+                <li>Sito aggiornato inferiore a 12 mesi <span style="color: var(--color-text-tertiary); font-weight: 600;">[+15]</span></li>
+                <li>SEO on-page coerente <span style="color: var(--color-text-tertiary); font-weight: 600;">[+10]</span></li>
+                <li>Form e CTA funzionanti <span style="color: var(--color-text-tertiary); font-weight: 600;">[+10]</span></li>
+                <li>Blog attivo <span style="color: var(--color-text-tertiary); font-weight: 600;">[+10]</span></li>
+                <li>Newsletter automation <span style="color: var(--color-text-tertiary); font-weight: 600;">[+10]</span></li>
+                <li>ADV attiva (Google e LinkedIn) <span style="color: var(--color-text-tertiary); font-weight: 600;">[+15]</span></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- TAB 6: QUALIFICA -->
+    <div id="qualifica" class="tab-container">
+        <div class="grid-2col">
+            <div class="form-field">
+                <label>Stato Qualifica</label>
+                <p><strong style="font-size: 17px; color: var(--color-primary);">Qualificata</strong></p>
+            </div>
+            <div class="form-field">
+                <label>Priorità Score</label>
+                <p style="font-size: 32px; font-weight: 700; color: var(--color-primary);">92 / 100</p>
+            </div>
+        </div>
+
+        <div class="form-field full-width">
+            <label>Motivo Qualifica</label>
+            <div class="reason-box">
+                <p>Profilo fit con Perspect. Revenue positiva, team competente, budget marketing attivo. Decision maker identificato (CTO Maria Rossi). Strong technical background con visione commerciale moderna.</p>
+            </div>
+        </div>
+
+        <div class="form-field full-width">
+            <label>Servizi Possibili</label>
+            <ul class="services-list">
+                <li>SEO e SEM Strategy per B2B</li>
+                <li>Content Marketing e Thought Leadership</li>
+                <li>LinkedIn Lead Generation Campaign</li>
+                <li>Marketing Automation Setup</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- TAB 7: ANALYSIS PERSPECT -->
+    <div id="analysis" class="tab-container">
+        
+        <!-- OVERVIEW -->
+        <div class="analysis-overview">
+            <h2>Riassunto Esecutivo</h2>
+            <div class="overview-card">
+                <p class="summary-text">Agenzia software B2B di qualità, in crescita. Profilo molto fit per Perspect: team competente, budget marketing attivo, decision maker identificato. Strong technical background con visione commerciale moderna. Business model resiliente anche post-COVID.</p>
+                
+                <div class="overview-meta">
+                    <div class="meta-badge">
+                        <div class="meta-badge-label">Data Analisi</div>
+                        <div class="meta-badge-value">02 Nov 2025</div>
+                    </div>
+                    <div class="meta-badge">
+                        <div class="meta-badge-label">Status</div>
+                        <div class="meta-badge-value">200 OK</div>
+                    </div>
+                    <div class="meta-badge">
+                        <div class="meta-badge-label">Qualità</div>
+                        <div class="meta-badge-value">9.2 / 10</div>
+                    </div>
+                    <div class="meta-badge">
+                        <div class="meta-badge-label">Confidenza</div>
+                        <div class="meta-badge-value">88%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACCORDION SECTIONS -->
+        <div class="analysis-accordion">
+
+            <!-- ACCORDION 1: BRAND & POSITIONING -->
+            <div class="accordion-item">
+                <button class="accordion-header" onclick="toggleAccordion(this)">
+                    <span class="accordion-icon">▶</span>
+                    <span class="accordion-title">Brand e Posizionamento</span>
+                    <div class="accordion-meta">
+                        <span class="badge">3 Messaggi</span>
+                        <span class="badge">88% Coerenza</span>
+                    </div>
+                </button>
+
+                <div class="accordion-body">
+                    <div class="accordion-content">
+                        <div class="grid-2col">
+                            <div class="brand-section">
+                                <h4>Messaggi Principali</h4>
+                                <ol class="numbered-list">
+                                    <li>Soluzioni custom per PMI innovative</li>
+                                    <li>Team con 10+ anni di esperienza</li>
+                                    <li>Agile, trasparente, partnership-first</li>
+                                </ol>
+                            </div>
+
+                            <div class="brand-section">
+                                <h4>Tono di Voce</h4>
+                                <p class="tone-text">Professionale, Moderno, Data-driven, Partnership-first, Accessible, Consultivo</p>
+                                
+                                <div class="coherence-meter">
+                                    <label>Coerenza Comunicativa</label>
+                                    <div class="progress-container">
+                                        <progress value="88" max="100"></progress>
+                                        <span class="progress-value">88%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="brand-section">
+                                <h4>Elementi Differenzianti</h4>
+                                <ul class="bullet-list">
+                                    <li>Consulenza gratuita pre-project</li>
+                                    <li>Modello di pricing trasparente</li>
+                                </ul>
+                            </div>
+
+                            <div class="brand-section">
+                                <h4>Target Commerciali</h4>
+                                <ul class="bullet-list">
+                                    <li>CTO e Chief Technology Officer</li>
+                                    <li>CEO PMI (15-50 dipendenti)</li>
+                                    <li>Founder scaleup in fase growth</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACCORDION 2: COMMERCIAL ANALYSIS -->
+            <div class="accordion-item">
+                <button class="accordion-header" onclick="toggleAccordion(this)">
+                    <span class="accordion-icon">▶</span>
+                    <span class="accordion-title">Analisi Commerciale</span>
+                    <div class="accordion-meta">
+                        <span class="badge">4 Idee</span>
+                        <span class="badge">3 Domande</span>
+                    </div>
+                </button>
+
+                <div class="accordion-body">
+                    <div class="accordion-content">
+                        <div class="value-promise">
+                            <h4>Promessa di Valore</h4>
+                            <blockquote>Aumentare la velocità di delivery e ridurre i costi operativi tramite automazione e architetture cloud-native, mantenendo il controllo e la qualità del codice. ROI: -30% time-to-market</blockquote>
+                        </div>
+
+                        <div class="grid-2col">
+                            <div class="commercial-section">
+                                <h4>Domande Prospect Chiave</h4>
+                                <ul class="bullet-list">
+                                    <li>Come scalare senza assumere?</li>
+                                    <li>Tecnologie migliori per startup tech?</li>
+                                    <li>Come mantenere qualità in crescita?</li>
+                                </ul>
+                            </div>
+
+                            <div class="commercial-section">
+                                <h4>Idee di Valore Perspect</h4>
+                                <ol class="numbered-list">
+                                    <li>LinkedIn lead generation per vendor tech</li>
+                                    <li>Thought leadership content strategy</li>
+                                    <li>SEO per termini high-intent</li>
+                                    <li>Email nurture per decision makers</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACCORDION 3: SWOT -->
+            <div class="accordion-item">
+                <button class="accordion-header" onclick="toggleAccordion(this)">
+                    <span class="accordion-icon">▶</span>
+                    <span class="accordion-title">Punti di Forza e Debolezza</span>
+                    <div class="accordion-meta">
+                        <span class="badge">4 Punti Forza</span>
+                        <span class="badge">2 Debolezze</span>
+                    </div>
+                </button>
+
+                <div class="accordion-body">
+                    <div class="accordion-content">
+                        <div class="grid-2x2">
+                            <div class="swot-card">
+                                <h4>Punti di Forza</h4>
+                                <ul class="bullet-list">
+                                    <li>Team esperto con 10+ anni di esperienza</li>
+                                    <li>Portfolio cliente forte e consolidato</li>
+                                    <li>Margini sani tra 22-25% EBITDA</li>
+                                    <li>Crescita YoY consistente 20-23%</li>
+                                </ul>
+                            </div>
+
+                            <div class="swot-card">
+                                <h4>Punti di Debolezza</h4>
+                                <ul class="bullet-list">
+                                    <li>Sito web non del tutto aggiornato</li>
+                                    <li>Marketing organico con performance media</li>
+                                </ul>
+                            </div>
+
+                            <div class="swot-card">
+                                <h4>Opportunità</h4>
+                                <ul class="bullet-list">
+                                    <li>Espansione dei servizi verticali</li>
+                                    <li>Upsell di AI e automation</li>
+                                    <li>Partnership con Big Tech</li>
+                                </ul>
+                            </div>
+
+                            <div class="swot-card">
+                                <h4>Azioni Rapide</h4>
+                                <ol class="numbered-list">
+                                    <li>Creare thought leadership</li>
+                                    <li>Lanciare LinkedIn campaign</li>
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACCORDION 4: RISKS -->
+            <div class="accordion-item">
+                <button class="accordion-header" onclick="toggleAccordion(this)">
+                    <span class="accordion-icon">▶</span>
+                    <span class="accordion-title">Rischi e Mitigazione</span>
+                    <div class="accordion-meta">
+                        <span class="badge">2 Rischi</span>
+                    </div>
+                </button>
+
+                <div class="accordion-body">
+                    <div class="accordion-content">
+                        <table class="risks-table">
+                            <thead>
+                                <tr>
+                                    <th>Rischio</th>
+                                    <th>Mitigazione</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Budget marketing limitato inferiore a €150K (esposizione massima €500 mese)</td>
+                                    <td>Start con LinkedIn e content a basso costo, scalare se ROI superiore a 30%</td>
+                                </tr>
+                                <tr>
+                                    <td>Decision maker cambio (CEO risk)</td>
+                                    <td>Build relationship con 2-3 manager tech e founder, non solo CEO</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACCORDION 5: TIMELINE -->
+            <div class="accordion-item">
+                <button class="accordion-header" onclick="toggleAccordion(this)">
+                    <span class="accordion-icon">▶</span>
+                    <span class="accordion-title">Timing e Priorità</span>
+                    <div class="accordion-meta">
+                        <span class="badge">Q1 2026</span>
+                    </div>
+                </button>
+
+                <div class="accordion-body">
+                    <div class="accordion-content">
+                        <div class="timeline-info">
+                            <div class="timeline-section">
+                                <h4>Timing Consigliato</h4>
+                                <p class="timeline-value">Q1 2026 (post-capodanno, budget allocation)</p>
+                            </div>
+                            <div class="timeline-section">
+                                <h4>Canale Prioritario</h4>
+                                <p class="timeline-value">LinkedIn → Email → Call</p>
+                            </div>
+                            <div class="timeline-section full-width">
+                                <h4>Best Contact</h4>
+                                <div class="contact-box">
+                                    <p><strong>Nome:</strong> Maria Rossi</p>
+                                    <p><strong>Ruolo:</strong> CTO</p>
+                                    <p><strong>Email:</strong> maria.rossi@acmecorp.com</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- QUICK ACTIONS BAR -->
+    <div class="quick-actions-bar">
+        <button class="btn-primary">Genera Outreach Email</button>
+        <button class="btn-secondary">Prepara LinkedIn</button>
+        <button class="btn-secondary">Full Report PDF</button>
+        <button class="btn-secondary">Riavvia Analisi</button>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script>
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tabId = this.dataset.tab;
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-container').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+
+        function toggleAccordion(header) {
+            const body = header.nextElementSibling;
+            const isOpen = body.classList.contains('open');
+            document.querySelectorAll('.accordion-body').forEach(b => b.classList.remove('open'));
+            document.querySelectorAll('.accordion-header').forEach(h => h.classList.remove('active'));
+            if (!isOpen) {
+                body.classList.add('open');
+                header.classList.add('active');
+            }
+        }
+    </script>
+
+</body>
+</html>
