@@ -62,6 +62,32 @@ if (!function_exists('lg_extract_strings')) {
     }
 }
 
+if (!function_exists('lg_to_string')) {
+    function lg_to_string($value) {
+        if (is_string($value)) {
+            return $value;
+        }
+        if (is_array($value)) {
+            // If it's an array, try to extract text content
+            $strings = [];
+            foreach ($value as $item) {
+                if (is_string($item)) {
+                    $strings[] = $item;
+                } elseif (is_array($item) && isset($item['value'])) {
+                    $strings[] = (string) $item['value'];
+                } elseif (is_scalar($item)) {
+                    $strings[] = (string) $item;
+                }
+            }
+            return implode("\n", $strings);
+        }
+        if (is_scalar($value)) {
+            return (string) $value;
+        }
+        return '';
+    }
+}
+
 get_header();
 
 if (have_posts()) : while (have_posts()) : the_post();
@@ -1040,7 +1066,7 @@ p, li {
     <?php if ($social_links !== '') : ?>
         <div class="form-field full-width">
             <label>Social Links</label>
-            <?php echo wp_kses_post(wpautop($social_links)); ?>
+            <?php echo wp_kses_post(wpautop(lg_to_string($social_links))); ?>
         </div>
     <?php endif; ?>
 
@@ -1069,7 +1095,7 @@ p, li {
         <div class="form-field full-width">
             <label>Motivo Qualifica</label>
             <div style="background: var(--color-bg-medium); padding: var(--spacing-lg); border: 1px solid var(--color-border-light); border-left: 3px solid var(--color-accent);">
-                <?php echo wp_kses_post(wpautop($qualification_reason)); ?>
+                <?php echo wp_kses_post(wpautop(lg_to_string($qualification_reason))); ?>
             </div>
         </div>
     <?php endif; ?>
@@ -1078,7 +1104,7 @@ p, li {
         <div class="form-field full-width">
             <label>Servizi Possibili</label>
             <div style="background: var(--color-bg-medium); padding: var(--spacing-lg); border: 1px solid var(--color-border-light);">
-                <?php echo wp_kses_post(wpautop($service_fit)); ?>
+                <?php echo wp_kses_post(wpautop(lg_to_string($service_fit))); ?>
             </div>
         </div>
     <?php endif; ?>
@@ -1353,7 +1379,7 @@ p, li {
                             <div style="margin-bottom: var(--spacing-lg);">
                                 <h4>Analisi Iniziale</h4>
                                 <div style="margin-top: var(--spacing-md);">
-                                    <?php echo wp_kses_post(wpautop($analisi['deep_research'])); ?>
+                                    <?php echo wp_kses_post(wpautop(lg_to_string($analisi['deep_research']))); ?>
                                 </div>
                             </div>
                         <?php endif; ?>
@@ -1362,7 +1388,7 @@ p, li {
                             <div>
                                 <h4>Revisione Analisi</h4>
                                 <div style="margin-top: var(--spacing-md);">
-                                    <?php echo wp_kses_post(wpautop($analisi['review'])); ?>
+                                    <?php echo wp_kses_post(wpautop(lg_to_string($analisi['review']))); ?>
                                 </div>
                             </div>
                         <?php endif; ?>
@@ -1381,7 +1407,7 @@ p, li {
 
                 <div class="accordion-body">
                     <div class="accordion-content">
-                        <?php echo wp_kses_post(wpautop($analisi['priorita_temporali'])); ?>
+                        <?php echo wp_kses_post(wpautop(lg_to_string($analisi['priorita_temporali']))); ?>
                     </div>
                 </div>
             </div>
