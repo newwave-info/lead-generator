@@ -165,6 +165,8 @@ if ($analisi_query->have_posts()) {
             'value_ideas' => lg_extract_strings($analysis_fields['idee_di_valore_perspect'] ?? []),
             'quality_score' => $analysis_fields['voto_qualita_analisi'] ?? null,
             'data_quality' => $analysis_fields['qualita_dati'] ?? null,
+            'analysis_status' => $analysis_fields['analysis_last_status_code'] ?? '',
+            'analysis_at' => $analysis_fields['analysis_last_at'] ?? '',
             'messaggi_principali' => lg_extract_strings($analysis_fields['messaggi_principali'] ?? []),
             'promessa_di_valore' => $analysis_fields['promessa_di_valore'] ?? '',
             'tono_di_voce' => $analysis_fields['tono_di_voce'] ?? '',
@@ -531,42 +533,265 @@ p, li {
     font-size: 16px;
 }
 
-/* Accordion for Analysis */
-.analysis-section {
-    margin: var(--spacing-xl) 0;
+/* Analysis Overview */
+.analysis-overview {
+    margin-bottom: var(--spacing-xl);
 }
 
-.analysis-card {
-    background: var(--color-bg-light);
-    border: 1px solid var(--color-border-light);
-    margin-bottom: var(--spacing-md);
+.overview-card {
+    background: var(--color-bg-medium);
     padding: var(--spacing-lg);
-}
-
-.analysis-card h3 {
-    font-size: 22px;
     margin-bottom: var(--spacing-md);
-    color: var(--color-primary);
+    border: 1px solid var(--color-border-light);
+    border-left: 4px solid var(--color-accent);
 }
 
-.analysis-link {
+.summary-text {
+    font-size: 16px;
+    line-height: 1.75;
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-lg);
+    font-weight: 500;
+}
+
+.overview-meta {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--spacing-lg);
+}
+
+.meta-badge {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.meta-badge-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    color: var(--color-text-tertiary);
+    font-weight: 700;
+}
+
+.meta-badge-value {
+    font-size: 17px;
+    color: var(--color-primary);
+    font-weight: 700;
+}
+
+/* Accordion */
+.analysis-accordion {
+    margin: var(--spacing-md) 0;
+    border: 1px solid var(--color-border-light);
+    background: var(--color-bg-light);
+    overflow: hidden;
+}
+
+.accordion-item {
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.accordion-item:last-child {
+    border-bottom: none;
+}
+
+.accordion-item:nth-child(odd) .accordion-header {
+    background: var(--color-bg-light);
+}
+
+.accordion-item:nth-child(even) .accordion-header {
+    background: var(--color-bg-medium);
+}
+
+.accordion-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px var(--spacing-lg);
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--color-text-primary);
+    transition: all 0.2s ease;
+    text-align: left;
+    letter-spacing: 0.2px;
+}
+
+.accordion-header:hover {
+    background: var(--color-bg-soft);
+}
+
+.accordion-header.active {
+    background: var(--color-bg-soft);
+}
+
+.accordion-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    font-size: 10px;
+    color: var(--color-primary);
+    font-weight: 700;
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+}
+
+.accordion-header.active .accordion-icon {
+    transform: rotate(90deg);
+}
+
+.accordion-title {
+    flex: 1;
+}
+
+.accordion-meta {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-left: auto;
+}
+
+.badge {
     display: inline-block;
-    margin-top: var(--spacing-md);
-    color: var(--color-primary);
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 14px;
+    background: transparent;
+    color: var(--color-text-tertiary);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    border: 1px solid var(--color-border);
 }
 
-.analysis-link:hover {
-    text-decoration: underline;
+.accordion-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+}
+
+.accordion-body.open {
+    max-height: 5000px;
+}
+
+.accordion-content {
+    padding: var(--spacing-lg);
+    background: var(--color-bg-light);
+    border-top: 1px solid var(--color-border-light);
+}
+
+/* Sections within Accordion */
+.brand-section,
+.commercial-section,
+.swot-card {
+    padding: var(--spacing-lg);
+    background: var(--color-bg-medium);
+    border: 1px solid var(--color-border-light);
+}
+
+.swot-card {
+    border-left: 3px solid var(--color-accent);
+}
+
+/* Numbered Lists */
+.numbered-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: item;
+}
+
+.numbered-list li {
+    padding: 9px 0 9px 26px;
+    position: relative;
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--color-text-secondary);
+}
+
+.numbered-list li:before {
+    content: counter(item);
+    counter-increment: item;
+    position: absolute;
+    left: 0;
+    width: 18px;
+    height: 18px;
+    background: var(--color-accent);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+/* Value Promise Box */
+.value-promise {
+    background: linear-gradient(135deg, #5b7fa6 0%, #6b8ec4 100%);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.value-promise h4 {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.value-promise blockquote {
+    margin: 0;
+    font-size: 16px;
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.95);
+    line-height: 1.75;
+    padding-left: 0;
+    font-weight: 500;
+}
+
+/* Tone Text */
+.tone-text {
+    font-size: 15px;
+    color: var(--color-text-secondary);
+    line-height: 1.75;
+}
+
+/* Logo & Screenshot */
+.company-visual {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: center;
+    margin-top: var(--spacing-md);
+}
+
+.company-logo {
+    max-width: 120px;
+    max-height: 60px;
+    object-fit: contain;
+    background: white;
+    padding: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.company-screenshot {
+    max-width: 200px;
+    max-height: 120px;
+    object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Responsive */
 @media (max-width: 1024px) {
     .grid-2col,
     .grid-2x2,
-    .company-meta {
+    .company-meta,
+    .overview-meta {
         grid-template-columns: 1fr;
     }
     .grid-3col {
@@ -604,6 +829,10 @@ p, li {
     .metrics-grid {
         grid-template-columns: 1fr;
     }
+
+    .accordion-meta {
+        display: none;
+    }
 }
 </style>
 
@@ -614,6 +843,17 @@ p, li {
             <h1><?php echo esc_html($company_name); ?></h1>
             <?php if ($sector_specific !== '') : ?>
                 <p class="company-subtitle"><?php echo esc_html($sector_specific); ?></p>
+            <?php endif; ?>
+
+            <?php if ($logo_url !== '' || $screenshot_url !== '') : ?>
+                <div class="company-visual">
+                    <?php if ($logo_url !== '') : ?>
+                        <img src="<?php echo esc_url($logo_url); ?>" alt="<?php echo esc_attr($company_name); ?> Logo" class="company-logo" />
+                    <?php endif; ?>
+                    <?php if ($screenshot_url !== '') : ?>
+                        <img src="<?php echo esc_url($screenshot_url); ?>" alt="<?php echo esc_attr($company_name); ?> Website" class="company-screenshot" />
+                    <?php endif; ?>
+                </div>
             <?php endif; ?>
         </div>
         <?php if ($priority_score !== null) : ?>
@@ -847,20 +1087,299 @@ p, li {
 <!-- TAB 7: ANALYSIS -->
 <?php if ($has_analisi) : ?>
 <div id="analysis" class="tab-container">
-    <h2>Analisi Collegate</h2>
+    <h2>Analisi Perspect</h2>
 
-    <?php foreach ($analisi_items as $analisi) : ?>
-        <div class="analysis-card">
-            <h3><?php echo esc_html($analisi['title']); ?></h3>
+    <?php foreach ($analisi_items as $index => $analisi) : ?>
+        <!-- Analysis Overview -->
+        <div class="analysis-overview" style="margin-top: <?php echo $index > 0 ? 'var(--spacing-xl)' : '0'; ?>;">
+            <h3 style="font-size: 28px; margin-bottom: var(--spacing-md); color: var(--color-primary);">
+                <?php echo esc_html($analisi['title']); ?>
+            </h3>
 
-            <?php if ($analisi['riassunto'] !== '') : ?>
-                <div style="margin-bottom: var(--spacing-md);">
-                    <?php echo wp_kses_post(wpautop($analisi['riassunto'])); ?>
+            <div class="overview-card">
+                <?php if ($analisi['riassunto'] !== '') : ?>
+                    <p class="summary-text"><?php echo esc_html($analisi['riassunto']); ?></p>
+                <?php endif; ?>
+
+                <div class="overview-meta">
+                    <div class="meta-badge">
+                        <div class="meta-badge-label">Data Analisi</div>
+                        <div class="meta-badge-value"><?php echo $analisi['analysis_at'] !== '' ? esc_html(date_i18n('d M Y', strtotime($analisi['analysis_at']))) : '—'; ?></div>
+                    </div>
+                    <div class="meta-badge">
+                        <div class="meta-badge-label">Status</div>
+                        <div class="meta-badge-value"><?php echo $analisi['analysis_status'] !== '' ? esc_html($analisi['analysis_status']) : '—'; ?></div>
+                    </div>
+                    <div class="meta-badge">
+                        <div class="meta-badge-label">Qualità</div>
+                        <div class="meta-badge-value"><?php echo $analisi['quality_score'] !== null ? esc_html($analisi['quality_score']) . ' / 10' : '—'; ?></div>
+                    </div>
+                    <div class="meta-badge">
+                        <div class="meta-badge-label">Confidenza</div>
+                        <div class="meta-badge-value"><?php echo $analisi['data_quality'] !== '' ? esc_html($analisi['data_quality']) : '—'; ?></div>
+                    </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Accordion Sections -->
+        <div class="analysis-accordion">
+
+            <!-- ACCORDION 1: BRAND & POSITIONING -->
+            <?php if (!empty($analisi['messaggi_principali']) || $analisi['tono_di_voce'] !== '' || !empty($analisi['elementi_differenzianti']) || !empty($analisi['target_commerciali'])) : ?>
+            <div class="accordion-item">
+                <button class="accordion-header" onclick="toggleAccordion(this)">
+                    <span class="accordion-icon">▶</span>
+                    <span class="accordion-title">Brand e Posizionamento</span>
+                    <div class="accordion-meta">
+                        <span class="badge"><?php echo count($analisi['messaggi_principali']); ?> Messaggi</span>
+                        <?php if ($analisi['coerenza_comunicativa'] !== '') : ?>
+                            <span class="badge"><?php echo esc_html($analisi['coerenza_comunicativa']); ?> Coerenza</span>
+                        <?php endif; ?>
+                    </div>
+                </button>
+
+                <div class="accordion-body">
+                    <div class="accordion-content">
+                        <div class="grid-2col">
+                            <?php if (!empty($analisi['messaggi_principali'])) : ?>
+                                <div class="brand-section">
+                                    <h4>Messaggi Principali</h4>
+                                    <ol class="numbered-list">
+                                        <?php foreach ($analisi['messaggi_principali'] as $msg) : ?>
+                                            <li><?php echo esc_html($msg); ?></li>
+                                        <?php endforeach; ?>
+                                    </ol>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if ($analisi['tono_di_voce'] !== '') : ?>
+                                <div class="brand-section">
+                                    <h4>Tono di Voce</h4>
+                                    <p class="tone-text"><?php echo esc_html($analisi['tono_di_voce']); ?></p>
+
+                                    <?php if ($analisi['coerenza_comunicativa'] !== '') : ?>
+                                        <div style="margin-top: var(--spacing-md);">
+                                            <label style="display: block; font-size: 11px; font-weight: 700; color: var(--color-text-tertiary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.7px;">Coerenza Comunicativa</label>
+                                            <p style="font-size: 14px; font-weight: 700; color: var(--color-primary);"><?php echo esc_html($analisi['coerenza_comunicativa']); ?></p>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if (!empty($analisi['elementi_differenzianti'])) : ?>
+                                <div class="brand-section">
+                                    <h4>Elementi Differenzianti</h4>
+                                    <ul class="bullet-list">
+                                        <?php foreach ($analisi['elementi_differenzianti'] as $elem) : ?>
+                                            <li><?php echo esc_html($elem); ?></li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if (!empty($analisi['target_commerciali'])) : ?>
+                                <div class="brand-section">
+                                    <h4>Target Commerciali</h4>
+                                    <ul class="bullet-list">
+                                        <?php foreach ($analisi['target_commerciali'] as $target) : ?>
+                                            <li><?php echo esc_html($target); ?></li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <?php endif; ?>
 
-            <a href="<?php echo esc_url($analisi['permalink']); ?>" class="analysis-link">Visualizza analisi completa →</a>
+            <!-- ACCORDION 2: COMMERCIAL ANALYSIS -->
+            <?php if ($analisi['promessa_di_valore'] !== '' || !empty($analisi['questions']) || !empty($analisi['value_ideas'])) : ?>
+            <div class="accordion-item">
+                <button class="accordion-header" onclick="toggleAccordion(this)">
+                    <span class="accordion-icon">▶</span>
+                    <span class="accordion-title">Analisi Commerciale</span>
+                    <div class="accordion-meta">
+                        <span class="badge"><?php echo count($analisi['value_ideas']); ?> Idee</span>
+                        <span class="badge"><?php echo count($analisi['questions']); ?> Domande</span>
+                    </div>
+                </button>
+
+                <div class="accordion-body">
+                    <div class="accordion-content">
+                        <?php if ($analisi['promessa_di_valore'] !== '') : ?>
+                            <div class="value-promise">
+                                <h4>Promessa di Valore</h4>
+                                <blockquote><?php echo esc_html($analisi['promessa_di_valore']); ?></blockquote>
+                            </div>
+                        <?php endif; ?>
+
+                        <div class="grid-2col">
+                            <?php if (!empty($analisi['questions'])) : ?>
+                                <div class="commercial-section">
+                                    <h4>Domande Prospect Chiave</h4>
+                                    <ul class="bullet-list">
+                                        <?php foreach ($analisi['questions'] as $question) : ?>
+                                            <li><?php echo esc_html($question); ?></li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if (!empty($analisi['value_ideas'])) : ?>
+                                <div class="commercial-section">
+                                    <h4>Idee di Valore Perspect</h4>
+                                    <ol class="numbered-list">
+                                        <?php foreach ($analisi['value_ideas'] as $idea) : ?>
+                                            <li><?php echo esc_html($idea); ?></li>
+                                        <?php endforeach; ?>
+                                    </ol>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- ACCORDION 3: SWOT -->
+            <?php if (!empty($analisi['strengths']) || !empty($analisi['weaknesses']) || !empty($analisi['opportunities']) || !empty($analisi['quick_wins'])) : ?>
+            <div class="accordion-item">
+                <button class="accordion-header" onclick="toggleAccordion(this)">
+                    <span class="accordion-icon">▶</span>
+                    <span class="accordion-title">Punti di Forza e Debolezza</span>
+                    <div class="accordion-meta">
+                        <span class="badge"><?php echo count($analisi['strengths']); ?> Punti Forza</span>
+                        <span class="badge"><?php echo count($analisi['weaknesses']); ?> Debolezze</span>
+                    </div>
+                </button>
+
+                <div class="accordion-body">
+                    <div class="accordion-content">
+                        <div class="grid-2x2">
+                            <?php if (!empty($analisi['strengths'])) : ?>
+                                <div class="swot-card">
+                                    <h4>Punti di Forza</h4>
+                                    <ul class="bullet-list">
+                                        <?php foreach ($analisi['strengths'] as $strength) : ?>
+                                            <li><?php echo esc_html($strength); ?></li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if (!empty($analisi['weaknesses'])) : ?>
+                                <div class="swot-card">
+                                    <h4>Punti di Debolezza</h4>
+                                    <ul class="bullet-list">
+                                        <?php foreach ($analisi['weaknesses'] as $weakness) : ?>
+                                            <li><?php echo esc_html($weakness); ?></li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if (!empty($analisi['opportunities'])) : ?>
+                                <div class="swot-card">
+                                    <h4>Opportunità</h4>
+                                    <ul class="bullet-list">
+                                        <?php foreach ($analisi['opportunities'] as $opportunity) : ?>
+                                            <li><?php echo esc_html($opportunity); ?></li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if (!empty($analisi['quick_wins'])) : ?>
+                                <div class="swot-card">
+                                    <h4>Azioni Rapide</h4>
+                                    <ol class="numbered-list">
+                                        <?php foreach ($analisi['quick_wins'] as $action) : ?>
+                                            <li><?php echo esc_html($action); ?></li>
+                                        <?php endforeach; ?>
+                                    </ol>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- ACCORDION 4: RISKS -->
+            <?php if (!empty($analisi['risks'])) : ?>
+            <div class="accordion-item">
+                <button class="accordion-header" onclick="toggleAccordion(this)">
+                    <span class="accordion-icon">▶</span>
+                    <span class="accordion-title">Rischi e Mitigazione</span>
+                    <div class="accordion-meta">
+                        <span class="badge"><?php echo count($analisi['risks']); ?> Rischi</span>
+                    </div>
+                </button>
+
+                <div class="accordion-body">
+                    <div class="accordion-content">
+                        <ul class="bullet-list">
+                            <?php foreach ($analisi['risks'] as $risk) : ?>
+                                <li><?php echo esc_html($risk); ?></li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- ACCORDION 5: DEEP RESEARCH -->
+            <?php if ($analisi['deep_research'] !== '' || $analisi['review'] !== '') : ?>
+            <div class="accordion-item">
+                <button class="accordion-header" onclick="toggleAccordion(this)">
+                    <span class="accordion-icon">▶</span>
+                    <span class="accordion-title">Analisi Approfondita</span>
+                </button>
+
+                <div class="accordion-body">
+                    <div class="accordion-content">
+                        <?php if ($analisi['deep_research'] !== '') : ?>
+                            <div style="margin-bottom: var(--spacing-lg);">
+                                <h4>Analisi Iniziale</h4>
+                                <div style="margin-top: var(--spacing-md);">
+                                    <?php echo wp_kses_post(wpautop($analisi['deep_research'])); ?>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
+                        <?php if ($analisi['review'] !== '') : ?>
+                            <div>
+                                <h4>Revisione Analisi</h4>
+                                <div style="margin-top: var(--spacing-md);">
+                                    <?php echo wp_kses_post(wpautop($analisi['review'])); ?>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- ACCORDION 6: PRIORITA TEMPORALI -->
+            <?php if ($analisi['priorita_temporali'] !== '') : ?>
+            <div class="accordion-item">
+                <button class="accordion-header" onclick="toggleAccordion(this)">
+                    <span class="accordion-icon">▶</span>
+                    <span class="accordion-title">Priorità Temporali</span>
+                </button>
+
+                <div class="accordion-body">
+                    <div class="accordion-content">
+                        <?php echo wp_kses_post(wpautop($analisi['priorita_temporali'])); ?>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+
         </div>
+
     <?php endforeach; ?>
 </div>
 <?php endif; ?>
@@ -875,6 +1394,21 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         document.getElementById(tabId).classList.add('active');
     });
 });
+
+function toggleAccordion(header) {
+    const body = header.nextElementSibling;
+    const isOpen = body.classList.contains('open');
+
+    // Close all accordions
+    document.querySelectorAll('.accordion-body').forEach(b => b.classList.remove('open'));
+    document.querySelectorAll('.accordion-header').forEach(h => h.classList.remove('active'));
+
+    // Open clicked accordion if it was closed
+    if (!isOpen) {
+        body.classList.add('open');
+        header.classList.add('active');
+    }
+}
 </script>
 
 <?php
