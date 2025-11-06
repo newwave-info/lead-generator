@@ -3,9 +3,7 @@
  * Template per single post type: azienda
  */
 
-get_header();
-
-// Helper functions
+// Helper functions - must be defined before get_header()
 if (!function_exists('lg_media_url')) {
     function lg_media_url($value, $size = 'large', $fallback = '') {
         if (is_numeric($value)) {
@@ -64,10 +62,12 @@ if (!function_exists('lg_extract_strings')) {
     }
 }
 
+get_header();
+
 if (have_posts()) : while (have_posts()) : the_post();
 
 $post_id = get_the_ID();
-$fields = get_fields($post_id);
+$fields = function_exists('get_fields') ? get_fields($post_id) : [];
 $fields = is_array($fields) ? $fields : [];
 $theme_uri = get_template_directory_uri();
 
