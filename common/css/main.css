@@ -2965,7 +2965,10 @@ Copyright (c) 2015 Daniel Eden
    Dark Anthracite/Grey Theme
    =================================================== */
 
-.perspect-scheda :root {
+body.single-azienda,
+body.single-analisi,
+body.post-type-archive-azienda,
+body.post-type-archive-analisi {
     --color-primary: #2c3e50;
     --color-primary-dark: #1a252f;
     --color-primary-light: #556270;
