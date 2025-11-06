@@ -1097,26 +1097,35 @@ p, li {
             </h3>
 
             <div class="overview-card">
-                <?php if ($analisi['riassunto'] !== '') : ?>
+                <?php if (!empty($analisi['riassunto'])) : ?>
                     <p class="summary-text"><?php echo esc_html($analisi['riassunto']); ?></p>
                 <?php endif; ?>
 
                 <div class="overview-meta">
                     <div class="meta-badge">
                         <div class="meta-badge-label">Data Analisi</div>
-                        <div class="meta-badge-value"><?php echo $analisi['analysis_at'] !== '' ? esc_html(date_i18n('d M Y', strtotime($analisi['analysis_at']))) : '—'; ?></div>
+                        <div class="meta-badge-value">
+                            <?php
+                            if (!empty($analisi['analysis_at'])) {
+                                $timestamp = strtotime($analisi['analysis_at']);
+                                echo $timestamp ? esc_html(date_i18n('d M Y', $timestamp)) : '—';
+                            } else {
+                                echo '—';
+                            }
+                            ?>
+                        </div>
                     </div>
                     <div class="meta-badge">
                         <div class="meta-badge-label">Status</div>
-                        <div class="meta-badge-value"><?php echo $analisi['analysis_status'] !== '' ? esc_html($analisi['analysis_status']) : '—'; ?></div>
+                        <div class="meta-badge-value"><?php echo !empty($analisi['analysis_status']) ? esc_html($analisi['analysis_status']) : '—'; ?></div>
                     </div>
                     <div class="meta-badge">
                         <div class="meta-badge-label">Qualità</div>
-                        <div class="meta-badge-value"><?php echo $analisi['quality_score'] !== null ? esc_html($analisi['quality_score']) . ' / 10' : '—'; ?></div>
+                        <div class="meta-badge-value"><?php echo isset($analisi['quality_score']) && $analisi['quality_score'] !== null ? esc_html($analisi['quality_score']) . ' / 10' : '—'; ?></div>
                     </div>
                     <div class="meta-badge">
                         <div class="meta-badge-label">Confidenza</div>
-                        <div class="meta-badge-value"><?php echo $analisi['data_quality'] !== '' ? esc_html($analisi['data_quality']) : '—'; ?></div>
+                        <div class="meta-badge-value"><?php echo !empty($analisi['data_quality']) ? esc_html($analisi['data_quality']) : '—'; ?></div>
                     </div>
                 </div>
             </div>
@@ -1126,14 +1135,14 @@ p, li {
         <div class="analysis-accordion">
 
             <!-- ACCORDION 1: BRAND & POSITIONING -->
-            <?php if (!empty($analisi['messaggi_principali']) || $analisi['tono_di_voce'] !== '' || !empty($analisi['elementi_differenzianti']) || !empty($analisi['target_commerciali'])) : ?>
+            <?php if (!empty($analisi['messaggi_principali']) || !empty($analisi['tono_di_voce']) || !empty($analisi['elementi_differenzianti']) || !empty($analisi['target_commerciali'])) : ?>
             <div class="accordion-item">
                 <button class="accordion-header" onclick="toggleAccordion(this)">
                     <span class="accordion-icon">▶</span>
                     <span class="accordion-title">Brand e Posizionamento</span>
                     <div class="accordion-meta">
-                        <span class="badge"><?php echo count($analisi['messaggi_principali']); ?> Messaggi</span>
-                        <?php if ($analisi['coerenza_comunicativa'] !== '') : ?>
+                        <span class="badge"><?php echo count($analisi['messaggi_principali'] ?? []); ?> Messaggi</span>
+                        <?php if (!empty($analisi['coerenza_comunicativa'])) : ?>
                             <span class="badge"><?php echo esc_html($analisi['coerenza_comunicativa']); ?> Coerenza</span>
                         <?php endif; ?>
                     </div>
@@ -1153,12 +1162,12 @@ p, li {
                                 </div>
                             <?php endif; ?>
 
-                            <?php if ($analisi['tono_di_voce'] !== '') : ?>
+                            <?php if (!empty($analisi['tono_di_voce'])) : ?>
                                 <div class="brand-section">
                                     <h4>Tono di Voce</h4>
                                     <p class="tone-text"><?php echo esc_html($analisi['tono_di_voce']); ?></p>
 
-                                    <?php if ($analisi['coerenza_comunicativa'] !== '') : ?>
+                                    <?php if (!empty($analisi['coerenza_comunicativa'])) : ?>
                                         <div style="margin-top: var(--spacing-md);">
                                             <label style="display: block; font-size: 11px; font-weight: 700; color: var(--color-text-tertiary); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.7px;">Coerenza Comunicativa</label>
                                             <p style="font-size: 14px; font-weight: 700; color: var(--color-primary);"><?php echo esc_html($analisi['coerenza_comunicativa']); ?></p>
@@ -1195,20 +1204,20 @@ p, li {
             <?php endif; ?>
 
             <!-- ACCORDION 2: COMMERCIAL ANALYSIS -->
-            <?php if ($analisi['promessa_di_valore'] !== '' || !empty($analisi['questions']) || !empty($analisi['value_ideas'])) : ?>
+            <?php if (!empty($analisi['promessa_di_valore']) || !empty($analisi['questions']) || !empty($analisi['value_ideas'])) : ?>
             <div class="accordion-item">
                 <button class="accordion-header" onclick="toggleAccordion(this)">
                     <span class="accordion-icon">▶</span>
                     <span class="accordion-title">Analisi Commerciale</span>
                     <div class="accordion-meta">
-                        <span class="badge"><?php echo count($analisi['value_ideas']); ?> Idee</span>
-                        <span class="badge"><?php echo count($analisi['questions']); ?> Domande</span>
+                        <span class="badge"><?php echo count($analisi['value_ideas'] ?? []); ?> Idee</span>
+                        <span class="badge"><?php echo count($analisi['questions'] ?? []); ?> Domande</span>
                     </div>
                 </button>
 
                 <div class="accordion-body">
                     <div class="accordion-content">
-                        <?php if ($analisi['promessa_di_valore'] !== '') : ?>
+                        <?php if (!empty($analisi['promessa_di_valore'])) : ?>
                             <div class="value-promise">
                                 <h4>Promessa di Valore</h4>
                                 <blockquote><?php echo esc_html($analisi['promessa_di_valore']); ?></blockquote>
@@ -1250,8 +1259,8 @@ p, li {
                     <span class="accordion-icon">▶</span>
                     <span class="accordion-title">Punti di Forza e Debolezza</span>
                     <div class="accordion-meta">
-                        <span class="badge"><?php echo count($analisi['strengths']); ?> Punti Forza</span>
-                        <span class="badge"><?php echo count($analisi['weaknesses']); ?> Debolezze</span>
+                        <span class="badge"><?php echo count($analisi['strengths'] ?? []); ?> Punti Forza</span>
+                        <span class="badge"><?php echo count($analisi['weaknesses'] ?? []); ?> Debolezze</span>
                     </div>
                 </button>
 
@@ -1314,7 +1323,7 @@ p, li {
                     <span class="accordion-icon">▶</span>
                     <span class="accordion-title">Rischi e Mitigazione</span>
                     <div class="accordion-meta">
-                        <span class="badge"><?php echo count($analisi['risks']); ?> Rischi</span>
+                        <span class="badge"><?php echo count($analisi['risks'] ?? []); ?> Rischi</span>
                     </div>
                 </button>
 
@@ -1331,7 +1340,7 @@ p, li {
             <?php endif; ?>
 
             <!-- ACCORDION 5: DEEP RESEARCH -->
-            <?php if ($analisi['deep_research'] !== '' || $analisi['review'] !== '') : ?>
+            <?php if (!empty($analisi['deep_research']) || !empty($analisi['review'])) : ?>
             <div class="accordion-item">
                 <button class="accordion-header" onclick="toggleAccordion(this)">
                     <span class="accordion-icon">▶</span>
@@ -1340,7 +1349,7 @@ p, li {
 
                 <div class="accordion-body">
                     <div class="accordion-content">
-                        <?php if ($analisi['deep_research'] !== '') : ?>
+                        <?php if (!empty($analisi['deep_research'])) : ?>
                             <div style="margin-bottom: var(--spacing-lg);">
                                 <h4>Analisi Iniziale</h4>
                                 <div style="margin-top: var(--spacing-md);">
@@ -1349,7 +1358,7 @@ p, li {
                             </div>
                         <?php endif; ?>
 
-                        <?php if ($analisi['review'] !== '') : ?>
+                        <?php if (!empty($analisi['review'])) : ?>
                             <div>
                                 <h4>Revisione Analisi</h4>
                                 <div style="margin-top: var(--spacing-md);">
@@ -1363,7 +1372,7 @@ p, li {
             <?php endif; ?>
 
             <!-- ACCORDION 6: PRIORITA TEMPORALI -->
-            <?php if ($analisi['priorita_temporali'] !== '') : ?>
+            <?php if (!empty($analisi['priorita_temporali'])) : ?>
             <div class="accordion-item">
                 <button class="accordion-header" onclick="toggleAccordion(this)">
                     <span class="accordion-icon">▶</span>
