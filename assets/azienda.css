@@ -809,6 +809,10 @@
     color: var(--color-text-primary);
 }
 
+.azienda-profile .service-fit-value {
+    font-weight: 400;
+}
+
 /* Accordion Styles */
 .azienda-profile .analysis-accordion {
     display: flex;

@@ -503,7 +503,7 @@ if (have_posts()) :
                                 <div class="overview-meta">
                                     <?php foreach ($service_fit_list as $service) : ?>
                                         <div class="meta-badge">
-                                            <div class="meta-badge-value"><?php echo esc_html($service); ?></div>
+                                            <div class="meta-badge-value service-fit-value"><?php echo esc_html(ucfirst(strtolower(trim($service)))); ?></div>
                                         </div>
                                     <?php endforeach; ?>
                                 </div>
@@ -514,8 +514,8 @@ if (have_posts()) :
                             </div>
                         </div>
 
-                        <div class="anagrafica-section">
-                            <h3 class="section-title">
+                        <div class="analysis-overview">
+                            <h2>
                                 <?php
                                 if ($digital_score !== null) {
                                     printf(esc_html__('Maturità Digitale: %d / 100', 'lead-generator'), $digital_score);
@@ -523,33 +523,44 @@ if (have_posts()) :
                                     esc_html_e('Maturità Digitale', 'lead-generator');
                                 }
                                 ?>
-                            </h3>
+                            </h2>
                             <?php if ($social_links !== '' || $domain_display !== '' || $linkedin_url !== '' || !empty($digital_highlights)) : ?>
-                            <div class="reason-box">
-                                <h4><?php esc_html_e('Presenza Digitale', 'lead-generator'); ?></h4>
-                                <ul class="bullet-list">
+                            <div class="overview-card">
+                                <p class="summary-text"><?php esc_html_e('Presenza digitale dell\'azienda sui principali canali online.', 'lead-generator'); ?></p>
+
+                                <div class="service-fit-label"><?php esc_html_e('Canali Attivi', 'lead-generator'); ?></div>
+                                <div class="overview-meta">
                                     <?php if ($domain_display !== '') : ?>
-                                        <li><?php printf(esc_html__('Sito: %s', 'lead-generator'), $domain_display); ?></li>
+                                        <div class="meta-badge">
+                                            <div class="meta-badge-label"><?php esc_html_e('Sito Web', 'lead-generator'); ?></div>
+                                            <div class="meta-badge-value"><?php echo esc_html($domain_display); ?></div>
+                                        </div>
                                     <?php endif; ?>
                                     <?php if ($linkedin_url !== '') : ?>
-                                        <li><?php esc_html_e('Profilo LinkedIn attivo', 'lead-generator'); ?></li>
+                                        <div class="meta-badge">
+                                            <div class="meta-badge-value service-fit-value"><?php esc_html_e('LinkedIn', 'lead-generator'); ?></div>
+                                        </div>
                                     <?php endif; ?>
                                     <?php
                                     if ($social_links !== '') {
                                         $social_list = lg_parse_list($social_links);
                                         foreach ($social_list as $social_item) :
                                     ?>
-                                        <li><?php echo esc_html($social_item); ?></li>
+                                        <div class="meta-badge">
+                                            <div class="meta-badge-value service-fit-value"><?php echo esc_html(ucfirst(trim($social_item))); ?></div>
+                                        </div>
                                     <?php
                                         endforeach;
                                     }
                                     ?>
                                     <?php if (!empty($digital_highlights)) : ?>
                                         <?php foreach ($digital_highlights as $highlight) : ?>
-                                            <li><?php echo esc_html($highlight); ?></li>
+                                        <div class="meta-badge">
+                                            <div class="meta-badge-value service-fit-value"><?php echo esc_html($highlight); ?></div>
+                                        </div>
                                         <?php endforeach; ?>
                                     <?php endif; ?>
-                                </ul>
+                                </div>
                             </div>
                             <?php endif; ?>
                         </div>
