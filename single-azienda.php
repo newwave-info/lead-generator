@@ -226,6 +226,16 @@ if (have_posts()) :
                 'value' => $marketing_budget,
                 'meta'  => __('annuale', 'lead-generator'),
             ],
+            [
+                'label' => __('Tier Budget', 'lead-generator'),
+                'value' => $budget_tier,
+                'meta'  => __('categoria', 'lead-generator'),
+            ],
+            [
+                'label' => __('Confidenza', 'lead-generator'),
+                'value' => $financial_conf !== null ? sprintf('%d%%', $financial_conf) : '—',
+                'meta'  => __('affidabilità dato', 'lead-generator'),
+            ],
         ];
 
         $digital_highlights = array_values(array_filter([
@@ -410,83 +420,60 @@ if (have_posts()) :
                         <?php endif; ?>
 
                         <div class="anagrafica-section">
-                            <h3 class="section-title"><?php esc_html_e('Sede', 'lead-generator'); ?></h3>
-                            <div class="grid-3col">
-                                <div class="form-field">
-                                    <label><?php esc_html_e('Indirizzo', 'lead-generator'); ?></label>
-                                    <p class="field-value"><?php echo esc_html(lg_format_display($address)); ?></p>
-                                </div>
-                                <div class="form-field">
-                                    <label><?php esc_html_e('Città', 'lead-generator'); ?></label>
-                                    <p class="field-value"><?php echo esc_html(lg_format_display($city)); ?></p>
-                                </div>
-                                <div class="form-field">
-                                    <label><?php esc_html_e('Provincia', 'lead-generator'); ?></label>
-                                    <p class="field-value"><?php echo esc_html(lg_format_display($province)); ?></p>
-                                </div>
+                            <div class="reason-box">
+                                <h4><?php esc_html_e('Sede', 'lead-generator'); ?></h4>
+                                <p>
+                                    <?php
+                                    $sede_parts = array_filter([
+                                        $address !== '' ? $address : null,
+                                        $city !== '' ? $city : null,
+                                        $province !== '' ? $province : null,
+                                    ]);
+                                    if (!empty($sede_parts)) {
+                                        echo esc_html(implode(', ', $sede_parts));
+                                    } else {
+                                        esc_html_e('Non disponibile', 'lead-generator');
+                                    }
+                                    ?>
+                                </p>
                             </div>
                         </div>
 
                         <div class="anagrafica-section">
-                            <h3 class="section-title"><?php esc_html_e('Contatti', 'lead-generator'); ?></h3>
-                            <div class="grid-2col">
-                                <div class="form-field">
-                                    <label><?php esc_html_e('Telefono', 'lead-generator'); ?></label>
-                                    <p class="field-value"><?php echo esc_html(lg_format_display($phone)); ?></p>
-                                </div>
-                                <div class="form-field">
-                                    <label><?php esc_html_e('Email', 'lead-generator'); ?></label>
-                                    <?php if ($email !== '') : ?>
-                                        <a class="field-value-link" href="mailto:<?php echo esc_attr($email); ?>"><?php echo esc_html($email); ?></a>
-                                    <?php else : ?>
-                                        <p class="field-value"><?php esc_html_e('Non disponibile', 'lead-generator'); ?></p>
+                            <div class="reason-box">
+                                <h4><?php esc_html_e('Contatti', 'lead-generator'); ?></h4>
+                                <ul class="bullet-list">
+                                    <?php if ($phone !== '') : ?>
+                                        <li><?php printf(esc_html__('Tel: %s', 'lead-generator'), $phone); ?></li>
                                     <?php endif; ?>
-                                </div>
+                                    <?php if ($email !== '') : ?>
+                                        <li>
+                                            <a href="mailto:<?php echo esc_attr($email); ?>" style="color: var(--color-primary); text-decoration: none;">
+                                                <?php echo esc_html($email); ?>
+                                            </a>
+                                        </li>
+                                    <?php endif; ?>
+                                    <?php if ($linkedin_url !== '') : ?>
+                                        <li>
+                                            <a href="<?php echo esc_url($linkedin_url); ?>" target="_blank" rel="noreferrer noopener" style="color: var(--color-primary); text-decoration: none;">
+                                                LinkedIn
+                                            </a>
+                                        </li>
+                                    <?php endif; ?>
+                                </ul>
                             </div>
-                            <?php if ($linkedin_url !== '') : ?>
-                            <div class="form-field">
-                                <label><?php esc_html_e('LinkedIn', 'lead-generator'); ?></label>
-                                <a class="field-value-link" href="<?php echo esc_url($linkedin_url); ?>" target="_blank" rel="noreferrer noopener">
-                                    <?php echo esc_html($linkedin_url); ?>
-                                </a>
-                            </div>
-                            <?php endif; ?>
                         </div>
                     </section>
 
                     <section id="tab-economics" class="ap-tab-panel" data-ap-panel role="tabpanel" hidden>
-                        <div class="anagrafica-section">
-                            <h3 class="section-title"><?php esc_html_e('Dati Finanziari', 'lead-generator'); ?></h3>
-                            <div class="metrics-grid">
-                                <?php foreach ($economics_cards as $card) : ?>
-                                    <div class="metric-card">
-                                        <h4><?php echo esc_html($card['label']); ?></h4>
-                                        <p class="metric-value"><?php echo esc_html(lg_format_display($card['value'])); ?></p>
-                                        <span class="sub-text"><?php echo esc_html($card['meta']); ?></span>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-
-                        <div class="anagrafica-section">
-                            <h3 class="section-title"><?php esc_html_e('Budget e Confidenza', 'lead-generator'); ?></h3>
-                            <div class="grid-2col">
-                                <div class="form-field">
-                                    <label><?php esc_html_e('Tier budget', 'lead-generator'); ?></label>
-                                    <p><strong><?php echo esc_html(lg_format_display($budget_tier)); ?></strong></p>
+                        <div class="metrics-grid-5">
+                            <?php foreach ($economics_cards as $card) : ?>
+                                <div class="metric-card">
+                                    <h4><?php echo esc_html($card['label']); ?></h4>
+                                    <p class="metric-value"><?php echo esc_html(lg_format_display($card['value'])); ?></p>
+                                    <span class="sub-text"><?php echo esc_html($card['meta']); ?></span>
                                 </div>
-                                <div class="form-field">
-                                    <label><?php esc_html_e('Confidenza dato', 'lead-generator'); ?></label>
-                                    <div class="coherence-meter">
-                                        <div class="progress-container">
-                                            <progress value="<?php echo esc_attr($financial_conf ?? 0); ?>" max="100"></progress>
-                                            <span class="progress-value">
-                                                <?php echo $financial_conf !== null ? esc_html(sprintf('%d%%', $financial_conf)) : '—'; ?>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <?php endforeach; ?>
                         </div>
                     </section>
 
@@ -498,12 +485,21 @@ if (have_posts()) :
                             </div>
                         </div>
 
+                        <?php
+                        $service_fit_list = lg_parse_list($service_fit);
+                        if (!empty($service_fit_list)) :
+                        ?>
                         <div class="anagrafica-section">
-                            <div class="reason-box">
-                                <h4><?php esc_html_e('Service fit', 'lead-generator'); ?></h4>
-                                <p><?php echo esc_html(lg_format_display($service_fit)); ?></p>
+                            <h3 class="section-title"><?php esc_html_e('Service Fit', 'lead-generator'); ?></h3>
+                            <div class="metrics-grid-auto">
+                                <?php foreach ($service_fit_list as $service) : ?>
+                                    <div class="metric-card">
+                                        <p class="metric-value"><?php echo esc_html($service); ?></p>
+                                    </div>
+                                <?php endforeach; ?>
                             </div>
                         </div>
+                        <?php endif; ?>
 
                         <div class="anagrafica-section">
                             <h3 class="section-title">
@@ -901,10 +897,7 @@ if (have_posts()) :
                 </div>
 
                 <div class="quick-actions-bar">
-                    <button type="button" class="btn-primary"><?php esc_html_e('Genera outreach email', 'lead-generator'); ?></button>
-                    <button type="button" class="btn-secondary"><?php esc_html_e('Prepara LinkedIn', 'lead-generator'); ?></button>
-                    <button type="button" class="btn-secondary"><?php esc_html_e('Full report PDF', 'lead-generator'); ?></button>
-                    <button type="button" class="btn-secondary"><?php esc_html_e('Riavvia analisi', 'lead-generator'); ?></button>
+                    <button type="button" class="btn-primary" disabled><?php esc_html_e('Genera outreach email', 'lead-generator'); ?></button>
                 </div>
             </div>
         </article>

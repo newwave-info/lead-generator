@@ -423,6 +423,18 @@
     gap: var(--spacing-md);
 }
 
+.azienda-profile .metrics-grid-5 {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: var(--spacing-md);
+}
+
+.azienda-profile .metrics-grid-auto {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--spacing-md);
+}
+
 .azienda-profile .metric-card {
     padding: var(--spacing-md);
     background: var(--color-bg-medium);
@@ -608,6 +620,13 @@
     color: #fff;
 }
 
+.azienda-profile .btn-primary:disabled {
+    background: var(--color-bg-medium);
+    color: var(--color-text-tertiary);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
 .azienda-profile .btn-secondary {
     background: var(--color-bg-medium);
     color: var(--color-text-primary);
@@ -624,8 +643,13 @@
     }
 
     .azienda-profile .grid-3col,
-    .azienda-profile .metrics-grid {
+    .azienda-profile .metrics-grid,
+    .azienda-profile .metrics-grid-5 {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .azienda-profile .metrics-grid-auto {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     }
 }
 
@@ -679,7 +703,9 @@
     .azienda-profile .grid-2col,
     .azienda-profile .grid-3col,
     .azienda-profile .grid-2x2,
-    .azienda-profile .metrics-grid {
+    .azienda-profile .metrics-grid,
+    .azienda-profile .metrics-grid-5,
+    .azienda-profile .metrics-grid-auto {
         grid-template-columns: 1fr;
     }
 
