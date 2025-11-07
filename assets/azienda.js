@@ -68,3 +68,15 @@
 
     document.addEventListener('DOMContentLoaded', initTabs);
 })();
+
+// Accordion Toggle Function
+function toggleAccordion(button) {
+    const accordionItem = button.closest('.accordion-item');
+    const isOpen = accordionItem.classList.contains('is-open');
+
+    // Toggle the open state
+    accordionItem.classList.toggle('is-open');
+
+    // Update ARIA attributes
+    button.setAttribute('aria-expanded', !isOpen);
+}
