@@ -1,15 +1,15 @@
 .azienda-profile {
-    --color-primary: #374151;
-    --color-primary-dark: #1f2937;
+    --color-primary: #1f2937;
+    --color-primary-dark: #111827;
     --color-bg-light: #ffffff;
-    --color-bg-medium: #f9fafb;
-    --color-bg-soft: #f3f4f6;
+    --color-bg-medium: #f3f4f6;
+    --color-bg-soft: #e5e7eb;
     --color-text-primary: #111827;
-    --color-text-secondary: #6b7280;
-    --color-text-tertiary: #9ca3af;
-    --color-border: #e5e7eb;
-    --color-border-light: #f3f4f6;
-    --color-accent: #4b5563;
+    --color-text-secondary: #4b5563;
+    --color-text-tertiary: #6b7280;
+    --color-border: #d1d5db;
+    --color-border-light: #e5e7eb;
+    --color-accent: #374151;
     --spacing-xs: 8px;
     --spacing-sm: 16px;
     --spacing-md: 24px;
@@ -207,7 +207,7 @@
 
 .azienda-profile .ap-company-meta {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr 1fr;
     gap: var(--spacing-sm);
     border-top: 1px solid rgba(255, 255, 255, 0.2);
     padding-top: var(--spacing-sm);
@@ -249,6 +249,8 @@
     cursor: pointer;
     border-bottom: 2px solid transparent;
     transition: color 0.2s ease, border 0.2s ease, background 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .azienda-profile .ap-tab-btn:hover {
@@ -520,9 +522,10 @@
 .azienda-profile .reason-box h4,
 .azienda-profile .message-box h4 {
     margin-top: 0;
-    font-size: 14px;
+    font-size: 11px;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.6px;
+    letter-spacing: 0.8px;
     color: var(--color-text-tertiary);
 }
 
