@@ -396,25 +396,14 @@ if (have_posts()) :
 
                 <div class="ap-tabs-wrapper">
                     <section id="tab-anagrafica" class="ap-tab-panel is-active" data-ap-panel role="tabpanel">
+                        <?php if ($short_bio !== '') : ?>
                         <div class="anagrafica-section">
-                            <h3 class="section-title"><?php esc_html_e('Informazioni Generali', 'lead-generator'); ?></h3>
-                            <div class="grid-2col">
-                                <div class="form-field">
-                                    <label><?php esc_html_e('Ragione sociale', 'lead-generator'); ?></label>
-                                    <p class="field-value"><?php echo esc_html(lg_format_display($company_name)); ?></p>
-                                </div>
-                                <div class="form-field">
-                                    <label><?php esc_html_e('Partita IVA', 'lead-generator'); ?></label>
-                                    <p class="field-value"><?php echo esc_html(lg_format_display($partita_iva)); ?></p>
-                                </div>
+                            <div class="reason-box">
+                                <h4><?php esc_html_e('Descrizione', 'lead-generator'); ?></h4>
+                                <p><?php echo esc_html(lg_format_display($short_bio)); ?></p>
                             </div>
-                            <?php if ($short_bio !== '') : ?>
-                            <div class="form-field">
-                                <label><?php esc_html_e('Descrizione', 'lead-generator'); ?></label>
-                                <p class="field-value"><?php echo esc_html(lg_format_display($short_bio)); ?></p>
-                            </div>
-                            <?php endif; ?>
                         </div>
+                        <?php endif; ?>
 
                         <div class="anagrafica-section">
                             <h3 class="section-title"><?php esc_html_e('Sede', 'lead-generator'); ?></h3>
