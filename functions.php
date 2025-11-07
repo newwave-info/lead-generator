@@ -73,18 +73,18 @@ add_action('wp_enqueue_scripts', function () {
     $theme_uri = get_template_directory_uri();
     $theme_dir = get_template_directory();
 
-    $style_path  = $theme_dir . '/assets/azienda.css';
-    $script_path = $theme_dir . '/assets/azienda.js';
+    $style_path  = $theme_dir . '/newwave/custom/css/azienda.css';
+    $script_path = $theme_dir . '/newwave/custom/js/azienda.js';
 
     $style_version  = file_exists($style_path) ? filemtime($style_path) : false;
     $script_version = file_exists($script_path) ? filemtime($script_path) : false;
 
     if (file_exists($style_path)) {
-        wp_enqueue_style('lg-azienda', $theme_uri . '/assets/azienda.css', [], $style_version ?: null);
+        wp_enqueue_style('lg-azienda', $theme_uri . '/newwave/custom/css/azienda.css', [], $style_version ?: null);
     }
 
     if (file_exists($script_path)) {
-        wp_enqueue_script('lg-azienda', $theme_uri . '/assets/azienda.js', [], $script_version ?: null, true);
+        wp_enqueue_script('lg-azienda', $theme_uri . '/newwave/custom/js/azienda.js', [], $script_version ?: null, true);
     }
 }, 20);
 
