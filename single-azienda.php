@@ -64,6 +64,22 @@ if (!function_exists('lg_format_display')) {
     }
 }
 
+if (!function_exists('lg_parse_list')) {
+    /**
+     * Parser per liste separate da newline o pipe.
+     */
+    function lg_parse_list($text) {
+        if (empty($text) || !is_string($text)) {
+            return [];
+        }
+        // Prova a splittare per newline o pipe
+        $items = preg_split('/[\n\r\|]+/', $text);
+        $items = array_map('trim', $items);
+        $items = array_filter($items);
+        return array_values($items);
+    }
+}
+
 if (have_posts()) :
     while (have_posts()) :
         the_post();
@@ -285,16 +301,6 @@ if (have_posts()) :
                 $analisi_data_display = $analisi_data;
             }
         }
-
-        // Parser per liste separate da newline o pipe
-        $parse_list = function($text) {
-            if (empty($text)) return [];
-            // Prova a splittare per newline o pipe
-            $items = preg_split('/[\n\r\|]+/', $text);
-            $items = array_map('trim', $items);
-            $items = array_filter($items);
-            return array_values($items);
-        };
         ?>
 
         <article id="post-<?php the_ID(); ?>" <?php post_class('azienda-profile'); ?>>
@@ -495,7 +501,7 @@ if (have_posts()) :
                             <label><?php esc_html_e('Social Links', 'lead-generator'); ?></label>
                             <ul class="bullet-list" style="margin-top: 10px;">
                                 <?php
-                                $social_list = $parse_list($social_links);
+                                $social_list = lg_parse_list($social_links);
                                 foreach ($social_list as $social_item) :
                                 ?>
                                     <li><?php echo esc_html($social_item); ?></li>
@@ -622,7 +628,7 @@ if (have_posts()) :
                                                 <div class="brand-section">
                                                     <h4><?php esc_html_e('Messaggi Principali', 'lead-generator'); ?></h4>
                                                     <?php
-                                                    $messaggi_list = $parse_list($analisi_messaggi);
+                                                    $messaggi_list = lg_parse_list($analisi_messaggi);
                                                     if (!empty($messaggi_list)) :
                                                     ?>
                                                         <ol class="numbered-list">
@@ -656,7 +662,7 @@ if (have_posts()) :
                                                 <div class="brand-section">
                                                     <h4><?php esc_html_e('Elementi Differenzianti', 'lead-generator'); ?></h4>
                                                     <?php
-                                                    $diff_list = $parse_list($analisi_differenzianti);
+                                                    $diff_list = lg_parse_list($analisi_differenzianti);
                                                     if (!empty($diff_list)) :
                                                     ?>
                                                         <ul class="bullet-list">
@@ -672,7 +678,7 @@ if (have_posts()) :
                                                 <div class="brand-section">
                                                     <h4><?php esc_html_e('Target Commerciali', 'lead-generator'); ?></h4>
                                                     <?php
-                                                    $target_list = $parse_list($analisi_target);
+                                                    $target_list = lg_parse_list($analisi_target);
                                                     if (!empty($target_list)) :
                                                     ?>
                                                         <ul class="bullet-list">
@@ -713,7 +719,7 @@ if (have_posts()) :
                                                 <div class="commercial-section">
                                                     <h4><?php esc_html_e('Domande Prospect Chiave', 'lead-generator'); ?></h4>
                                                     <?php
-                                                    $domande_list = $parse_list($analisi_domande);
+                                                    $domande_list = lg_parse_list($analisi_domande);
                                                     if (!empty($domande_list)) :
                                                     ?>
                                                         <ul class="bullet-list">
@@ -729,7 +735,7 @@ if (have_posts()) :
                                                 <div class="commercial-section">
                                                     <h4><?php esc_html_e('Idee di Valore Perspect', 'lead-generator'); ?></h4>
                                                     <?php
-                                                    $idee_list = $parse_list($analisi_idee);
+                                                    $idee_list = lg_parse_list($analisi_idee);
                                                     if (!empty($idee_list)) :
                                                     ?>
                                                         <ol class="numbered-list">
@@ -763,7 +769,7 @@ if (have_posts()) :
                                                 <div class="swot-card">
                                                     <h4><?php esc_html_e('Punti di Forza', 'lead-generator'); ?></h4>
                                                     <?php
-                                                    $forza_list = $parse_list($analisi_forza);
+                                                    $forza_list = lg_parse_list($analisi_forza);
                                                     if (!empty($forza_list)) :
                                                     ?>
                                                         <ul class="bullet-list">
@@ -779,7 +785,7 @@ if (have_posts()) :
                                                 <div class="swot-card">
                                                     <h4><?php esc_html_e('Punti di Debolezza', 'lead-generator'); ?></h4>
                                                     <?php
-                                                    $debolezza_list = $parse_list($analisi_debolezza);
+                                                    $debolezza_list = lg_parse_list($analisi_debolezza);
                                                     if (!empty($debolezza_list)) :
                                                     ?>
                                                         <ul class="bullet-list">
@@ -795,7 +801,7 @@ if (have_posts()) :
                                                 <div class="swot-card">
                                                     <h4><?php esc_html_e('Opportunità', 'lead-generator'); ?></h4>
                                                     <?php
-                                                    $opportunita_list = $parse_list($analisi_opportunita);
+                                                    $opportunita_list = lg_parse_list($analisi_opportunita);
                                                     if (!empty($opportunita_list)) :
                                                     ?>
                                                         <ul class="bullet-list">
@@ -811,7 +817,7 @@ if (have_posts()) :
                                                 <div class="swot-card">
                                                     <h4><?php esc_html_e('Azioni Rapide', 'lead-generator'); ?></h4>
                                                     <?php
-                                                    $azioni_list = $parse_list($analisi_azioni);
+                                                    $azioni_list = lg_parse_list($analisi_azioni);
                                                     if (!empty($azioni_list)) :
                                                     ?>
                                                         <ol class="numbered-list">
@@ -841,7 +847,7 @@ if (have_posts()) :
                                     <div class="accordion-body">
                                         <div class="accordion-content">
                                             <?php
-                                            $rischi_list = $parse_list($analisi_rischi);
+                                            $rischi_list = lg_parse_list($analisi_rischi);
                                             if (!empty($rischi_list)) :
                                             ?>
                                                 <table class="risks-table">
