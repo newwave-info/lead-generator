@@ -122,11 +122,12 @@
 }
 
 .azienda-profile .ap-company-title h1 {
-    font-size: 36px;
+    font-size: 30px;
     margin: 0;
     line-height: 1.2;
-    font-weight: 600;
+    font-weight: 700;
     letter-spacing: -0.02em;
+    text-transform: uppercase;
 }
 
 .azienda-profile .ap-qualification-badge {
@@ -162,9 +163,11 @@
 
 .azienda-profile .ap-company-subtitle {
     margin: 8px 0 0;
-    font-size: 15px;
+    font-size: 14px;
     color: rgba(255, 255, 255, 0.85);
     font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .azienda-profile .ap-company-link {
