@@ -315,16 +315,6 @@ if (have_posts()) :
 
         <article id="post-<?php the_ID(); ?>" <?php post_class('azienda-profile'); ?>>
             <div class="ap-shell">
-                <header class="ap-main-header">
-                    <div class="ap-header-brand">
-                        <img src="<?php echo esc_url($theme_uri . '/common/img/logo.svg'); ?>" alt="<?php esc_attr_e('Logo Perspect', 'lead-generator'); ?>">
-                        <span><?php echo esc_html(get_bloginfo('name')); ?></span>
-                    </div>
-                    <nav class="ap-header-nav">
-                        <a href="<?php echo esc_url(home_url('/')); ?>"><?php esc_html_e('Aziende', 'lead-generator'); ?></a>
-                    </nav>
-                </header>
-
                 <section class="ap-company-header">
                     <div class="ap-company-title">
                         <div class="ap-company-main">
