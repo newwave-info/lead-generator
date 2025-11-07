@@ -439,6 +439,7 @@
     padding: var(--spacing-md);
     background: var(--color-bg-medium);
     border: 1px solid var(--color-border-light);
+    border-radius: 6px;
 }
 
 .azienda-profile .metric-card h4 {
@@ -542,6 +543,7 @@
     background: var(--color-bg-medium);
     border: 1px solid var(--color-border-light);
     padding: var(--spacing-md);
+    border-radius: 6px;
 }
 
 .azienda-profile .reason-box h4,
@@ -811,6 +813,7 @@
 
 .azienda-profile .service-fit-value {
     font-weight: 400;
+    font-size: 15px;
 }
 
 /* Accordion Styles */
