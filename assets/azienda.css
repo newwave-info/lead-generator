@@ -19,7 +19,7 @@
     background: var(--color-bg-light);
     color: var(--color-text-primary);
     line-height: 1.6;
-    font-size: 15px;
+    font-size: 14px;
 }
 
 .azienda-profile * {
@@ -122,19 +122,21 @@
 }
 
 .azienda-profile .ap-company-title h1 {
-    font-size: 58px;
+    font-size: 36px;
     margin: 0;
-    line-height: 1.1;
+    line-height: 1.2;
+    font-weight: 600;
+    letter-spacing: -0.02em;
 }
 
 .azienda-profile .ap-qualification-badge {
     display: inline-block;
-    padding: 6px 16px;
-    border-radius: 20px;
-    font-size: 13px;
+    padding: 5px 14px;
+    border-radius: 16px;
+    font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.05em;
     background: rgba(255, 255, 255, 0.2);
     color: #ffffff;
     border: 1px solid rgba(255, 255, 255, 0.3);
@@ -159,21 +161,22 @@
 }
 
 .azienda-profile .ap-company-subtitle {
-    margin: 10px 0 0;
-    font-size: 17px;
+    margin: 8px 0 0;
+    font-size: 15px;
     color: rgba(255, 255, 255, 0.85);
+    font-weight: 400;
 }
 
 .azienda-profile .ap-company-link {
     margin-top: 6px;
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .azienda-profile .ap-company-link a {
     color: #ffffff;
     opacity: 0.8;
     text-decoration: underline;
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .azienda-profile .ap-priority {
@@ -182,23 +185,24 @@
 }
 
 .azienda-profile .ap-priority-score {
-    font-size: 64px;
+    font-size: 48px;
     font-weight: 700;
     line-height: 1;
 }
 
 .azienda-profile .ap-priority-max {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 400;
     opacity: 0.7;
     margin-left: 4px;
 }
 
 .azienda-profile .ap-priority-label {
-    font-size: 11px;
+    font-size: 10px;
     text-transform: uppercase;
     letter-spacing: 0.8px;
     color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
 }
 
 .azienda-profile .ap-company-meta {
@@ -223,7 +227,7 @@
 }
 
 .azienda-profile .ap-meta-value {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
     color: #ffffff;
 }
@@ -238,12 +242,12 @@
 .azienda-profile .ap-tab-btn {
     border: none;
     background: transparent;
-    padding: 16px 14px;
-    font-size: 14px;
+    padding: 14px 16px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--color-text-secondary);
     cursor: pointer;
-    border-bottom: 3px solid transparent;
+    border-bottom: 2px solid transparent;
     transition: color 0.2s ease, border 0.2s ease, background 0.2s ease;
 }
 
@@ -313,6 +317,25 @@
     margin-bottom: var(--spacing-md);
 }
 
+.azienda-profile .anagrafica-section {
+    margin-bottom: var(--spacing-xl);
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.azienda-profile .anagrafica-section:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.azienda-profile .section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    margin: 0 0 var(--spacing-md) 0;
+    letter-spacing: -0.01em;
+}
+
 .azienda-profile .form-field {
     display: flex;
     flex-direction: column;
@@ -345,13 +368,13 @@
 
 .azienda-profile .form-field p {
     margin: 0;
-    font-size: 15px;
+    font-size: 14px;
     color: var(--color-text-primary);
 }
 
 .azienda-profile .field-value {
     margin: 0;
-    font-size: 15px;
+    font-size: 14px;
     line-height: 1.6;
     color: var(--color-text-primary);
     font-weight: 400;
@@ -360,7 +383,7 @@
 .azienda-profile .field-value-link {
     color: var(--color-primary);
     text-decoration: none;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 500;
     transition: color 0.2s;
 }
@@ -633,7 +656,7 @@
     }
 
     .azienda-profile .ap-company-title h1 {
-        font-size: 36px;
+        font-size: 28px;
     }
 
     .azienda-profile .ap-priority {
@@ -642,11 +665,15 @@
     }
 
     .azienda-profile .ap-priority-score {
-        font-size: 48px;
+        font-size: 40px;
     }
 
     .azienda-profile .ap-priority-max {
-        font-size: 20px;
+        font-size: 18px;
+    }
+
+    .azienda-profile .section-title {
+        font-size: 15px;
     }
 
     .azienda-profile .overview-meta {
