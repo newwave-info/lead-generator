@@ -88,9 +88,72 @@
     margin-bottom: var(--spacing-lg);
 }
 
+.azienda-profile .ap-company-main {
+    display: flex;
+    gap: var(--spacing-md);
+    align-items: flex-start;
+    flex: 1;
+}
+
+.azienda-profile .ap-company-logo {
+    flex-shrink: 0;
+}
+
+.azienda-profile .ap-company-logo img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    background: white;
+    border-radius: 8px;
+    padding: 8px;
+}
+
+.azienda-profile .ap-company-info {
+    flex: 1;
+}
+
+.azienda-profile .ap-company-name-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
 .azienda-profile .ap-company-title h1 {
     font-size: 58px;
     margin: 0;
+    line-height: 1.1;
+}
+
+.azienda-profile .ap-qualification-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.azienda-profile .ap-qualification-badge.status-qualified {
+    background: rgba(34, 197, 94, 0.2);
+    border-color: rgba(34, 197, 94, 0.4);
+    color: #d4fce3;
+}
+
+.azienda-profile .ap-qualification-badge.status-hot {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #fecaca;
+}
+
+.azienda-profile .ap-qualification-badge.status-pending {
+    background: rgba(251, 191, 36, 0.2);
+    border-color: rgba(251, 191, 36, 0.4);
+    color: #fef3c7;
 }
 
 .azienda-profile .ap-company-subtitle {
@@ -113,12 +176,20 @@
 
 .azienda-profile .ap-priority {
     text-align: right;
+    flex-shrink: 0;
 }
 
 .azienda-profile .ap-priority-score {
     font-size: 64px;
     font-weight: 700;
     line-height: 1;
+}
+
+.azienda-profile .ap-priority-max {
+    font-size: 24px;
+    font-weight: 400;
+    opacity: 0.7;
+    margin-left: 4px;
 }
 
 .azienda-profile .ap-priority-label {
@@ -491,6 +562,30 @@
         align-items: flex-start;
     }
 
+    .azienda-profile .ap-company-main {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        text-align: center;
+    }
+
+    .azienda-profile .ap-company-logo img {
+        width: 60px;
+        height: 60px;
+    }
+
+    .azienda-profile .ap-company-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .azienda-profile .ap-company-name-row {
+        flex-direction: column;
+        align-items: center;
+        gap: var(--spacing-xs);
+    }
+
     .azienda-profile .ap-company-header,
     .azienda-profile .ap-tab-panel,
     .azienda-profile .quick-actions-bar {
@@ -514,6 +609,19 @@
 
     .azienda-profile .ap-company-title h1 {
         font-size: 36px;
+    }
+
+    .azienda-profile .ap-priority {
+        width: 100%;
+        text-align: center;
+    }
+
+    .azienda-profile .ap-priority-score {
+        font-size: 48px;
+    }
+
+    .azienda-profile .ap-priority-max {
+        font-size: 20px;
     }
 
     .azienda-profile .overview-meta {

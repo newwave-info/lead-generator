@@ -157,6 +157,10 @@ if (have_posts()) :
 
         $company_meta = [
             [
+                'label' => __('Settore', 'lead-generator'),
+                'value' => $sector_specific !== '' ? $sector_specific : $business_type,
+            ],
+            [
                 'label' => __('Città', 'lead-generator'),
                 'value' => $meta_location,
             ],
@@ -175,10 +179,6 @@ if (have_posts()) :
             [
                 'label' => __('Stadio', 'lead-generator'),
                 'value' => $growth_stage,
-            ],
-            [
-                'label' => __('Settore', 'lead-generator'),
-                'value' => $sector_specific !== '' ? $sector_specific : $business_type,
             ],
         ];
 
@@ -319,21 +319,38 @@ if (have_posts()) :
 
                 <section class="ap-company-header">
                     <div class="ap-company-title">
-                        <div>
-                            <h1><?php echo esc_html($company_name); ?></h1>
-                            <?php if ($company_subtitle !== '') : ?>
-                                <p class="ap-company-subtitle"><?php echo esc_html($company_subtitle); ?></p>
-                            <?php endif; ?>
-                            <?php if ($domain_display !== '') : ?>
-                                <p class="ap-company-link">
-                                    <a href="<?php echo esc_url($domain_url); ?>" target="_blank" rel="noreferrer noopener">
-                                        <?php echo esc_html($domain_display); ?>
-                                    </a>
-                                </p>
-                            <?php endif; ?>
+                        <div class="ap-company-main">
+                            <div class="ap-company-logo">
+                                <img src="<?php echo esc_url($logo_url); ?>" alt="<?php echo esc_attr($company_name); ?>">
+                            </div>
+                            <div class="ap-company-info">
+                                <div class="ap-company-name-row">
+                                    <h1><?php echo esc_html($company_name); ?></h1>
+                                    <?php if ($qualification_status !== '') : ?>
+                                        <span class="ap-qualification-badge <?php echo esc_attr('status-' . sanitize_title($qualification_status)); ?>">
+                                            <?php echo esc_html(ucfirst($qualification_status)); ?>
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+                                <?php if ($company_subtitle !== '') : ?>
+                                    <p class="ap-company-subtitle"><?php echo esc_html($company_subtitle); ?></p>
+                                <?php endif; ?>
+                                <?php if ($domain_display !== '') : ?>
+                                    <p class="ap-company-link">
+                                        <a href="<?php echo esc_url($domain_url); ?>" target="_blank" rel="noreferrer noopener">
+                                            <?php echo esc_html($domain_display); ?>
+                                        </a>
+                                    </p>
+                                <?php endif; ?>
+                            </div>
                         </div>
                         <div class="ap-priority">
-                            <div class="ap-priority-score"><?php echo $priority_score !== null ? esc_html($priority_score) : '—'; ?></div>
+                            <div class="ap-priority-score">
+                                <?php echo $priority_score !== null ? esc_html($priority_score) : '—'; ?>
+                                <?php if ($priority_score !== null) : ?>
+                                    <span class="ap-priority-max">/100</span>
+                                <?php endif; ?>
+                            </div>
                             <div class="ap-priority-label"><?php esc_html_e('Priority score', 'lead-generator'); ?></div>
                         </div>
                     </div>
@@ -351,7 +368,6 @@ if (have_posts()) :
                 <nav class="ap-tab-nav" data-ap-tabs role="tablist">
                     <?php
                     $tabs = [
-                        'dati-minimi' => __('Dati Minimi', 'lead-generator'),
                         'anagrafica'  => __('Anagrafica', 'lead-generator'),
                         'profilo'     => __('Profilo', 'lead-generator'),
                         'economics'   => __('Economics', 'lead-generator'),
@@ -380,7 +396,7 @@ if (have_posts()) :
                 </nav>
 
                 <div class="ap-tabs-wrapper">
-                    <section id="tab-dati-minimi" class="ap-tab-panel is-active" data-ap-panel role="tabpanel">
+                    <section id="tab-anagrafica" class="ap-tab-panel is-active" data-ap-panel role="tabpanel">
                         <div class="grid-2col">
                             <div class="form-field">
                                 <label><?php esc_html_e('Ragione sociale', 'lead-generator'); ?></label>
@@ -391,6 +407,7 @@ if (have_posts()) :
                                 <input type="text" readonly value="<?php echo esc_attr($partita_iva); ?>">
                             </div>
                         </div>
+
                         <div class="form-field full-width">
                             <label><?php esc_html_e('Dominio / sito web', 'lead-generator'); ?></label>
                             <?php if ($domain_display !== '') : ?>
@@ -401,9 +418,7 @@ if (have_posts()) :
                                 <span class="ap-placeholder"><?php esc_html_e('Non disponibile', 'lead-generator'); ?></span>
                             <?php endif; ?>
                         </div>
-                    </section>
 
-                    <section id="tab-anagrafica" class="ap-tab-panel" data-ap-panel role="tabpanel" hidden>
                         <div class="form-field full-width">
                             <label><?php esc_html_e('Descrizione / Bio', 'lead-generator'); ?></label>
                             <textarea readonly><?php echo esc_textarea(lg_format_display($short_bio, '')); ?></textarea>
