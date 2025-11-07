@@ -241,8 +241,8 @@
 
 .azienda-profile .ap-tab-nav {
     display: flex;
-    border-bottom: 1px solid var(--color-border-light);
-    background: var(--color-bg-light);
+    border-bottom: none;
+    background: linear-gradient(135deg, #2d3748 0%, #374151 100%);
     padding: 0 var(--spacing-xl);
 }
 
@@ -252,7 +252,7 @@
     padding: 14px 16px;
     font-size: 13px;
     font-weight: 600;
-    color: var(--color-text-secondary);
+    color: rgba(255, 255, 255, 0.7);
     cursor: pointer;
     border-bottom: 2px solid transparent;
     transition: color 0.2s ease, border 0.2s ease, background 0.2s ease;
@@ -261,13 +261,13 @@
 }
 
 .azienda-profile .ap-tab-btn:hover {
-    color: var(--color-primary);
-    background: var(--color-bg-medium);
+    color: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .azienda-profile .ap-tab-btn.is-active {
     color: var(--color-primary);
-    border-bottom-color: var(--color-primary);
+    border-bottom-color: transparent;
     background: var(--color-bg-light);
 }
 
