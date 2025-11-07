@@ -772,6 +772,16 @@
     margin-bottom: var(--spacing-md);
 }
 
+.azienda-profile .service-fit-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--color-text-tertiary);
+    margin-bottom: var(--spacing-sm);
+    margin-top: var(--spacing-md);
+}
+
 .azienda-profile .overview-meta {
     display: grid;
     grid-template-columns: repeat(4, 1fr);

@@ -495,17 +495,22 @@ if (have_posts()) :
                                 <p class="summary-text"><?php echo esc_html(lg_format_display($qualification_reason, 'Nessuna motivazione inserita.')); ?></p>
 
                                 <?php
-                                $service_fit_list = lg_parse_list($service_fit);
-                                if (!empty($service_fit_list)) :
+                                if ($service_fit !== '') {
+                                    $service_fit_list = array_values(array_filter(array_map('trim', explode(';', $service_fit))));
+                                    if (!empty($service_fit_list)) :
                                 ?>
+                                <div class="service-fit-label"><?php esc_html_e('Service Fit', 'lead-generator'); ?></div>
                                 <div class="overview-meta">
                                     <?php foreach ($service_fit_list as $service) : ?>
                                         <div class="meta-badge">
-                                            <div class="meta-badge-value"><?php echo esc_html(trim($service)); ?></div>
+                                            <div class="meta-badge-value"><?php echo esc_html($service); ?></div>
                                         </div>
                                     <?php endforeach; ?>
                                 </div>
-                                <?php endif; ?>
+                                <?php
+                                    endif;
+                                }
+                                ?>
                             </div>
                         </div>
 
