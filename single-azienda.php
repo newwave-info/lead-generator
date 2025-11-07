@@ -369,7 +369,6 @@ if (have_posts()) :
                     <?php
                     $tabs = [
                         'anagrafica'  => __('Anagrafica', 'lead-generator'),
-                        'profilo'     => __('Profilo', 'lead-generator'),
                         'economics'   => __('Economics', 'lead-generator'),
                         'digital'     => __('Digital', 'lead-generator'),
                         'qualifica'   => __('Qualifica', 'lead-generator'),
@@ -397,59 +396,48 @@ if (have_posts()) :
 
                 <div class="ap-tabs-wrapper">
                     <section id="tab-anagrafica" class="ap-tab-panel is-active" data-ap-panel role="tabpanel">
+                        <div class="form-field full-width">
+                            <label><?php esc_html_e('Descrizione / Bio', 'lead-generator'); ?></label>
+                            <p class="field-value"><?php echo esc_html(lg_format_display($short_bio)); ?></p>
+                        </div>
+
                         <div class="grid-2col">
                             <div class="form-field">
                                 <label><?php esc_html_e('Ragione sociale', 'lead-generator'); ?></label>
-                                <input type="text" readonly value="<?php echo esc_attr($company_name); ?>">
+                                <p class="field-value"><?php echo esc_html(lg_format_display($company_name)); ?></p>
                             </div>
                             <div class="form-field">
                                 <label><?php esc_html_e('Partita IVA', 'lead-generator'); ?></label>
-                                <input type="text" readonly value="<?php echo esc_attr($partita_iva); ?>">
+                                <p class="field-value"><?php echo esc_html(lg_format_display($partita_iva)); ?></p>
                             </div>
-                        </div>
-
-                        <div class="form-field full-width">
-                            <label><?php esc_html_e('Dominio / sito web', 'lead-generator'); ?></label>
-                            <?php if ($domain_display !== '') : ?>
-                                <a class="ap-link-plain" href="<?php echo esc_url($domain_url); ?>" target="_blank" rel="noreferrer noopener">
-                                    <?php echo esc_html($domain_display); ?>
-                                </a>
-                            <?php else : ?>
-                                <span class="ap-placeholder"><?php esc_html_e('Non disponibile', 'lead-generator'); ?></span>
-                            <?php endif; ?>
-                        </div>
-
-                        <div class="form-field full-width">
-                            <label><?php esc_html_e('Descrizione / Bio', 'lead-generator'); ?></label>
-                            <textarea readonly><?php echo esc_textarea(lg_format_display($short_bio, '')); ?></textarea>
                         </div>
 
                         <div class="grid-3col">
                             <div class="form-field">
                                 <label><?php esc_html_e('Indirizzo', 'lead-generator'); ?></label>
-                                <p><?php echo esc_html(lg_format_display($address)); ?></p>
+                                <p class="field-value"><?php echo esc_html(lg_format_display($address)); ?></p>
                             </div>
                             <div class="form-field">
                                 <label><?php esc_html_e('Città', 'lead-generator'); ?></label>
-                                <p><?php echo esc_html(lg_format_display($city)); ?></p>
+                                <p class="field-value"><?php echo esc_html(lg_format_display($city)); ?></p>
                             </div>
                             <div class="form-field">
                                 <label><?php esc_html_e('Provincia', 'lead-generator'); ?></label>
-                                <p><?php echo esc_html(lg_format_display($province)); ?></p>
+                                <p class="field-value"><?php echo esc_html(lg_format_display($province)); ?></p>
                             </div>
                         </div>
 
                         <div class="grid-2col">
                             <div class="form-field">
                                 <label><?php esc_html_e('Telefono', 'lead-generator'); ?></label>
-                                <p><?php echo esc_html(lg_format_display($phone)); ?></p>
+                                <p class="field-value"><?php echo esc_html(lg_format_display($phone)); ?></p>
                             </div>
                             <div class="form-field">
                                 <label><?php esc_html_e('Email', 'lead-generator'); ?></label>
                                 <?php if ($email !== '') : ?>
-                                    <a class="ap-link-plain" href="mailto:<?php echo esc_attr($email); ?>"><?php echo esc_html($email); ?></a>
+                                    <a class="field-value-link" href="mailto:<?php echo esc_attr($email); ?>"><?php echo esc_html($email); ?></a>
                                 <?php else : ?>
-                                    <p><?php esc_html_e('Non disponibile', 'lead-generator'); ?></p>
+                                    <p class="field-value"><?php esc_html_e('Non disponibile', 'lead-generator'); ?></p>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -457,26 +445,12 @@ if (have_posts()) :
                         <div class="form-field full-width">
                             <label><?php esc_html_e('LinkedIn', 'lead-generator'); ?></label>
                             <?php if ($linkedin_url !== '') : ?>
-                                <a class="ap-link-plain" href="<?php echo esc_url($linkedin_url); ?>" target="_blank" rel="noreferrer noopener">
+                                <a class="field-value-link" href="<?php echo esc_url($linkedin_url); ?>" target="_blank" rel="noreferrer noopener">
                                     <?php echo esc_html($linkedin_url); ?>
                                 </a>
                             <?php else : ?>
-                                <span class="ap-placeholder"><?php esc_html_e('Non disponibile', 'lead-generator'); ?></span>
+                                <p class="field-value"><?php esc_html_e('Non disponibile', 'lead-generator'); ?></p>
                             <?php endif; ?>
-                        </div>
-                    </section>
-
-                    <section id="tab-profilo" class="ap-tab-panel" data-ap-panel role="tabpanel" hidden>
-                        <div class="metrics-grid">
-                            <?php foreach ($profile_metrics as $metric) : ?>
-                                <div class="metric-card">
-                                    <h4><?php echo esc_html($metric['label']); ?></h4>
-                                    <p class="metric-value"><?php echo esc_html(lg_format_display($metric['value'])); ?></p>
-                                    <?php if (array_key_exists('progress', $metric) && $metric['progress'] !== null) : ?>
-                                        <progress max="100" value="<?php echo esc_attr($metric['progress']); ?>"></progress>
-                                    <?php endif; ?>
-                                </div>
-                            <?php endforeach; ?>
                         </div>
                     </section>
 

@@ -1,15 +1,15 @@
 .azienda-profile {
-    --color-primary: #2d3748;
-    --color-primary-dark: #1a202c;
+    --color-primary: #374151;
+    --color-primary-dark: #1f2937;
     --color-bg-light: #ffffff;
-    --color-bg-medium: #f7fafc;
-    --color-bg-soft: #edf2f7;
-    --color-text-primary: #1a202c;
-    --color-text-secondary: #4a5568;
-    --color-text-tertiary: #718096;
-    --color-border: #e2e8f0;
-    --color-border-light: #edf2f7;
-    --color-accent: #4a5568;
+    --color-bg-medium: #f9fafb;
+    --color-bg-soft: #f3f4f6;
+    --color-text-primary: #111827;
+    --color-text-secondary: #6b7280;
+    --color-text-tertiary: #9ca3af;
+    --color-border: #e5e7eb;
+    --color-border-light: #f3f4f6;
+    --color-accent: #4b5563;
     --spacing-xs: 8px;
     --spacing-sm: 16px;
     --spacing-md: 24px;
@@ -18,6 +18,8 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     background: var(--color-bg-light);
     color: var(--color-text-primary);
+    line-height: 1.6;
+    font-size: 15px;
 }
 
 .azienda-profile * {
@@ -76,7 +78,7 @@
 
 .azienda-profile .ap-company-header {
     padding: var(--spacing-xl);
-    background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+    background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
     color: #ffffff;
 }
 
@@ -318,11 +320,12 @@
 }
 
 .azienda-profile .form-field label {
-    font-size: 12px;
+    font-size: 11px;
     text-transform: uppercase;
-    letter-spacing: 0.6px;
+    letter-spacing: 0.8px;
     color: var(--color-text-tertiary);
-    font-weight: 700;
+    font-weight: 600;
+    margin-bottom: 2px;
 }
 
 .azienda-profile .form-field input,
@@ -346,6 +349,27 @@
     color: var(--color-text-primary);
 }
 
+.azienda-profile .field-value {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--color-text-primary);
+    font-weight: 400;
+}
+
+.azienda-profile .field-value-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.azienda-profile .field-value-link:hover {
+    color: var(--color-primary-dark);
+    text-decoration: underline;
+}
+
 .azienda-profile .form-field.full-width {
     grid-column: 1 / -1;
 }
@@ -353,11 +377,12 @@
 .azienda-profile .ap-link-plain {
     color: var(--color-primary);
     text-decoration: none;
-    font-weight: 600;
+    font-weight: 500;
 }
 
 .azienda-profile .ap-link-plain:hover {
     text-decoration: underline;
+    color: var(--color-primary-dark);
 }
 
 .azienda-profile .metrics-grid {
@@ -635,9 +660,11 @@
 }
 
 .azienda-profile .analysis-overview h2 {
-    font-size: 24px;
+    font-size: 22px;
+    font-weight: 600;
     margin-bottom: var(--spacing-md);
     color: var(--color-text-primary);
+    letter-spacing: -0.02em;
 }
 
 .azienda-profile .overview-card {
@@ -648,8 +675,8 @@
 }
 
 .azienda-profile .summary-text {
-    font-size: 16px;
-    line-height: 1.6;
+    font-size: 15px;
+    line-height: 1.7;
     color: var(--color-text-secondary);
     margin-bottom: var(--spacing-md);
 }
@@ -723,10 +750,11 @@
 
 .azienda-profile .accordion-title {
     flex: 1;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
     color: var(--color-text-primary);
     text-align: left;
+    letter-spacing: -0.01em;
 }
 
 .azienda-profile .accordion-meta {
@@ -738,7 +766,7 @@
     background: var(--color-bg-soft);
     padding: 4px 12px;
     border-radius: 12px;
-    font-size: 12px;
+    font-size: 11px;
     color: var(--color-text-secondary);
     font-weight: 500;
 }
@@ -764,15 +792,17 @@
 
 .azienda-profile .brand-section h4,
 .azienda-profile .commercial-section h4 {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--color-text-primary);
     margin-bottom: var(--spacing-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .azienda-profile .tone-text {
     font-size: 14px;
-    line-height: 1.6;
+    line-height: 1.7;
     color: var(--color-text-secondary);
 }
 
@@ -785,9 +815,9 @@
 .azienda-profile .numbered-list li,
 .azienda-profile .bullet-list li {
     font-size: 14px;
-    line-height: 1.7;
+    line-height: 1.75;
     color: var(--color-text-secondary);
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 .azienda-profile .coherence-meter {
@@ -831,18 +861,21 @@
 }
 
 .azienda-profile .value-promise h4 {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     margin-bottom: var(--spacing-sm);
     color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .azienda-profile .value-promise blockquote {
     margin: 0;
     font-size: 15px;
-    line-height: 1.6;
+    line-height: 1.7;
     color: var(--color-text-secondary);
     font-style: italic;
+    font-weight: 400;
 }
 
 /* SWOT Grid */
@@ -860,10 +893,12 @@
 }
 
 .azienda-profile .swot-card h4 {
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 600;
     color: var(--color-text-primary);
     margin-bottom: var(--spacing-sm);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 /* Risks Table */
