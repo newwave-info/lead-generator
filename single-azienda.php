@@ -342,6 +342,11 @@ if (have_posts()) :
                                         </a>
                                     </p>
                                 <?php endif; ?>
+                                <?php if ($enrichment_display !== '') : ?>
+                                    <p class="ap-enrichment-date">
+                                        <?php printf(esc_html__('Ultimo enrichment: %s', 'lead-generator'), $enrichment_display); ?>
+                                    </p>
+                                <?php endif; ?>
                             </div>
                         </div>
                         <div class="ap-priority">
@@ -529,36 +534,16 @@ if (have_posts()) :
 
                     <section id="tab-qualifica" class="ap-tab-panel" data-ap-panel role="tabpanel" hidden>
                         <div class="anagrafica-section">
-                            <h3 class="section-title"><?php esc_html_e('Valutazione', 'lead-generator'); ?></h3>
-                            <div class="grid-2col">
-                                <div class="reason-box">
-                                    <h4><?php esc_html_e('Motivo della qualifica', 'lead-generator'); ?></h4>
-                                    <p><?php echo esc_html(lg_format_display($qualification_reason)); ?></p>
-                                </div>
-                                <div class="reason-box">
-                                    <h4><?php esc_html_e('Service fit', 'lead-generator'); ?></h4>
-                                    <p><?php echo esc_html(lg_format_display($service_fit)); ?></p>
-                                </div>
+                            <div class="reason-box">
+                                <h4><?php esc_html_e('Motivo della qualifica', 'lead-generator'); ?></h4>
+                                <p><?php echo esc_html(lg_format_display($qualification_reason)); ?></p>
                             </div>
                         </div>
 
                         <div class="anagrafica-section">
-                            <h3 class="section-title"><?php esc_html_e('Enrichment', 'lead-generator'); ?></h3>
-                            <div class="message-box">
-                                <h4><?php esc_html_e('Ultimo enrichment', 'lead-generator'); ?></h4>
-                                <p>
-                                    <?php
-                                    if ($enrichment_display !== '') {
-                                        printf(
-                                            esc_html__('%s (%s)', 'lead-generator'),
-                                            $enrichment_display,
-                                            lg_format_display($enrichment_status)
-                                        );
-                                    } else {
-                                        esc_html_e('Nessun enrichment registrato.', 'lead-generator');
-                                    }
-                                    ?>
-                                </p>
+                            <div class="reason-box">
+                                <h4><?php esc_html_e('Service fit', 'lead-generator'); ?></h4>
+                                <p><?php echo esc_html(lg_format_display($service_fit)); ?></p>
                             </div>
                         </div>
                     </section>

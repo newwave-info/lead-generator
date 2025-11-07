@@ -179,6 +179,13 @@
     font-size: 13px;
 }
 
+.azienda-profile .ap-enrichment-date {
+    margin-top: 6px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 400;
+}
+
 .azienda-profile .ap-priority {
     text-align: right;
     flex-shrink: 0;
@@ -527,6 +534,19 @@
     text-transform: uppercase;
     letter-spacing: 0.8px;
     color: var(--color-text-tertiary);
+}
+
+.azienda-profile .reason-box p,
+.azienda-profile .message-box p {
+    margin: 0;
+    line-height: 1.7;
+}
+
+.azienda-profile #tab-anagrafica .reason-box p {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.7;
+    color: var(--color-text-primary);
 }
 
 .azienda-profile .ap-qualifica-state,
