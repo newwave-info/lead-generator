@@ -102,6 +102,7 @@ if (have_posts()) :
         $marketing_budget     = $fields['marketing_budget_est'] ?? '';
         $ebitda_margin        = $fields['ebitda_margin_est'] ?? '';
         $website_logo         = $fields['website_logo_url'] ?? '';
+        $social_links         = $fields['social_links'] ?? '';
 
         $logo_url = lg_media_url($website_logo, 'medium', $theme_uri . '/common/img/logo.svg');
 
@@ -220,11 +221,12 @@ if (have_posts()) :
         ]));
 
         $analisi_count = 0;
+        $analisi_id = null;
+        $analisi_fields = [];
         $analisi_query = new WP_Query([
             'post_type'      => 'analisi',
             'posts_per_page' => 1,
             'post_status'    => 'publish',
-            'fields'         => 'ids',
             'meta_query'     => [
                 [
                     'key'     => 'parent_company_id',
@@ -236,8 +238,63 @@ if (have_posts()) :
 
         if ($analisi_query->have_posts()) {
             $analisi_count = (int) $analisi_query->found_posts;
+            $analisi_id = $analisi_query->posts[0]->ID;
+            $analisi_fields = get_fields($analisi_id);
+            $analisi_fields = is_array($analisi_fields) ? $analisi_fields : [];
         }
         wp_reset_postdata();
+
+        // Estrai campi analisi
+        $analisi_riassunto = $analisi_fields['riassunto'] ?? '';
+        $analisi_data = $analisi_fields['analysis_last_at'] ?? '';
+        $analisi_status = $analisi_fields['analysis_last_status_code'] ?? '';
+        $analisi_qualita = $analisi_fields['voto_qualita_analisi'] ?? '';
+        $analisi_qualita_dati = $analisi_fields['qualita_dati'] ?? '';
+        $analisi_messaggi = $analisi_fields['messaggi_principali'] ?? '';
+        $analisi_num_messaggi = $analisi_fields['numero_messaggi_principali'] ?? 0;
+        $analisi_tono = $analisi_fields['tono_di_voce'] ?? '';
+        $analisi_coerenza = $analisi_fields['coerenza_comunicativa'] ?? '';
+        $analisi_differenzianti = $analisi_fields['elementi_differenzianti'] ?? '';
+        $analisi_num_differenzianti = $analisi_fields['numero_elementi_differenzianti'] ?? 0;
+        $analisi_target = $analisi_fields['target_commerciali'] ?? '';
+        $analisi_num_target = $analisi_fields['numero_target_commerciali'] ?? 0;
+        $analisi_promessa = $analisi_fields['promessa_di_valore'] ?? '';
+        $analisi_domande = $analisi_fields['domande_prospect'] ?? '';
+        $analisi_num_domande = $analisi_fields['numero_domande'] ?? 0;
+        $analisi_idee = $analisi_fields['idee_di_valore_perspect'] ?? '';
+        $analisi_num_idee = $analisi_fields['numero_idee_di_valore'] ?? 0;
+        $analisi_forza = $analisi_fields['punti_di_forza'] ?? '';
+        $analisi_num_forza = $analisi_fields['numero_punti_di_forza'] ?? 0;
+        $analisi_debolezza = $analisi_fields['punti_di_debolezza'] ?? '';
+        $analisi_num_debolezza = $analisi_fields['numero_punti_di_debolezza'] ?? 0;
+        $analisi_opportunita = $analisi_fields['opportunita'] ?? '';
+        $analisi_num_opportunita = $analisi_fields['numero_opportunita'] ?? 0;
+        $analisi_azioni = $analisi_fields['azioni_rapide'] ?? '';
+        $analisi_num_azioni = $analisi_fields['numero_azioni_rapide'] ?? 0;
+        $analisi_rischi = $analisi_fields['rischi'] ?? '';
+        $analisi_num_rischi = $analisi_fields['numero_rischi'] ?? 0;
+        $analisi_priorita = $analisi_fields['priorita_temporali'] ?? '';
+
+        // Formatta data analisi
+        $analisi_data_display = '';
+        if ($analisi_data !== '') {
+            $timestamp = strtotime($analisi_data);
+            if ($timestamp) {
+                $analisi_data_display = date_i18n('d M Y', $timestamp);
+            } else {
+                $analisi_data_display = $analisi_data;
+            }
+        }
+
+        // Parser per liste separate da newline o pipe
+        $parse_list = function($text) {
+            if (empty($text)) return [];
+            // Prova a splittare per newline o pipe
+            $items = preg_split('/[\n\r\|]+/', $text);
+            $items = array_map('trim', $items);
+            $items = array_filter($items);
+            return array_values($items);
+        };
         ?>
 
         <article id="post-<?php the_ID(); ?>" <?php post_class('azienda-profile'); ?>>
@@ -433,45 +490,41 @@ if (have_posts()) :
                     </section>
 
                     <section id="tab-digital" class="ap-tab-panel" data-ap-panel role="tabpanel" hidden>
+                        <?php if ($social_links !== '') : ?>
                         <div class="form-field full-width">
-                            <label><?php esc_html_e('Social & contatti digitali', 'lead-generator'); ?></label>
-                            <ul class="bullet-list">
-                                <?php if ($linkedin_url !== '') : ?>
-                                    <li><?php esc_html_e('LinkedIn collegato', 'lead-generator'); ?>: <?php echo esc_html($linkedin_url); ?></li>
-                                <?php endif; ?>
-                                <?php if ($domain_display !== '') : ?>
-                                    <li><?php esc_html_e('Dominio verificato', 'lead-generator'); ?>: <?php echo esc_html($domain_display); ?></li>
-                                <?php endif; ?>
-                                <?php if ($email !== '') : ?>
-                                    <li><?php esc_html_e('Email primaria', 'lead-generator'); ?>: <?php echo esc_html($email); ?></li>
-                                <?php endif; ?>
-                                <?php if ($phone !== '') : ?>
-                                    <li><?php esc_html_e('Telefono', 'lead-generator'); ?>: <?php echo esc_html($phone); ?></li>
-                                <?php endif; ?>
-                                <?php if ($linkedin_url === '' && $domain_display === '' && $email === '' && $phone === '') : ?>
-                                    <li><?php esc_html_e('Nessun contatto digitale disponibile.', 'lead-generator'); ?></li>
-                                <?php endif; ?>
+                            <label><?php esc_html_e('Social Links', 'lead-generator'); ?></label>
+                            <ul class="bullet-list" style="margin-top: 10px;">
+                                <?php
+                                $social_list = $parse_list($social_links);
+                                foreach ($social_list as $social_item) :
+                                ?>
+                                    <li><?php echo esc_html($social_item); ?></li>
+                                <?php endforeach; ?>
                             </ul>
                         </div>
+                        <?php endif; ?>
 
-                        <div class="digital-summary">
-                            <h3><?php esc_html_e('Sintesi maturità digitale', 'lead-generator'); ?></h3>
-                            <p class="tone-text">
+                        <div style="margin-top: var(--spacing-xl);">
+                            <h3 style="font-size: 18px; margin-bottom: var(--spacing-md);">
                                 <?php
                                 if ($digital_score !== null) {
-                                    printf(esc_html__('Punteggio attuale: %d/100', 'lead-generator'), $digital_score);
+                                    printf(esc_html__('Maturità Digitale: %d / 100', 'lead-generator'), $digital_score);
                                 } else {
-                                    esc_html_e('Punteggio non disponibile', 'lead-generator');
+                                    esc_html_e('Maturità Digitale', 'lead-generator');
                                 }
                                 ?>
-                            </p>
+                            </h3>
                             <ul class="bullet-list">
+                                <?php if ($domain_display !== '') : ?>
+                                    <li><?php printf(esc_html__('Sito: %s', 'lead-generator'), $domain_display); ?></li>
+                                <?php endif; ?>
+                                <?php if ($linkedin_url !== '') : ?>
+                                    <li><?php esc_html_e('Profilo LinkedIn attivo', 'lead-generator'); ?></li>
+                                <?php endif; ?>
                                 <?php if (!empty($digital_highlights)) : ?>
                                     <?php foreach ($digital_highlights as $highlight) : ?>
                                         <li><?php echo esc_html($highlight); ?></li>
                                     <?php endforeach; ?>
-                                <?php else : ?>
-                                    <li><?php esc_html_e('In attesa di aggiornare la diagnostica digitale.', 'lead-generator'); ?></li>
                                 <?php endif; ?>
                             </ul>
                         </div>
@@ -521,22 +574,356 @@ if (have_posts()) :
                     </section>
 
                     <section id="tab-analisi" class="ap-tab-panel" data-ap-panel role="tabpanel" hidden>
-                        <div class="ap-placeholder-box">
-                            <h4><?php esc_html_e('Schede analisi', 'lead-generator'); ?></h4>
-                            <p>
-                                <?php esc_html_e('Stiamo lavorando al nuovo layout delle analisi. Saranno disponibili in un passaggio successivo.', 'lead-generator'); ?>
-                            </p>
-                            <?php if ($analisi_count > 0) : ?>
-                                <p class="ap-placeholder-count">
-                                    <?php
-                                    printf(
-                                        esc_html(_n('Hai già %d analisi collegate a questa azienda.', 'Hai già %d analisi collegate a questa azienda.', $analisi_count, 'lead-generator')),
-                                        $analisi_count
-                                    );
-                                    ?>
-                                </p>
-                            <?php endif; ?>
-                        </div>
+                        <?php if ($analisi_id !== null) : ?>
+                            <!-- OVERVIEW -->
+                            <div class="analysis-overview">
+                                <h2><?php esc_html_e('Riassunto Esecutivo', 'lead-generator'); ?></h2>
+                                <div class="overview-card">
+                                    <p class="summary-text"><?php echo esc_html(lg_format_display($analisi_riassunto, 'Analisi in corso...')); ?></p>
+
+                                    <div class="overview-meta">
+                                        <div class="meta-badge">
+                                            <div class="meta-badge-label"><?php esc_html_e('Data Analisi', 'lead-generator'); ?></div>
+                                            <div class="meta-badge-value"><?php echo esc_html(lg_format_display($analisi_data_display)); ?></div>
+                                        </div>
+                                        <div class="meta-badge">
+                                            <div class="meta-badge-label"><?php esc_html_e('Status', 'lead-generator'); ?></div>
+                                            <div class="meta-badge-value"><?php echo esc_html(lg_format_display($analisi_status, '—')); ?></div>
+                                        </div>
+                                        <div class="meta-badge">
+                                            <div class="meta-badge-label"><?php esc_html_e('Qualità', 'lead-generator'); ?></div>
+                                            <div class="meta-badge-value"><?php echo esc_html(lg_format_display($analisi_qualita ? $analisi_qualita . ' / 10' : '')); ?></div>
+                                        </div>
+                                        <div class="meta-badge">
+                                            <div class="meta-badge-label"><?php esc_html_e('Confidenza', 'lead-generator'); ?></div>
+                                            <div class="meta-badge-value"><?php echo esc_html(lg_format_display($analisi_qualita_dati)); ?></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ACCORDION SECTIONS -->
+                            <div class="analysis-accordion">
+
+                                <!-- ACCORDION 1: BRAND & POSITIONING -->
+                                <div class="accordion-item">
+                                    <button class="accordion-header" onclick="toggleAccordion(this)">
+                                        <span class="accordion-icon">▶</span>
+                                        <span class="accordion-title"><?php esc_html_e('Brand e Posizionamento', 'lead-generator'); ?></span>
+                                        <div class="accordion-meta">
+                                            <span class="badge"><?php echo esc_html($analisi_num_messaggi . ' ' . __('Messaggi', 'lead-generator')); ?></span>
+                                            <span class="badge"><?php echo esc_html(lg_format_display($analisi_coerenza, '—') . ' ' . __('Coerenza', 'lead-generator')); ?></span>
+                                        </div>
+                                    </button>
+
+                                    <div class="accordion-body">
+                                        <div class="accordion-content">
+                                            <div class="grid-2col">
+                                                <div class="brand-section">
+                                                    <h4><?php esc_html_e('Messaggi Principali', 'lead-generator'); ?></h4>
+                                                    <?php
+                                                    $messaggi_list = $parse_list($analisi_messaggi);
+                                                    if (!empty($messaggi_list)) :
+                                                    ?>
+                                                        <ol class="numbered-list">
+                                                            <?php foreach ($messaggi_list as $msg) : ?>
+                                                                <li><?php echo esc_html($msg); ?></li>
+                                                            <?php endforeach; ?>
+                                                        </ol>
+                                                    <?php else : ?>
+                                                        <p class="tone-text"><?php esc_html_e('Nessun messaggio disponibile', 'lead-generator'); ?></p>
+                                                    <?php endif; ?>
+                                                </div>
+
+                                                <div class="brand-section">
+                                                    <h4><?php esc_html_e('Tono di Voce', 'lead-generator'); ?></h4>
+                                                    <p class="tone-text"><?php echo esc_html(lg_format_display($analisi_tono)); ?></p>
+
+                                                    <?php if ($analisi_coerenza !== '') : ?>
+                                                    <div class="coherence-meter">
+                                                        <label><?php esc_html_e('Coerenza Comunicativa', 'lead-generator'); ?></label>
+                                                        <div class="progress-container">
+                                                            <?php
+                                                            $coerenza_val = is_numeric($analisi_coerenza) ? max(0, min(100, (int) $analisi_coerenza)) : 0;
+                                                            ?>
+                                                            <progress value="<?php echo esc_attr($coerenza_val); ?>" max="100"></progress>
+                                                            <span class="progress-value"><?php echo esc_html($coerenza_val . '%'); ?></span>
+                                                        </div>
+                                                    </div>
+                                                    <?php endif; ?>
+                                                </div>
+
+                                                <div class="brand-section">
+                                                    <h4><?php esc_html_e('Elementi Differenzianti', 'lead-generator'); ?></h4>
+                                                    <?php
+                                                    $diff_list = $parse_list($analisi_differenzianti);
+                                                    if (!empty($diff_list)) :
+                                                    ?>
+                                                        <ul class="bullet-list">
+                                                            <?php foreach ($diff_list as $diff) : ?>
+                                                                <li><?php echo esc_html($diff); ?></li>
+                                                            <?php endforeach; ?>
+                                                        </ul>
+                                                    <?php else : ?>
+                                                        <p class="tone-text"><?php esc_html_e('Nessun elemento disponibile', 'lead-generator'); ?></p>
+                                                    <?php endif; ?>
+                                                </div>
+
+                                                <div class="brand-section">
+                                                    <h4><?php esc_html_e('Target Commerciali', 'lead-generator'); ?></h4>
+                                                    <?php
+                                                    $target_list = $parse_list($analisi_target);
+                                                    if (!empty($target_list)) :
+                                                    ?>
+                                                        <ul class="bullet-list">
+                                                            <?php foreach ($target_list as $target) : ?>
+                                                                <li><?php echo esc_html($target); ?></li>
+                                                            <?php endforeach; ?>
+                                                        </ul>
+                                                    <?php else : ?>
+                                                        <p class="tone-text"><?php esc_html_e('Nessun target identificato', 'lead-generator'); ?></p>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- ACCORDION 2: COMMERCIAL ANALYSIS -->
+                                <div class="accordion-item">
+                                    <button class="accordion-header" onclick="toggleAccordion(this)">
+                                        <span class="accordion-icon">▶</span>
+                                        <span class="accordion-title"><?php esc_html_e('Analisi Commerciale', 'lead-generator'); ?></span>
+                                        <div class="accordion-meta">
+                                            <span class="badge"><?php echo esc_html($analisi_num_idee . ' ' . __('Idee', 'lead-generator')); ?></span>
+                                            <span class="badge"><?php echo esc_html($analisi_num_domande . ' ' . __('Domande', 'lead-generator')); ?></span>
+                                        </div>
+                                    </button>
+
+                                    <div class="accordion-body">
+                                        <div class="accordion-content">
+                                            <?php if ($analisi_promessa !== '') : ?>
+                                            <div class="value-promise">
+                                                <h4><?php esc_html_e('Promessa di Valore', 'lead-generator'); ?></h4>
+                                                <blockquote><?php echo esc_html($analisi_promessa); ?></blockquote>
+                                            </div>
+                                            <?php endif; ?>
+
+                                            <div class="grid-2col">
+                                                <div class="commercial-section">
+                                                    <h4><?php esc_html_e('Domande Prospect Chiave', 'lead-generator'); ?></h4>
+                                                    <?php
+                                                    $domande_list = $parse_list($analisi_domande);
+                                                    if (!empty($domande_list)) :
+                                                    ?>
+                                                        <ul class="bullet-list">
+                                                            <?php foreach ($domande_list as $domanda) : ?>
+                                                                <li><?php echo esc_html($domanda); ?></li>
+                                                            <?php endforeach; ?>
+                                                        </ul>
+                                                    <?php else : ?>
+                                                        <p class="tone-text"><?php esc_html_e('Nessuna domanda identificata', 'lead-generator'); ?></p>
+                                                    <?php endif; ?>
+                                                </div>
+
+                                                <div class="commercial-section">
+                                                    <h4><?php esc_html_e('Idee di Valore Perspect', 'lead-generator'); ?></h4>
+                                                    <?php
+                                                    $idee_list = $parse_list($analisi_idee);
+                                                    if (!empty($idee_list)) :
+                                                    ?>
+                                                        <ol class="numbered-list">
+                                                            <?php foreach ($idee_list as $idea) : ?>
+                                                                <li><?php echo esc_html($idea); ?></li>
+                                                            <?php endforeach; ?>
+                                                        </ol>
+                                                    <?php else : ?>
+                                                        <p class="tone-text"><?php esc_html_e('Nessuna idea disponibile', 'lead-generator'); ?></p>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- ACCORDION 3: SWOT -->
+                                <div class="accordion-item">
+                                    <button class="accordion-header" onclick="toggleAccordion(this)">
+                                        <span class="accordion-icon">▶</span>
+                                        <span class="accordion-title"><?php esc_html_e('Punti di Forza e Debolezza', 'lead-generator'); ?></span>
+                                        <div class="accordion-meta">
+                                            <span class="badge"><?php echo esc_html($analisi_num_forza . ' ' . __('Forza', 'lead-generator')); ?></span>
+                                            <span class="badge"><?php echo esc_html($analisi_num_debolezza . ' ' . __('Debolezze', 'lead-generator')); ?></span>
+                                        </div>
+                                    </button>
+
+                                    <div class="accordion-body">
+                                        <div class="accordion-content">
+                                            <div class="grid-2x2">
+                                                <div class="swot-card">
+                                                    <h4><?php esc_html_e('Punti di Forza', 'lead-generator'); ?></h4>
+                                                    <?php
+                                                    $forza_list = $parse_list($analisi_forza);
+                                                    if (!empty($forza_list)) :
+                                                    ?>
+                                                        <ul class="bullet-list">
+                                                            <?php foreach ($forza_list as $item) : ?>
+                                                                <li><?php echo esc_html($item); ?></li>
+                                                            <?php endforeach; ?>
+                                                        </ul>
+                                                    <?php else : ?>
+                                                        <p class="tone-text"><?php esc_html_e('Nessun dato disponibile', 'lead-generator'); ?></p>
+                                                    <?php endif; ?>
+                                                </div>
+
+                                                <div class="swot-card">
+                                                    <h4><?php esc_html_e('Punti di Debolezza', 'lead-generator'); ?></h4>
+                                                    <?php
+                                                    $debolezza_list = $parse_list($analisi_debolezza);
+                                                    if (!empty($debolezza_list)) :
+                                                    ?>
+                                                        <ul class="bullet-list">
+                                                            <?php foreach ($debolezza_list as $item) : ?>
+                                                                <li><?php echo esc_html($item); ?></li>
+                                                            <?php endforeach; ?>
+                                                        </ul>
+                                                    <?php else : ?>
+                                                        <p class="tone-text"><?php esc_html_e('Nessun dato disponibile', 'lead-generator'); ?></p>
+                                                    <?php endif; ?>
+                                                </div>
+
+                                                <div class="swot-card">
+                                                    <h4><?php esc_html_e('Opportunità', 'lead-generator'); ?></h4>
+                                                    <?php
+                                                    $opportunita_list = $parse_list($analisi_opportunita);
+                                                    if (!empty($opportunita_list)) :
+                                                    ?>
+                                                        <ul class="bullet-list">
+                                                            <?php foreach ($opportunita_list as $item) : ?>
+                                                                <li><?php echo esc_html($item); ?></li>
+                                                            <?php endforeach; ?>
+                                                        </ul>
+                                                    <?php else : ?>
+                                                        <p class="tone-text"><?php esc_html_e('Nessun dato disponibile', 'lead-generator'); ?></p>
+                                                    <?php endif; ?>
+                                                </div>
+
+                                                <div class="swot-card">
+                                                    <h4><?php esc_html_e('Azioni Rapide', 'lead-generator'); ?></h4>
+                                                    <?php
+                                                    $azioni_list = $parse_list($analisi_azioni);
+                                                    if (!empty($azioni_list)) :
+                                                    ?>
+                                                        <ol class="numbered-list">
+                                                            <?php foreach ($azioni_list as $item) : ?>
+                                                                <li><?php echo esc_html($item); ?></li>
+                                                            <?php endforeach; ?>
+                                                        </ol>
+                                                    <?php else : ?>
+                                                        <p class="tone-text"><?php esc_html_e('Nessun dato disponibile', 'lead-generator'); ?></p>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- ACCORDION 4: RISKS -->
+                                <div class="accordion-item">
+                                    <button class="accordion-header" onclick="toggleAccordion(this)">
+                                        <span class="accordion-icon">▶</span>
+                                        <span class="accordion-title"><?php esc_html_e('Rischi e Mitigazione', 'lead-generator'); ?></span>
+                                        <div class="accordion-meta">
+                                            <span class="badge"><?php echo esc_html($analisi_num_rischi . ' ' . __('Rischi', 'lead-generator')); ?></span>
+                                        </div>
+                                    </button>
+
+                                    <div class="accordion-body">
+                                        <div class="accordion-content">
+                                            <?php
+                                            $rischi_list = $parse_list($analisi_rischi);
+                                            if (!empty($rischi_list)) :
+                                            ?>
+                                                <table class="risks-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th><?php esc_html_e('Rischio', 'lead-generator'); ?></th>
+                                                            <th><?php esc_html_e('Mitigazione', 'lead-generator'); ?></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <?php foreach ($rischi_list as $rischio) : ?>
+                                                            <?php
+                                                            // Prova a splittare rischio|mitigazione
+                                                            $parts = explode('|', $rischio, 2);
+                                                            $r = isset($parts[0]) ? trim($parts[0]) : $rischio;
+                                                            $m = isset($parts[1]) ? trim($parts[1]) : '—';
+                                                            ?>
+                                                            <tr>
+                                                                <td><?php echo esc_html($r); ?></td>
+                                                                <td><?php echo esc_html($m); ?></td>
+                                                            </tr>
+                                                        <?php endforeach; ?>
+                                                    </tbody>
+                                                </table>
+                                            <?php else : ?>
+                                                <p class="tone-text"><?php esc_html_e('Nessun rischio identificato', 'lead-generator'); ?></p>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- ACCORDION 5: TIMELINE -->
+                                <div class="accordion-item">
+                                    <button class="accordion-header" onclick="toggleAccordion(this)">
+                                        <span class="accordion-icon">▶</span>
+                                        <span class="accordion-title"><?php esc_html_e('Timing e Priorità', 'lead-generator'); ?></span>
+                                        <div class="accordion-meta">
+                                            <span class="badge"><?php echo esc_html(lg_format_display($analisi_priorita, '—')); ?></span>
+                                        </div>
+                                    </button>
+
+                                    <div class="accordion-body">
+                                        <div class="accordion-content">
+                                            <div class="timeline-info">
+                                                <div class="timeline-section">
+                                                    <h4><?php esc_html_e('Timing Consigliato', 'lead-generator'); ?></h4>
+                                                    <p class="timeline-value"><?php echo esc_html(lg_format_display($analisi_priorita)); ?></p>
+                                                </div>
+                                                <div class="timeline-section">
+                                                    <h4><?php esc_html_e('Canale Prioritario', 'lead-generator'); ?></h4>
+                                                    <p class="timeline-value"><?php esc_html_e('LinkedIn → Email → Call', 'lead-generator'); ?></p>
+                                                </div>
+                                                <div class="timeline-section full-width">
+                                                    <h4><?php esc_html_e('Best Contact', 'lead-generator'); ?></h4>
+                                                    <div class="contact-box">
+                                                        <?php if ($email !== '' || $phone !== '' || $linkedin_url !== '') : ?>
+                                                            <?php if ($email !== '') : ?>
+                                                                <p><strong><?php esc_html_e('Email:', 'lead-generator'); ?></strong> <?php echo esc_html($email); ?></p>
+                                                            <?php endif; ?>
+                                                            <?php if ($phone !== '') : ?>
+                                                                <p><strong><?php esc_html_e('Telefono:', 'lead-generator'); ?></strong> <?php echo esc_html($phone); ?></p>
+                                                            <?php endif; ?>
+                                                            <?php if ($linkedin_url !== '') : ?>
+                                                                <p><strong><?php esc_html_e('LinkedIn:', 'lead-generator'); ?></strong> <?php echo esc_html($linkedin_url); ?></p>
+                                                            <?php endif; ?>
+                                                        <?php else : ?>
+                                                            <p><?php esc_html_e('Contatti non disponibili', 'lead-generator'); ?></p>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        <?php else : ?>
+                            <div class="ap-placeholder-box">
+                                <h4><?php esc_html_e('Nessuna analisi disponibile', 'lead-generator'); ?></h4>
+                                <p><?php esc_html_e('Non è ancora stata generata un\'analisi per questa azienda.', 'lead-generator'); ?></p>
+                            </div>
+                        <?php endif; ?>
                     </section>
                 </div>
 
