@@ -323,7 +323,7 @@ img[src=""] {
 
 /* -------- HEADER ------- */
 #header {
-    position: absolute;
+/*     position: absolute; */
     z-index: 100;
     width: 100%;
     padding: max(0.75rem,1.045vw) 0;
