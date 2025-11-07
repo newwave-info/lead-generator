@@ -451,29 +451,35 @@ if (have_posts()) :
                     </section>
 
                     <section id="tab-economics" class="ap-tab-panel" data-ap-panel role="tabpanel" hidden>
-                        <div class="metrics-grid">
-                            <?php foreach ($economics_cards as $card) : ?>
-                                <div class="metric-card">
-                                    <h4><?php echo esc_html($card['label']); ?></h4>
-                                    <p class="metric-value"><?php echo esc_html(lg_format_display($card['value'])); ?></p>
-                                    <span class="sub-text"><?php echo esc_html($card['meta']); ?></span>
-                                </div>
-                            <?php endforeach; ?>
+                        <div class="anagrafica-section">
+                            <h3 class="section-title"><?php esc_html_e('Dati Finanziari', 'lead-generator'); ?></h3>
+                            <div class="metrics-grid">
+                                <?php foreach ($economics_cards as $card) : ?>
+                                    <div class="metric-card">
+                                        <h4><?php echo esc_html($card['label']); ?></h4>
+                                        <p class="metric-value"><?php echo esc_html(lg_format_display($card['value'])); ?></p>
+                                        <span class="sub-text"><?php echo esc_html($card['meta']); ?></span>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
                         </div>
 
-                        <div class="grid-2col">
-                            <div class="form-field">
-                                <label><?php esc_html_e('Tier budget', 'lead-generator'); ?></label>
-                                <p><strong><?php echo esc_html(lg_format_display($budget_tier)); ?></strong></p>
-                            </div>
-                            <div class="form-field">
-                                <label><?php esc_html_e('Confidenza dato', 'lead-generator'); ?></label>
-                                <div class="coherence-meter">
-                                    <div class="progress-container">
-                                        <progress value="<?php echo esc_attr($financial_conf ?? 0); ?>" max="100"></progress>
-                                        <span class="progress-value">
-                                            <?php echo $financial_conf !== null ? esc_html(sprintf('%d%%', $financial_conf)) : '—'; ?>
-                                        </span>
+                        <div class="anagrafica-section">
+                            <h3 class="section-title"><?php esc_html_e('Budget e Confidenza', 'lead-generator'); ?></h3>
+                            <div class="grid-2col">
+                                <div class="form-field">
+                                    <label><?php esc_html_e('Tier budget', 'lead-generator'); ?></label>
+                                    <p><strong><?php echo esc_html(lg_format_display($budget_tier)); ?></strong></p>
+                                </div>
+                                <div class="form-field">
+                                    <label><?php esc_html_e('Confidenza dato', 'lead-generator'); ?></label>
+                                    <div class="coherence-meter">
+                                        <div class="progress-container">
+                                            <progress value="<?php echo esc_attr($financial_conf ?? 0); ?>" max="100"></progress>
+                                            <span class="progress-value">
+                                                <?php echo $financial_conf !== null ? esc_html(sprintf('%d%%', $financial_conf)) : '—'; ?>
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -522,45 +528,38 @@ if (have_posts()) :
                     </section>
 
                     <section id="tab-qualifica" class="ap-tab-panel" data-ap-panel role="tabpanel" hidden>
-                        <div class="grid-2col">
-                            <div class="form-field">
-                                <label><?php esc_html_e('Stato qualifica', 'lead-generator'); ?></label>
-                                <p class="ap-qualifica-state"><?php echo esc_html(lg_format_display($qualification_status)); ?></p>
+                        <div class="anagrafica-section">
+                            <h3 class="section-title"><?php esc_html_e('Valutazione', 'lead-generator'); ?></h3>
+                            <div class="grid-2col">
+                                <div class="reason-box">
+                                    <h4><?php esc_html_e('Motivo della qualifica', 'lead-generator'); ?></h4>
+                                    <p><?php echo esc_html(lg_format_display($qualification_reason)); ?></p>
+                                </div>
+                                <div class="reason-box">
+                                    <h4><?php esc_html_e('Service fit', 'lead-generator'); ?></h4>
+                                    <p><?php echo esc_html(lg_format_display($service_fit)); ?></p>
+                                </div>
                             </div>
-                            <div class="form-field">
-                                <label><?php esc_html_e('Priority score', 'lead-generator'); ?></label>
-                                <p class="ap-qualifica-priority">
-                                    <?php echo $priority_score !== null ? esc_html(sprintf('%d / 100', $priority_score)) : '—'; ?>
+                        </div>
+
+                        <div class="anagrafica-section">
+                            <h3 class="section-title"><?php esc_html_e('Enrichment', 'lead-generator'); ?></h3>
+                            <div class="message-box">
+                                <h4><?php esc_html_e('Ultimo enrichment', 'lead-generator'); ?></h4>
+                                <p>
+                                    <?php
+                                    if ($enrichment_display !== '') {
+                                        printf(
+                                            esc_html__('%s (%s)', 'lead-generator'),
+                                            $enrichment_display,
+                                            lg_format_display($enrichment_status)
+                                        );
+                                    } else {
+                                        esc_html_e('Nessun enrichment registrato.', 'lead-generator');
+                                    }
+                                    ?>
                                 </p>
                             </div>
-                        </div>
-
-                        <div class="grid-2col">
-                            <div class="reason-box">
-                                <h4><?php esc_html_e('Motivo della qualifica', 'lead-generator'); ?></h4>
-                                <p><?php echo esc_html(lg_format_display($qualification_reason)); ?></p>
-                            </div>
-                            <div class="reason-box">
-                                <h4><?php esc_html_e('Service fit', 'lead-generator'); ?></h4>
-                                <p><?php echo esc_html(lg_format_display($service_fit)); ?></p>
-                            </div>
-                        </div>
-
-                        <div class="message-box">
-                            <h4><?php esc_html_e('Ultimo enrichment', 'lead-generator'); ?></h4>
-                            <p>
-                                <?php
-                                if ($enrichment_display !== '') {
-                                    printf(
-                                        esc_html__('%s (%s)', 'lead-generator'),
-                                        $enrichment_display,
-                                        lg_format_display($enrichment_status)
-                                    );
-                                } else {
-                                    esc_html_e('Nessun enrichment registrato.', 'lead-generator');
-                                }
-                                ?>
-                            </p>
                         </div>
                     </section>
 
