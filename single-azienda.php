@@ -375,7 +375,6 @@ if (have_posts()) :
                     $tabs = [
                         'anagrafica'  => __('Anagrafica', 'lead-generator'),
                         'economics'   => __('Economics', 'lead-generator'),
-                        'digital'     => __('Digital', 'lead-generator'),
                         'qualifica'   => __('Qualifica', 'lead-generator'),
                         'analisi'     => __('Analisi Perspect', 'lead-generator'),
                     ];
@@ -491,47 +490,6 @@ if (have_posts()) :
                         </div>
                     </section>
 
-                    <section id="tab-digital" class="ap-tab-panel" data-ap-panel role="tabpanel" hidden>
-                        <?php if ($social_links !== '') : ?>
-                        <div class="form-field full-width">
-                            <label><?php esc_html_e('Social Links', 'lead-generator'); ?></label>
-                            <ul class="bullet-list" style="margin-top: 10px;">
-                                <?php
-                                $social_list = lg_parse_list($social_links);
-                                foreach ($social_list as $social_item) :
-                                ?>
-                                    <li><?php echo esc_html($social_item); ?></li>
-                                <?php endforeach; ?>
-                            </ul>
-                        </div>
-                        <?php endif; ?>
-
-                        <div style="margin-top: var(--spacing-xl);">
-                            <h3 style="font-size: 18px; margin-bottom: var(--spacing-md);">
-                                <?php
-                                if ($digital_score !== null) {
-                                    printf(esc_html__('Maturità Digitale: %d / 100', 'lead-generator'), $digital_score);
-                                } else {
-                                    esc_html_e('Maturità Digitale', 'lead-generator');
-                                }
-                                ?>
-                            </h3>
-                            <ul class="bullet-list">
-                                <?php if ($domain_display !== '') : ?>
-                                    <li><?php printf(esc_html__('Sito: %s', 'lead-generator'), $domain_display); ?></li>
-                                <?php endif; ?>
-                                <?php if ($linkedin_url !== '') : ?>
-                                    <li><?php esc_html_e('Profilo LinkedIn attivo', 'lead-generator'); ?></li>
-                                <?php endif; ?>
-                                <?php if (!empty($digital_highlights)) : ?>
-                                    <?php foreach ($digital_highlights as $highlight) : ?>
-                                        <li><?php echo esc_html($highlight); ?></li>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </ul>
-                        </div>
-                    </section>
-
                     <section id="tab-qualifica" class="ap-tab-panel" data-ap-panel role="tabpanel" hidden>
                         <div class="anagrafica-section">
                             <div class="reason-box">
@@ -545,6 +503,46 @@ if (have_posts()) :
                                 <h4><?php esc_html_e('Service fit', 'lead-generator'); ?></h4>
                                 <p><?php echo esc_html(lg_format_display($service_fit)); ?></p>
                             </div>
+                        </div>
+
+                        <div class="anagrafica-section">
+                            <h3 class="section-title">
+                                <?php
+                                if ($digital_score !== null) {
+                                    printf(esc_html__('Maturità Digitale: %d / 100', 'lead-generator'), $digital_score);
+                                } else {
+                                    esc_html_e('Maturità Digitale', 'lead-generator');
+                                }
+                                ?>
+                            </h3>
+                            <?php if ($social_links !== '' || $domain_display !== '' || $linkedin_url !== '' || !empty($digital_highlights)) : ?>
+                            <div class="reason-box">
+                                <h4><?php esc_html_e('Presenza Digitale', 'lead-generator'); ?></h4>
+                                <ul class="bullet-list">
+                                    <?php if ($domain_display !== '') : ?>
+                                        <li><?php printf(esc_html__('Sito: %s', 'lead-generator'), $domain_display); ?></li>
+                                    <?php endif; ?>
+                                    <?php if ($linkedin_url !== '') : ?>
+                                        <li><?php esc_html_e('Profilo LinkedIn attivo', 'lead-generator'); ?></li>
+                                    <?php endif; ?>
+                                    <?php
+                                    if ($social_links !== '') {
+                                        $social_list = lg_parse_list($social_links);
+                                        foreach ($social_list as $social_item) :
+                                    ?>
+                                        <li><?php echo esc_html($social_item); ?></li>
+                                    <?php
+                                        endforeach;
+                                    }
+                                    ?>
+                                    <?php if (!empty($digital_highlights)) : ?>
+                                        <?php foreach ($digital_highlights as $highlight) : ?>
+                                            <li><?php echo esc_html($highlight); ?></li>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </ul>
+                            </div>
+                            <?php endif; ?>
                         </div>
                     </section>
 
