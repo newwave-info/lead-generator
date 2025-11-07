@@ -187,8 +187,22 @@
 }
 
 .azienda-profile .ap-priority {
-    text-align: right;
     flex-shrink: 0;
+}
+
+.azienda-profile .ap-priority-box {
+    background: rgba(0, 0, 0, 0.3);
+    padding: var(--spacing-md);
+    border-radius: 8px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.azienda-profile .ap-priority-box .ap-qualification-badge {
+    margin: 0;
 }
 
 .azienda-profile .ap-priority-score {

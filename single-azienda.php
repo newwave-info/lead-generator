@@ -336,11 +336,6 @@ if (have_posts()) :
                             <div class="ap-company-info">
                                 <div class="ap-company-name-row">
                                     <h1><?php echo esc_html($company_name); ?></h1>
-                                    <?php if ($qualification_status !== '') : ?>
-                                        <span class="ap-qualification-badge <?php echo esc_attr('status-' . sanitize_title($qualification_status)); ?>">
-                                            <?php echo esc_html(ucfirst($qualification_status)); ?>
-                                        </span>
-                                    <?php endif; ?>
                                 </div>
                                 <?php if ($company_subtitle !== '') : ?>
                                     <p class="ap-company-subtitle"><?php echo esc_html($company_subtitle); ?></p>
@@ -360,13 +355,20 @@ if (have_posts()) :
                             </div>
                         </div>
                         <div class="ap-priority">
-                            <div class="ap-priority-score">
-                                <?php echo $priority_score !== null ? esc_html($priority_score) : '—'; ?>
-                                <?php if ($priority_score !== null) : ?>
-                                    <span class="ap-priority-max">/100</span>
+                            <div class="ap-priority-box">
+                                <?php if ($qualification_status !== '') : ?>
+                                    <span class="ap-qualification-badge <?php echo esc_attr('status-' . sanitize_title($qualification_status)); ?>">
+                                        <?php echo esc_html(ucfirst($qualification_status)); ?>
+                                    </span>
                                 <?php endif; ?>
+                                <div class="ap-priority-score">
+                                    <?php echo $priority_score !== null ? esc_html($priority_score) : '—'; ?>
+                                    <?php if ($priority_score !== null) : ?>
+                                        <span class="ap-priority-max">/100</span>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="ap-priority-label"><?php esc_html_e('Priority score', 'lead-generator'); ?></div>
                             </div>
-                            <div class="ap-priority-label"><?php esc_html_e('Priority score', 'lead-generator'); ?></div>
                         </div>
                     </div>
 
