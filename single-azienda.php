@@ -46,54 +46,21 @@ if (!function_exists('lg_normalize_domain')) {
     }
 }
 
-if (!function_exists('lg_extract_strings')) {
+if (!function_exists('lg_format_display')) {
     /**
-     * Normalizza valori ACF (stringhe, array di stringhe/label) in un array di stringhe.
+     * Restituisce una stringa pronta per il template con fallback.
      */
-    function lg_extract_strings($value) {
+    function lg_format_display($value, $fallback = '—') {
         if (is_array($value)) {
-            $result = [];
-            foreach ($value as $item) {
-                if (is_array($item)) {
-                    if (isset($item['value']) && is_scalar($item['value'])) {
-                        $item = $item['value'];
-                    } elseif (isset($item['label']) && is_scalar($item['label'])) {
-                        $item = $item['label'];
-                    } else {
-                        $item = null;
-                    }
-                }
-
-                if (is_scalar($item)) {
-                    $trimmed = trim((string) $item);
-                    if ($trimmed !== '') {
-                        $result[] = $trimmed;
-                    }
-                }
-            }
-
-            return $result;
+            $value = array_filter(array_map('trim', array_map('strval', $value)));
+            $value = implode(', ', $value);
+        } elseif (is_scalar($value)) {
+            $value = trim((string) $value);
+        } else {
+            $value = '';
         }
 
-        if (is_scalar($value)) {
-            $trimmed = trim((string) $value);
-            return $trimmed !== '' ? [$trimmed] : [];
-        }
-
-        return [];
-    }
-}
-
-if (!function_exists('lg_normalize_count')) {
-    /**
-     * Restituisce un conteggio valido partendo da un numero dichiarato o dalla lunghezza dell'array.
-     */
-    function lg_normalize_count($maybe_number, array $items) {
-        if (is_numeric($maybe_number)) {
-            return (int) $maybe_number;
-        }
-
-        return count($items);
+        return $value !== '' ? $value : $fallback;
     }
 }
 
@@ -106,39 +73,37 @@ if (have_posts()) :
         $fields    = is_array($fields) ? $fields : [];
         $theme_uri = get_template_directory_uri();
 
-        $company_name        = !empty($fields['company_name_full']) ? $fields['company_name_full'] : get_the_title();
+        $company_name         = !empty($fields['company_name_full']) ? $fields['company_name_full'] : get_the_title();
         $qualification_status = $fields['qualification_status'] ?? '';
-        $budget_tier         = $fields['budget_tier'] ?? '';
-        $sector_specific     = $fields['sector_specific'] ?? '';
-        $short_bio           = $fields['short_bio'] ?? '';
-        $business_type       = $fields['business_type'] ?? '';
-        $employee_count      = $fields['employee_count'] ?? '';
-        $growth_stage        = $fields['growth_stage'] ?? '';
-        $geography_scope     = $fields['geography_scope'] ?? '';
-        $annual_revenue      = $fields['annual_revenue'] ?? '';
-        $domain_raw          = $fields['domain'] ?? '';
-        $city                = $fields['city'] ?? '';
-        $province            = $fields['province'] ?? '';
-        $address             = $fields['address'] ?? '';
-        $partita_iva         = $fields['partita_iva'] ?? '';
-        $phone               = $fields['phone'] ?? '';
-        $email               = $fields['email'] ?? '';
-        $linkedin_url        = $fields['linkedin_url'] ?? '';
-        $website_logo        = $fields['website_logo_url'] ?? '';
-        $website_screenshot  = $fields['website_screenshot_url'] ?? '';
+        $budget_tier          = $fields['budget_tier'] ?? '';
+        $sector_specific      = $fields['sector_specific'] ?? '';
+        $short_bio            = $fields['short_bio'] ?? '';
+        $business_type        = $fields['business_type'] ?? '';
+        $employee_count       = $fields['employee_count'] ?? '';
+        $growth_stage         = $fields['growth_stage'] ?? '';
+        $geography_scope      = $fields['geography_scope'] ?? '';
+        $annual_revenue       = $fields['annual_revenue'] ?? '';
+        $domain_raw           = $fields['domain'] ?? '';
+        $city                 = $fields['city'] ?? '';
+        $province             = $fields['province'] ?? '';
+        $address              = $fields['address'] ?? '';
+        $partita_iva          = $fields['partita_iva'] ?? '';
+        $phone                = $fields['phone'] ?? '';
+        $email                = $fields['email'] ?? '';
+        $linkedin_url         = $fields['linkedin_url'] ?? '';
         $qualification_reason = $fields['qualification_reason'] ?? '';
-        $service_fit         = $fields['service_fit'] ?? '';
-        $data_enrichment     = $fields['data_ultimo_enrichment'] ?? '';
-        $enrichment_status   = $fields['enrichment_last_status_code'] ?? '';
-        $enrichment_message  = $fields['enrichment_last_message'] ?? '';
-        $digital_score_raw   = $fields['digital_maturity_score'] ?? '';
-        $financial_conf_raw  = $fields['financial_confidence'] ?? '';
-        $priority_score_raw  = $fields['priority_score'] ?? '';
-        $marketing_budget    = $fields['marketing_budget_est'] ?? '';
-        $ebitda_margin       = $fields['ebitda_margin_est'] ?? '';
+        $service_fit          = $fields['service_fit'] ?? '';
+        $data_enrichment      = $fields['data_ultimo_enrichment'] ?? '';
+        $enrichment_status    = $fields['enrichment_last_status_code'] ?? '';
+        $enrichment_message   = $fields['enrichment_last_message'] ?? '';
+        $digital_score_raw    = $fields['digital_maturity_score'] ?? '';
+        $financial_conf_raw   = $fields['financial_confidence'] ?? '';
+        $priority_score_raw   = $fields['priority_score'] ?? '';
+        $marketing_budget     = $fields['marketing_budget_est'] ?? '';
+        $ebitda_margin        = $fields['ebitda_margin_est'] ?? '';
+        $website_logo         = $fields['website_logo_url'] ?? '';
 
-        $logo_url       = lg_media_url($website_logo, 'medium', $theme_uri . '/common/img/logo.svg');
-        $screenshot_url = lg_media_url($website_screenshot, 'large', 'https://via.placeholder.com/320x200?text=Anteprima');
+        $logo_url = lg_media_url($website_logo, 'medium', $theme_uri . '/common/img/logo.svg');
 
         $meta_location = '';
         if ($city !== '' && $province !== '') {
@@ -156,10 +121,10 @@ if (have_posts()) :
             $domain_display = rtrim($domain_display, '/');
         }
 
-        $digital_score    = is_numeric($digital_score_raw) ? max(0, min(100, (int) $digital_score_raw)) : null;
-        $financial_conf   = is_numeric($financial_conf_raw) ? max(0, min(100, (int) $financial_conf_raw)) : null;
-        $priority_score   = is_numeric($priority_score_raw) ? max(0, min(100, (int) $priority_score_raw)) : null;
-        $ebitda_display   = $ebitda_margin !== '' ? sprintf('%s%%', trim((string) $ebitda_margin)) : '';
+        $digital_score  = is_numeric($digital_score_raw) ? max(0, min(100, (int) $digital_score_raw)) : null;
+        $financial_conf = is_numeric($financial_conf_raw) ? max(0, min(100, (int) $financial_conf_raw)) : null;
+        $priority_score = is_numeric($priority_score_raw) ? max(0, min(100, (int) $priority_score_raw)) : null;
+        $ebitda_display = $ebitda_margin !== '' ? sprintf('%s%%', trim((string) $ebitda_margin)) : '';
 
         $enrichment_display = '';
         if ($data_enrichment !== '') {
@@ -171,10 +136,95 @@ if (have_posts()) :
             }
         }
 
+        $company_subtitle = $business_type !== '' ? $business_type : $sector_specific;
+
+        $company_meta = [
+            [
+                'label' => __('Città', 'lead-generator'),
+                'value' => $meta_location,
+            ],
+            [
+                'label' => __('Respiro', 'lead-generator'),
+                'value' => $geography_scope,
+            ],
+            [
+                'label' => __('Dipendenti', 'lead-generator'),
+                'value' => $employee_count,
+            ],
+            [
+                'label' => __('Fatturato', 'lead-generator'),
+                'value' => $annual_revenue,
+            ],
+            [
+                'label' => __('Stadio', 'lead-generator'),
+                'value' => $growth_stage,
+            ],
+            [
+                'label' => __('Settore', 'lead-generator'),
+                'value' => $sector_specific !== '' ? $sector_specific : $business_type,
+            ],
+        ];
+
+        $profile_metrics = [
+            [
+                'label' => __('Tipo Business', 'lead-generator'),
+                'value' => $business_type,
+            ],
+            [
+                'label' => __('Settore Specifico', 'lead-generator'),
+                'value' => $sector_specific,
+            ],
+            [
+                'label' => __('Dipendenti', 'lead-generator'),
+                'value' => $employee_count,
+            ],
+            [
+                'label' => __('Stadio Crescita', 'lead-generator'),
+                'value' => $growth_stage,
+            ],
+            [
+                'label' => __('Respiro Geografico', 'lead-generator'),
+                'value' => $geography_scope,
+            ],
+            [
+                'label' => __('Maturità Digitale', 'lead-generator'),
+                'value' => $digital_score !== null ? sprintf('%d / 100', $digital_score) : '',
+                'progress' => $digital_score !== null ? $digital_score : null,
+            ],
+        ];
+
+        $economics_cards = [
+            [
+                'label' => __('Fatturato', 'lead-generator'),
+                'value' => $annual_revenue,
+                'meta'  => __('ultimo anno stimato', 'lead-generator'),
+            ],
+            [
+                'label' => __('EBITDA %', 'lead-generator'),
+                'value' => $ebitda_display,
+                'meta'  => __('stima', 'lead-generator'),
+            ],
+            [
+                'label' => __('Budget Marketing', 'lead-generator'),
+                'value' => $marketing_budget,
+                'meta'  => __('annuale', 'lead-generator'),
+            ],
+        ];
+
+        $digital_highlights = array_values(array_filter([
+            $domain_display !== '' ? sprintf(__('Dominio verificato: %s', 'lead-generator'), $domain_display) : '',
+            $linkedin_url !== '' ? __('Profilo LinkedIn collegato', 'lead-generator') : '',
+            $enrichment_status !== '' ? sprintf(__('Ultimo enrichment: %s', 'lead-generator'), $enrichment_status) : '',
+            $enrichment_display !== '' ? sprintf(__('Aggiornato il %s', 'lead-generator'), $enrichment_display) : '',
+            $enrichment_message !== '' ? $enrichment_message : '',
+        ]));
+
+        $analisi_count = 0;
         $analisi_query = new WP_Query([
             'post_type'      => 'analisi',
-            'posts_per_page' => -1,
+            'posts_per_page' => 1,
             'post_status'    => 'publish',
+            'fields'         => 'ids',
             'meta_query'     => [
                 [
                     'key'     => 'parent_company_id',
@@ -184,566 +234,319 @@ if (have_posts()) :
             ],
         ]);
 
-        $analisi_items = [];
-
         if ($analisi_query->have_posts()) {
-            while ($analisi_query->have_posts()) {
-                $analisi_query->the_post();
-
-                $analysis_id     = get_the_ID();
-                $analysis_fields = get_fields($analysis_id);
-                $analysis_fields = is_array($analysis_fields) ? $analysis_fields : [];
-
-                $strengths         = lg_extract_strings($analysis_fields['punti_di_forza'] ?? []);
-                $weaknesses        = lg_extract_strings($analysis_fields['punti_di_debolezza'] ?? []);
-                $opportunities     = lg_extract_strings($analysis_fields['opportunita'] ?? []);
-                $quick_wins        = lg_extract_strings($analysis_fields['azioni_rapide'] ?? []);
-                $questions         = lg_extract_strings($analysis_fields['domande_prospect'] ?? []);
-                $value_ideas       = lg_extract_strings($analysis_fields['idee_di_valore_perspect'] ?? []);
-                $riassunto         = $analysis_fields['riassunto'] ?? '';
-                $deep_research     = $analysis_fields['analisy_perplexity_deep_research'] ?? '';
-                $review            = $analysis_fields['revisione_analisi_completa'] ?? '';
-                $quality_score     = isset($analysis_fields['voto_qualita_analisi']) && is_numeric($analysis_fields['voto_qualita_analisi'])
-                    ? max(0, min(100, (int) $analysis_fields['voto_qualita_analisi']))
-                    : null;
-                $data_quality      = isset($analysis_fields['qualita_dati']) && is_numeric($analysis_fields['qualita_dati'])
-                    ? max(0, min(100, (int) $analysis_fields['qualita_dati']))
-                    : null;
-                $numero_rischi     = $analysis_fields['numero_rischi'] ?? null;
-
-                $risks = [];
-                if (isset($analysis_fields['rischi']) && is_array($analysis_fields['rischi'])) {
-                    foreach ($analysis_fields['rischi'] as $risk_row) {
-                        if (!is_array($risk_row)) {
-                            continue;
-                        }
-
-                        $risk_text       = isset($risk_row['rischio']) ? trim((string) $risk_row['rischio']) : '';
-                        $mitigation_text = isset($risk_row['mitigazione']) ? trim((string) $risk_row['mitigazione']) : '';
-
-                        if ($risk_text === '' && $mitigation_text === '') {
-                            continue;
-                        }
-
-                        $risks[] = [
-                            'rischio'     => $risk_text,
-                            'mitigazione' => $mitigation_text,
-                        ];
-                    }
-                }
-
-                $priorita_raw = $analysis_fields['priorita_temporali'] ?? [];
-                $priorita     = [
-                    'entro_30_giorni' => [],
-                    'entro_90_giorni' => [],
-                    'entro_12_mesi'   => [],
-                ];
-
-                if (is_array($priorita_raw)) {
-                    foreach ($priorita as $key => $default) {
-                        if (isset($priorita_raw[$key])) {
-                            $priorita[$key] = lg_extract_strings($priorita_raw[$key]);
-                        }
-                    }
-                }
-
-                $analisi_items[] = [
-                    'post_id'        => $analysis_id,
-                    'title'          => get_the_title(),
-                    'riassunto'      => $riassunto,
-                    'strengths'      => $strengths,
-                    'weaknesses'     => $weaknesses,
-                    'opportunities'  => $opportunities,
-                    'quick_wins'     => $quick_wins,
-                    'deep_research'  => $deep_research,
-                    'review'         => $review,
-                    'risks'          => $risks,
-                    'priorita'       => $priorita,
-                    'questions'      => $questions,
-                    'value_ideas'    => $value_ideas,
-                    'quality_score'  => $quality_score,
-                    'data_quality'   => $data_quality,
-                    'counts'         => [
-                        'strengths'     => lg_normalize_count($analysis_fields['numero_punti_di_forza'] ?? null, $strengths),
-                        'weaknesses'    => lg_normalize_count($analysis_fields['numero_punti_di_debolezza'] ?? null, $weaknesses),
-                        'opportunities' => lg_normalize_count($analysis_fields['numero_opportunita'] ?? null, $opportunities),
-                        'quick_wins'    => lg_normalize_count($analysis_fields['numero_azioni_rapide'] ?? null, $quick_wins),
-                        'risks'         => lg_normalize_count($numero_rischi, $risks),
-                        'questions'     => lg_normalize_count($analysis_fields['numero_domande'] ?? null, $questions),
-                        'value_ideas'   => lg_normalize_count($analysis_fields['numero_idee_di_valore'] ?? null, $value_ideas),
-                    ],
-                ];
-            }
-            wp_reset_postdata();
+            $analisi_count = (int) $analisi_query->found_posts;
         }
-
-        $has_analisi = !empty($analisi_items);
+        wp_reset_postdata();
         ?>
 
-        <article id="post-<?php the_ID(); ?>" <?php post_class('lg-azienda'); ?>>
-            <section class="lg-azienda__section lg-azienda__section--hero">
-                <div class="lg-azienda__inner">
-                    <div class="lg-azienda__hero">
-                        <div class="lg-azienda__hero-id">
-                            <div class="lg-azienda__logo">
-                                <img src="<?php echo esc_url($logo_url); ?>" alt="<?php echo esc_attr(sprintf('Logo di %s', $company_name)); ?>" loading="lazy" />
+        <article id="post-<?php the_ID(); ?>" <?php post_class('azienda-profile'); ?>>
+            <div class="ap-shell">
+                <header class="ap-main-header">
+                    <div class="ap-header-brand">
+                        <img src="<?php echo esc_url($logo_url); ?>" alt="<?php esc_attr_e('Logo azienda', 'lead-generator'); ?>">
+                        <span><?php echo esc_html(get_bloginfo('name')); ?></span>
+                    </div>
+                    <nav class="ap-header-nav">
+                        <a href="<?php echo esc_url(home_url('/')); ?>"><?php esc_html_e('Aziende', 'lead-generator'); ?></a>
+                        <a href="#"><?php esc_html_e('Impostazioni', 'lead-generator'); ?></a>
+                        <a href="#"><?php esc_html_e('Aiuto', 'lead-generator'); ?></a>
+                    </nav>
+                </header>
+
+                <section class="ap-company-header">
+                    <div class="ap-company-title">
+                        <div>
+                            <h1><?php echo esc_html($company_name); ?></h1>
+                            <?php if ($company_subtitle !== '') : ?>
+                                <p class="ap-company-subtitle"><?php echo esc_html($company_subtitle); ?></p>
+                            <?php endif; ?>
+                            <?php if ($domain_display !== '') : ?>
+                                <p class="ap-company-link">
+                                    <a href="<?php echo esc_url($domain_url); ?>" target="_blank" rel="noreferrer noopener">
+                                        <?php echo esc_html($domain_display); ?>
+                                    </a>
+                                </p>
+                            <?php endif; ?>
+                        </div>
+                        <div class="ap-priority">
+                            <div class="ap-priority-score"><?php echo $priority_score !== null ? esc_html($priority_score) : '—'; ?></div>
+                            <div class="ap-priority-label"><?php esc_html_e('Priority score', 'lead-generator'); ?></div>
+                        </div>
+                    </div>
+
+                    <div class="ap-company-meta">
+                        <?php foreach ($company_meta as $meta) : ?>
+                            <div class="ap-meta-item">
+                                <div class="ap-meta-label"><?php echo esc_html($meta['label']); ?></div>
+                                <div class="ap-meta-value"><?php echo esc_html(lg_format_display($meta['value'])); ?></div>
                             </div>
-                            <div>
-                                <h1 class="lg-azienda__title"><?php echo esc_html($company_name); ?></h1>
-                                <div class="lg-azienda__meta">
-                                    <?php if ($qualification_status !== '') : ?>
-                                        <span class="lg-azienda__pill"><?php echo esc_html($qualification_status); ?></span>
-                                    <?php endif; ?>
-                                    <?php if ($budget_tier !== '') : ?>
-                                        <span class="lg-azienda__pill"><?php echo esc_html(sprintf('Budget %s', $budget_tier)); ?></span>
-                                    <?php endif; ?>
-                                    <?php if ($sector_specific !== '') : ?>
-                                        <span class="lg-azienda__pill"><?php echo esc_html($sector_specific); ?></span>
-                                    <?php endif; ?>
-                                </div>
-                                <?php if ($meta_location !== '' || $domain_url !== '') : ?>
-                                    <p class="lg-azienda__lead">
-                                        <?php if ($meta_location !== '') : ?>
-                                            <?php echo esc_html($meta_location); ?>
-                                        <?php endif; ?>
-                                        <?php if ($meta_location !== '' && $domain_url !== '') : ?>
-                                            <span aria-hidden="true"> · </span>
-                                        <?php endif; ?>
-                                        <?php if ($domain_url !== '') : ?>
-                                            <a href="<?php echo $domain_url; ?>" target="_blank" rel="nofollow noopener">
-                                                <?php echo esc_html($domain_display); ?>
-                                            </a>
-                                        <?php endif; ?>
-                                    </p>
+                        <?php endforeach; ?>
+                    </div>
+                </section>
+
+                <nav class="ap-tab-nav" data-ap-tabs role="tablist">
+                    <?php
+                    $tabs = [
+                        'dati-minimi' => __('Dati Minimi', 'lead-generator'),
+                        'anagrafica'  => __('Anagrafica', 'lead-generator'),
+                        'profilo'     => __('Profilo', 'lead-generator'),
+                        'economics'   => __('Economics', 'lead-generator'),
+                        'digital'     => __('Digital', 'lead-generator'),
+                        'qualifica'   => __('Qualifica', 'lead-generator'),
+                        'analisi'     => __('Analisi Perspect', 'lead-generator'),
+                    ];
+                    $tab_index = 0;
+                    foreach ($tabs as $slug => $label) :
+                        $is_active = $tab_index === 0;
+                        ?>
+                        <button
+                            type="button"
+                            class="ap-tab-btn<?php echo $is_active ? ' is-active' : ''; ?>"
+                            data-ap-tab="<?php echo esc_attr($slug); ?>"
+                            role="tab"
+                            aria-selected="<?php echo $is_active ? 'true' : 'false'; ?>"
+                            aria-controls="tab-<?php echo esc_attr($slug); ?>"
+                        >
+                            <?php echo esc_html($label); ?>
+                        </button>
+                        <?php
+                        $tab_index++;
+                    endforeach;
+                    ?>
+                </nav>
+
+                <div class="ap-tabs-wrapper">
+                    <section id="tab-dati-minimi" class="ap-tab-panel is-active" data-ap-panel role="tabpanel">
+                        <div class="grid-2col">
+                            <div class="form-field">
+                                <label><?php esc_html_e('Ragione sociale', 'lead-generator'); ?></label>
+                                <input type="text" readonly value="<?php echo esc_attr($company_name); ?>">
+                            </div>
+                            <div class="form-field">
+                                <label><?php esc_html_e('Partita IVA', 'lead-generator'); ?></label>
+                                <input type="text" readonly value="<?php echo esc_attr($partita_iva); ?>">
+                            </div>
+                        </div>
+                        <div class="form-field full-width">
+                            <label><?php esc_html_e('Dominio / sito web', 'lead-generator'); ?></label>
+                            <?php if ($domain_display !== '') : ?>
+                                <a class="ap-link-plain" href="<?php echo esc_url($domain_url); ?>" target="_blank" rel="noreferrer noopener">
+                                    <?php echo esc_html($domain_display); ?>
+                                </a>
+                            <?php else : ?>
+                                <span class="ap-placeholder"><?php esc_html_e('Non disponibile', 'lead-generator'); ?></span>
+                            <?php endif; ?>
+                        </div>
+                    </section>
+
+                    <section id="tab-anagrafica" class="ap-tab-panel" data-ap-panel role="tabpanel" hidden>
+                        <div class="form-field full-width">
+                            <label><?php esc_html_e('Descrizione / Bio', 'lead-generator'); ?></label>
+                            <textarea readonly><?php echo esc_textarea(lg_format_display($short_bio, '')); ?></textarea>
+                        </div>
+
+                        <div class="grid-3col">
+                            <div class="form-field">
+                                <label><?php esc_html_e('Indirizzo', 'lead-generator'); ?></label>
+                                <p><?php echo esc_html(lg_format_display($address)); ?></p>
+                            </div>
+                            <div class="form-field">
+                                <label><?php esc_html_e('Città', 'lead-generator'); ?></label>
+                                <p><?php echo esc_html(lg_format_display($city)); ?></p>
+                            </div>
+                            <div class="form-field">
+                                <label><?php esc_html_e('Provincia', 'lead-generator'); ?></label>
+                                <p><?php echo esc_html(lg_format_display($province)); ?></p>
+                            </div>
+                        </div>
+
+                        <div class="grid-2col">
+                            <div class="form-field">
+                                <label><?php esc_html_e('Telefono', 'lead-generator'); ?></label>
+                                <p><?php echo esc_html(lg_format_display($phone)); ?></p>
+                            </div>
+                            <div class="form-field">
+                                <label><?php esc_html_e('Email', 'lead-generator'); ?></label>
+                                <?php if ($email !== '') : ?>
+                                    <a class="ap-link-plain" href="mailto:<?php echo esc_attr($email); ?>"><?php echo esc_html($email); ?></a>
+                                <?php else : ?>
+                                    <p><?php esc_html_e('Non disponibile', 'lead-generator'); ?></p>
                                 <?php endif; ?>
                             </div>
                         </div>
-                        <div class="lg-azienda__quick" aria-hidden="true">
-                            <div>
-                                <div class="lg-azienda__mini-title">Website preview</div>
-                                <div class="lg-azienda__thumb">
-                                    <img src="<?php echo esc_url($screenshot_url); ?>" alt="<?php echo esc_attr(sprintf('Anteprima sito %s', $company_name)); ?>" loading="lazy" />
+
+                        <div class="form-field full-width">
+                            <label><?php esc_html_e('LinkedIn', 'lead-generator'); ?></label>
+                            <?php if ($linkedin_url !== '') : ?>
+                                <a class="ap-link-plain" href="<?php echo esc_url($linkedin_url); ?>" target="_blank" rel="noreferrer noopener">
+                                    <?php echo esc_html($linkedin_url); ?>
+                                </a>
+                            <?php else : ?>
+                                <span class="ap-placeholder"><?php esc_html_e('Non disponibile', 'lead-generator'); ?></span>
+                            <?php endif; ?>
+                        </div>
+                    </section>
+
+                    <section id="tab-profilo" class="ap-tab-panel" data-ap-panel role="tabpanel" hidden>
+                        <div class="metrics-grid">
+                            <?php foreach ($profile_metrics as $metric) : ?>
+                                <div class="metric-card">
+                                    <h4><?php echo esc_html($metric['label']); ?></h4>
+                                    <p class="metric-value"><?php echo esc_html(lg_format_display($metric['value'])); ?></p>
+                                    <?php if (array_key_exists('progress', $metric) && $metric['progress'] !== null) : ?>
+                                        <progress max="100" value="<?php echo esc_attr($metric['progress']); ?>"></progress>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </section>
+
+                    <section id="tab-economics" class="ap-tab-panel" data-ap-panel role="tabpanel" hidden>
+                        <div class="metrics-grid">
+                            <?php foreach ($economics_cards as $card) : ?>
+                                <div class="metric-card">
+                                    <h4><?php echo esc_html($card['label']); ?></h4>
+                                    <p class="metric-value"><?php echo esc_html(lg_format_display($card['value'])); ?></p>
+                                    <span class="sub-text"><?php echo esc_html($card['meta']); ?></span>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+
+                        <div class="grid-2col">
+                            <div class="form-field">
+                                <label><?php esc_html_e('Tier budget', 'lead-generator'); ?></label>
+                                <p><strong><?php echo esc_html(lg_format_display($budget_tier)); ?></strong></p>
+                            </div>
+                            <div class="form-field">
+                                <label><?php esc_html_e('Confidenza dato', 'lead-generator'); ?></label>
+                                <div class="coherence-meter">
+                                    <div class="progress-container">
+                                        <progress value="<?php echo esc_attr($financial_conf ?? 0); ?>" max="100"></progress>
+                                        <span class="progress-value">
+                                            <?php echo $financial_conf !== null ? esc_html(sprintf('%d%%', $financial_conf)) : '—'; ?>
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </section>
+
+                    <section id="tab-digital" class="ap-tab-panel" data-ap-panel role="tabpanel" hidden>
+                        <div class="form-field full-width">
+                            <label><?php esc_html_e('Social & contatti digitali', 'lead-generator'); ?></label>
+                            <ul class="bullet-list">
+                                <?php if ($linkedin_url !== '') : ?>
+                                    <li><?php esc_html_e('LinkedIn collegato', 'lead-generator'); ?>: <?php echo esc_html($linkedin_url); ?></li>
+                                <?php endif; ?>
+                                <?php if ($domain_display !== '') : ?>
+                                    <li><?php esc_html_e('Dominio verificato', 'lead-generator'); ?>: <?php echo esc_html($domain_display); ?></li>
+                                <?php endif; ?>
+                                <?php if ($email !== '') : ?>
+                                    <li><?php esc_html_e('Email primaria', 'lead-generator'); ?>: <?php echo esc_html($email); ?></li>
+                                <?php endif; ?>
+                                <?php if ($phone !== '') : ?>
+                                    <li><?php esc_html_e('Telefono', 'lead-generator'); ?>: <?php echo esc_html($phone); ?></li>
+                                <?php endif; ?>
+                                <?php if ($linkedin_url === '' && $domain_display === '' && $email === '' && $phone === '') : ?>
+                                    <li><?php esc_html_e('Nessun contatto digitale disponibile.', 'lead-generator'); ?></li>
+                                <?php endif; ?>
+                            </ul>
+                        </div>
+
+                        <div class="digital-summary">
+                            <h3><?php esc_html_e('Sintesi maturità digitale', 'lead-generator'); ?></h3>
+                            <p class="tone-text">
+                                <?php
+                                if ($digital_score !== null) {
+                                    printf(esc_html__('Punteggio attuale: %d/100', 'lead-generator'), $digital_score);
+                                } else {
+                                    esc_html_e('Punteggio non disponibile', 'lead-generator');
+                                }
+                                ?>
+                            </p>
+                            <ul class="bullet-list">
+                                <?php if (!empty($digital_highlights)) : ?>
+                                    <?php foreach ($digital_highlights as $highlight) : ?>
+                                        <li><?php echo esc_html($highlight); ?></li>
+                                    <?php endforeach; ?>
+                                <?php else : ?>
+                                    <li><?php esc_html_e('In attesa di aggiornare la diagnostica digitale.', 'lead-generator'); ?></li>
+                                <?php endif; ?>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <section id="tab-qualifica" class="ap-tab-panel" data-ap-panel role="tabpanel" hidden>
+                        <div class="grid-2col">
+                            <div class="form-field">
+                                <label><?php esc_html_e('Stato qualifica', 'lead-generator'); ?></label>
+                                <p class="ap-qualifica-state"><?php echo esc_html(lg_format_display($qualification_status)); ?></p>
+                            </div>
+                            <div class="form-field">
+                                <label><?php esc_html_e('Priority score', 'lead-generator'); ?></label>
+                                <p class="ap-qualifica-priority">
+                                    <?php echo $priority_score !== null ? esc_html(sprintf('%d / 100', $priority_score)) : '—'; ?>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="grid-2col">
+                            <div class="reason-box">
+                                <h4><?php esc_html_e('Motivo della qualifica', 'lead-generator'); ?></h4>
+                                <p><?php echo esc_html(lg_format_display($qualification_reason)); ?></p>
+                            </div>
+                            <div class="reason-box">
+                                <h4><?php esc_html_e('Service fit', 'lead-generator'); ?></h4>
+                                <p><?php echo esc_html(lg_format_display($service_fit)); ?></p>
+                            </div>
+                        </div>
+
+                        <div class="message-box">
+                            <h4><?php esc_html_e('Ultimo enrichment', 'lead-generator'); ?></h4>
+                            <p>
+                                <?php
+                                if ($enrichment_display !== '') {
+                                    printf(
+                                        esc_html__('%s (%s)', 'lead-generator'),
+                                        $enrichment_display,
+                                        lg_format_display($enrichment_status)
+                                    );
+                                } else {
+                                    esc_html_e('Nessun enrichment registrato.', 'lead-generator');
+                                }
+                                ?>
+                            </p>
+                        </div>
+                    </section>
+
+                    <section id="tab-analisi" class="ap-tab-panel" data-ap-panel role="tabpanel" hidden>
+                        <div class="ap-placeholder-box">
+                            <h4><?php esc_html_e('Schede analisi', 'lead-generator'); ?></h4>
+                            <p>
+                                <?php esc_html_e('Stiamo lavorando al nuovo layout delle analisi. Saranno disponibili in un passaggio successivo.', 'lead-generator'); ?>
+                            </p>
+                            <?php if ($analisi_count > 0) : ?>
+                                <p class="ap-placeholder-count">
+                                    <?php
+                                    printf(
+                                        esc_html(_n('Hai già %d analisi collegate a questa azienda.', 'Hai già %d analisi collegate a questa azienda.', $analisi_count, 'lead-generator')),
+                                        $analisi_count
+                                    );
+                                    ?>
+                                </p>
+                            <?php endif; ?>
+                        </div>
+                    </section>
                 </div>
-            </section>
 
-            <section class="lg-azienda__section">
-                <div class="lg-azienda__inner lg-azienda__body">
-                    <nav class="lg-azienda__toc" id="lg-azienda-toc" aria-label="<?php esc_attr_e('Indice contenuti', 'lead-generator'); ?>">
-                        <h2 class="lg-azienda__toc-title"><?php esc_html_e('Indice', 'lead-generator'); ?></h2>
-                        <a class="lg-azienda__toc-link active" data-lg-toc-link href="#overview">Overview</a>
-                        <a class="lg-azienda__toc-link" data-lg-toc-link href="#metriche">Metriche</a>
-                        <a class="lg-azienda__toc-link" data-lg-toc-link href="#analisi">Analisi</a>
-                        <a class="lg-azienda__toc-link" data-lg-toc-link href="#contatti">Contatti</a>
-                    </nav>
-
-                    <div class="lg-azienda__content">
-                        <section id="overview" class="lg-azienda__box">
-                            <h2 class="lg-azienda__section-title">Overview</h2>
-                            <?php if ($short_bio !== '') : ?>
-                                <div class="lg-azienda__muted lg-azienda__muted--lead">
-                                    <?php echo wp_kses_post(wpautop($short_bio)); ?>
-                                </div>
-                            <?php endif; ?>
-
-                            <div class="lg-azienda__columns">
-                                <div>
-                                    <h3 class="lg-azienda__subtitle">Dati profilo</h3>
-                                    <ul class="lg-azienda__list">
-                                        <li><strong>Business:</strong> <?php echo $business_type !== '' ? esc_html($business_type) : '—'; ?></li>
-                                        <li><strong>Settore:</strong> <?php echo $sector_specific !== '' ? esc_html($sector_specific) : '—'; ?></li>
-                                        <li><strong>Dipendenti:</strong> <?php echo $employee_count !== '' ? esc_html($employee_count) : '—'; ?></li>
-                                    </ul>
-                                </div>
-                                <div>
-                                    <h3 class="lg-azienda__subtitle">Stadio &amp; mercato</h3>
-                                    <ul class="lg-azienda__list">
-                                        <li><strong>Stage:</strong> <?php echo $growth_stage !== '' ? esc_html($growth_stage) : '—'; ?></li>
-                                        <li><strong>Scope:</strong> <?php echo $geography_scope !== '' ? esc_html($geography_scope) : '—'; ?></li>
-                                        <li><strong>Ricavi:</strong> <?php echo $annual_revenue !== '' ? esc_html($annual_revenue) : '—'; ?></li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            <?php if ($qualification_reason !== '' || $service_fit !== '') : ?>
-                                <div class="lg-azienda__columns lg-azienda__columns--tight">
-                                    <?php if ($qualification_reason !== '') : ?>
-                                        <div>
-                                            <h3 class="lg-azienda__subtitle">Qualification note</h3>
-                                            <div class="lg-azienda__muted"><?php echo wp_kses_post(wpautop($qualification_reason)); ?></div>
-                                        </div>
-                                    <?php endif; ?>
-                                    <?php if ($service_fit !== '') : ?>
-                                        <div>
-                                            <h3 class="lg-azienda__subtitle">Service fit</h3>
-                                            <div class="lg-azienda__muted"><?php echo wp_kses_post(wpautop($service_fit)); ?></div>
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-                            <?php endif; ?>
-                        </section>
-
-                        <section id="metriche" class="lg-azienda__box">
-                            <h2 class="lg-azienda__section-title">Metriche principali</h2>
-                            <div class="lg-azienda__metrics">
-                                <div class="lg-azienda__kpi">
-                                    <span class="lg-azienda__kpi-label">Maturità digitale</span>
-                                    <span class="lg-azienda__kpi-value"><?php echo $digital_score !== null ? esc_html($digital_score) : '—'; ?></span>
-                                    <small class="lg-azienda__kpi-meta">digital_maturity_score</small>
-                                </div>
-                                <div class="lg-azienda__kpi">
-                                    <span class="lg-azienda__kpi-label">Confidenza finanziaria</span>
-                                    <span class="lg-azienda__kpi-value"><?php echo $financial_conf !== null ? esc_html($financial_conf) : '—'; ?></span>
-                                    <small class="lg-azienda__kpi-meta">financial_confidence</small>
-                                </div>
-                                <div class="lg-azienda__kpi">
-                                    <span class="lg-azienda__kpi-label">Priorità commerciale</span>
-                                    <span class="lg-azienda__kpi-value"><?php echo $priority_score !== null ? esc_html($priority_score) : '—'; ?></span>
-                                    <small class="lg-azienda__kpi-meta">priority_score</small>
-                                </div>
-                                <div class="lg-azienda__kpi">
-                                    <span class="lg-azienda__kpi-label">Budget tier</span>
-                                    <span class="lg-azienda__kpi-value"><?php echo $budget_tier !== '' ? esc_html($budget_tier) : '—'; ?></span>
-                                    <small class="lg-azienda__kpi-meta">marketing_budget_est <?php echo $marketing_budget !== '' ? esc_html(sprintf('(%s)', $marketing_budget)) : ''; ?></small>
-                                </div>
-                            </div>
-
-                            <div class="lg-azienda__metrics lg-azienda__metrics--secondary">
-                                <div class="lg-azienda__kpi">
-                                    <span class="lg-azienda__kpi-label">EBITDA margin</span>
-                                    <span class="lg-azienda__kpi-value lg-azienda__kpi-value--smaller"><?php echo $ebitda_display !== '' ? esc_html($ebitda_display) : '—'; ?></span>
-                                </div>
-                                <div class="lg-azienda__kpi">
-                                    <span class="lg-azienda__kpi-label">Budget marketing</span>
-                                    <span class="lg-azienda__kpi-value lg-azienda__kpi-value--smaller"><?php echo $marketing_budget !== '' ? esc_html($marketing_budget) : '—'; ?></span>
-                                </div>
-                            </div>
-                        </section>
-
-                        <section id="analisi" class="lg-azienda__box">
-                            <h2 class="lg-azienda__section-title">Analisi collegate</h2>
-                            <?php if (!$has_analisi) : ?>
-                                <div class="lg-azienda__empty">
-                                    <p><?php esc_html_e('Nessuna analisi disponibile al momento.', 'lead-generator'); ?></p>
-                                    <a class="lg-azienda__cta" href="#"><?php esc_html_e('Richiedi un’analisi personalizzata', 'lead-generator'); ?></a>
-                                </div>
-                            <?php else : ?>
-                                <div class="lg-azienda__tabs" data-lg-tabs>
-                                    <div class="lg-azienda__tablist" role="tablist" aria-label="<?php esc_attr_e('Analisi collegate', 'lead-generator'); ?>">
-                                        <?php foreach ($analisi_items as $index => $item) :
-                                            $tab_id   = sprintf('analysis-tab-%d', $item['post_id']);
-                                            $panel_id = sprintf('analysis-panel-%d', $item['post_id']);
-                                            $is_active = $index === 0;
-                                            ?>
-                                            <button
-                                                class="lg-azienda__tab<?php echo $is_active ? ' is-active' : ''; ?>"
-                                                id="<?php echo esc_attr($tab_id); ?>"
-                                                type="button"
-                                                role="tab"
-                                                aria-selected="<?php echo $is_active ? 'true' : 'false'; ?>"
-                                                aria-controls="<?php echo esc_attr($panel_id); ?>"
-                                                <?php echo $is_active ? '' : 'tabindex="-1"'; ?>
-                                                data-lg-tab
-                                            >
-                                                <?php echo esc_html($item['title']); ?>
-                                            </button>
-                                        <?php endforeach; ?>
-                                    </div>
-
-                                    <div class="lg-azienda__panels">
-                                        <?php foreach ($analisi_items as $index => $item) :
-                                            $panel_id = sprintf('analysis-panel-%d', $item['post_id']);
-                                            $tab_id   = sprintf('analysis-tab-%d', $item['post_id']);
-                                            $is_active = $index === 0;
-                                            ?>
-                                            <article
-                                                class="lg-azienda__analysis-panel<?php echo $is_active ? ' is-active' : ''; ?>"
-                                                id="<?php echo esc_attr($panel_id); ?>"
-                                                role="tabpanel"
-                                                aria-labelledby="<?php echo esc_attr($tab_id); ?>"
-                                                <?php echo $is_active ? '' : 'hidden'; ?>
-                                                data-lg-panel
-                                            >
-                                                <header class="lg-azienda__analysis-header">
-                                                    <h3 class="lg-azienda__analysis-title"><?php echo esc_html($item['title']); ?></h3>
-                                                    <div class="lg-azienda__indicators">
-                                                        <span class="lg-azienda__indicator">
-                                                            <strong><?php esc_html_e('Qualità analisi:', 'lead-generator'); ?></strong>
-                                                            <?php echo $item['quality_score'] !== null ? esc_html($item['quality_score']) : '—'; ?>/100
-                                                        </span>
-                                                        <span class="lg-azienda__indicator">
-                                                            <strong><?php esc_html_e('Qualità dati:', 'lead-generator'); ?></strong>
-                                                            <?php echo $item['data_quality'] !== null ? esc_html($item['data_quality']) : '—'; ?>/100
-                                                        </span>
-                                                    </div>
-                                                </header>
-
-                                                <?php if (!empty($item['riassunto']) || !empty($item['strengths']) || !empty($item['weaknesses']) || !empty($item['opportunities']) || !empty($item['quick_wins'])) : ?>
-                                                    <details class="lg-azienda__accordion" <?php echo $is_active ? 'open' : ''; ?>>
-                                                        <summary class="lg-azienda__accordion-summary">
-                                                            <?php esc_html_e('Sintesi e punti chiave', 'lead-generator'); ?>
-                                                        </summary>
-                                                        <div class="lg-azienda__accordion-content lg-azienda__scroll">
-                                                            <?php if (!empty($item['riassunto'])) : ?>
-                                                                <div class="lg-azienda__muted"><?php echo wp_kses_post(wpautop($item['riassunto'])); ?></div>
-                                                            <?php endif; ?>
-
-                                                            <div class="lg-azienda__columns">
-                                                                <div>
-                                                                    <h4 class="lg-azienda__subtitle"><?php esc_html_e('Punti di forza', 'lead-generator'); ?> (<?php echo esc_html($item['counts']['strengths']); ?>)</h4>
-                                                                    <?php if (!empty($item['strengths'])) : ?>
-                                                                        <ul class="lg-azienda__list">
-                                                                            <?php foreach ($item['strengths'] as $entry) : ?>
-                                                                                <li><?php echo esc_html($entry); ?></li>
-                                                                            <?php endforeach; ?>
-                                                                        </ul>
-                                                                    <?php else : ?>
-                                                                        <p class="lg-azienda__muted"><?php esc_html_e('Nessun dato disponibile.', 'lead-generator'); ?></p>
-                                                                    <?php endif; ?>
-                                                                </div>
-                                                                <div>
-                                                                    <h4 class="lg-azienda__subtitle"><?php esc_html_e('Punti di debolezza', 'lead-generator'); ?> (<?php echo esc_html($item['counts']['weaknesses']); ?>)</h4>
-                                                                    <?php if (!empty($item['weaknesses'])) : ?>
-                                                                        <ul class="lg-azienda__list">
-                                                                            <?php foreach ($item['weaknesses'] as $entry) : ?>
-                                                                                <li><?php echo esc_html($entry); ?></li>
-                                                                            <?php endforeach; ?>
-                                                                        </ul>
-                                                                    <?php else : ?>
-                                                                        <p class="lg-azienda__muted"><?php esc_html_e('Nessun dato disponibile.', 'lead-generator'); ?></p>
-                                                                    <?php endif; ?>
-                                                                </div>
-                                                            </div>
-
-                                                            <div class="lg-azienda__columns">
-                                                                <div>
-                                                                    <h4 class="lg-azienda__subtitle"><?php esc_html_e('Opportunità', 'lead-generator'); ?> (<?php echo esc_html($item['counts']['opportunities']); ?>)</h4>
-                                                                    <?php if (!empty($item['opportunities'])) : ?>
-                                                                        <ul class="lg-azienda__list">
-                                                                            <?php foreach ($item['opportunities'] as $entry) : ?>
-                                                                                <li><?php echo esc_html($entry); ?></li>
-                                                                            <?php endforeach; ?>
-                                                                        </ul>
-                                                                    <?php else : ?>
-                                                                        <p class="lg-azienda__muted"><?php esc_html_e('Nessuna opportunità registrata.', 'lead-generator'); ?></p>
-                                                                    <?php endif; ?>
-                                                                </div>
-                                                                <div>
-                                                                    <h4 class="lg-azienda__subtitle"><?php esc_html_e('Azioni rapide', 'lead-generator'); ?> (<?php echo esc_html($item['counts']['quick_wins']); ?>)</h4>
-                                                                    <?php if (!empty($item['quick_wins'])) : ?>
-                                                                        <ol class="lg-azienda__list lg-azienda__list--ordered">
-                                                                            <?php foreach ($item['quick_wins'] as $entry) : ?>
-                                                                                <li><?php echo esc_html($entry); ?></li>
-                                                                            <?php endforeach; ?>
-                                                                        </ol>
-                                                                    <?php else : ?>
-                                                                        <p class="lg-azienda__muted"><?php esc_html_e('Nessuna azione rapida.', 'lead-generator'); ?></p>
-                                                                    <?php endif; ?>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </details>
-                                                <?php endif; ?>
-
-                                                <?php if ($item['deep_research'] !== '' || $item['review'] !== '') : ?>
-                                                    <details class="lg-azienda__accordion">
-                                                        <summary class="lg-azienda__accordion-summary">
-                                                            <?php esc_html_e('Approfondimenti', 'lead-generator'); ?>
-                                                        </summary>
-                                                        <div class="lg-azienda__accordion-content lg-azienda__scroll">
-                                                            <?php if ($item['deep_research'] !== '') : ?>
-                                                                <section class="lg-azienda__accordion-block">
-                                                                    <h4 class="lg-azienda__subtitle"><?php esc_html_e('Dettaglio ricerca', 'lead-generator'); ?></h4>
-                                                                    <div class="lg-azienda__muted"><?php echo wp_kses_post($item['deep_research']); ?></div>
-                                                                </section>
-                                                            <?php endif; ?>
-                                                            <?php if ($item['review'] !== '') : ?>
-                                                                <section class="lg-azienda__accordion-block">
-                                                                    <h4 class="lg-azienda__subtitle"><?php esc_html_e('Revisione analisi', 'lead-generator'); ?></h4>
-                                                                    <div class="lg-azienda__muted"><?php echo wp_kses_post(wpautop($item['review'])); ?></div>
-                                                                </section>
-                                                            <?php endif; ?>
-                                                        </div>
-                                                    </details>
-                                                <?php endif; ?>
-
-                                                <details class="lg-azienda__accordion">
-                                                    <summary class="lg-azienda__accordion-summary">
-                                                        <?php esc_html_e('Rischi &amp; mitigazioni', 'lead-generator'); ?> (<?php echo esc_html($item['counts']['risks']); ?>)
-                                                    </summary>
-                                                    <div class="lg-azienda__accordion-content lg-azienda__scroll">
-                                                        <?php if (!empty($item['risks'])) : ?>
-                                                            <div class="lg-azienda__table-wrapper">
-                                                                <table class="lg-azienda__table">
-                                                                    <thead>
-                                                                        <tr>
-                                                                            <th scope="col"><?php esc_html_e('Rischio', 'lead-generator'); ?></th>
-                                                                            <th scope="col"><?php esc_html_e('Mitigazione', 'lead-generator'); ?></th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        <?php foreach ($item['risks'] as $risk) : ?>
-                                                                            <tr>
-                                                                                <td><?php echo $risk['rischio'] !== '' ? esc_html($risk['rischio']) : '—'; ?></td>
-                                                                                <td><?php echo $risk['mitigazione'] !== '' ? esc_html($risk['mitigazione']) : '—'; ?></td>
-                                                                            </tr>
-                                                                        <?php endforeach; ?>
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
-                                                        <?php else : ?>
-                                                            <p class="lg-azienda__muted"><?php esc_html_e('Nessun rischio segnalato.', 'lead-generator'); ?></p>
-                                                        <?php endif; ?>
-                                                    </div>
-                                                </details>
-
-                                                <details class="lg-azienda__accordion">
-                                                    <summary class="lg-azienda__accordion-summary">
-                                                        <?php esc_html_e('Priorità temporali', 'lead-generator'); ?>
-                                                    </summary>
-                                                    <div class="lg-azienda__accordion-content lg-azienda__scroll">
-                                                        <div class="lg-azienda__columns lg-azienda__columns--three">
-                                                            <div>
-                                                                <h5 class="lg-azienda__subheading"><?php esc_html_e('Entro 30 giorni', 'lead-generator'); ?></h5>
-                                                                <?php if (!empty($item['priorita']['entro_30_giorni'])) : ?>
-                                                                    <ul class="lg-azienda__list">
-                                                                        <?php foreach ($item['priorita']['entro_30_giorni'] as $entry) : ?>
-                                                                            <li><?php echo esc_html($entry); ?></li>
-                                                                        <?php endforeach; ?>
-                                                                    </ul>
-                                                                <?php else : ?>
-                                                                    <p class="lg-azienda__muted"><?php esc_html_e('Nessuna attività programmata.', 'lead-generator'); ?></p>
-                                                                <?php endif; ?>
-                                                            </div>
-                                                            <div>
-                                                                <h5 class="lg-azienda__subheading"><?php esc_html_e('Entro 90 giorni', 'lead-generator'); ?></h5>
-                                                                <?php if (!empty($item['priorita']['entro_90_giorni'])) : ?>
-                                                                    <ul class="lg-azienda__list">
-                                                                        <?php foreach ($item['priorita']['entro_90_giorni'] as $entry) : ?>
-                                                                            <li><?php echo esc_html($entry); ?></li>
-                                                                        <?php endforeach; ?>
-                                                                    </ul>
-                                                                <?php else : ?>
-                                                                    <p class="lg-azienda__muted"><?php esc_html_e('Nessuna attività programmata.', 'lead-generator'); ?></p>
-                                                                <?php endif; ?>
-                                                            </div>
-                                                            <div>
-                                                                <h5 class="lg-azienda__subheading"><?php esc_html_e('Entro 12 mesi', 'lead-generator'); ?></h5>
-                                                                <?php if (!empty($item['priorita']['entro_12_mesi'])) : ?>
-                                                                    <ul class="lg-azienda__list">
-                                                                        <?php foreach ($item['priorita']['entro_12_mesi'] as $entry) : ?>
-                                                                            <li><?php echo esc_html($entry); ?></li>
-                                                                        <?php endforeach; ?>
-                                                                    </ul>
-                                                                <?php else : ?>
-                                                                    <p class="lg-azienda__muted"><?php esc_html_e('Nessuna attività programmata.', 'lead-generator'); ?></p>
-                                                                <?php endif; ?>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </details>
-
-                                                <details class="lg-azienda__accordion">
-                                                    <summary class="lg-azienda__accordion-summary">
-                                                        <?php esc_html_e('Domande prospect', 'lead-generator'); ?> (<?php echo esc_html($item['counts']['questions']); ?>)
-                                                    </summary>
-                                                    <div class="lg-azienda__accordion-content lg-azienda__scroll">
-                                                        <?php if (!empty($item['questions'])) : ?>
-                                                            <ul class="lg-azienda__list">
-                                                                <?php foreach ($item['questions'] as $entry) : ?>
-                                                                    <li><?php echo esc_html($entry); ?></li>
-                                                                <?php endforeach; ?>
-                                                            </ul>
-                                                        <?php else : ?>
-                                                            <p class="lg-azienda__muted"><?php esc_html_e('Nessuna domanda registrata.', 'lead-generator'); ?></p>
-                                                        <?php endif; ?>
-                                                    </div>
-                                                </details>
-
-                                                <details class="lg-azienda__accordion">
-                                                    <summary class="lg-azienda__accordion-summary">
-                                                        <?php esc_html_e('Idee di valore', 'lead-generator'); ?> (<?php echo esc_html($item['counts']['value_ideas']); ?>)
-                                                    </summary>
-                                                    <div class="lg-azienda__accordion-content lg-azienda__scroll">
-                                                        <?php if (!empty($item['value_ideas'])) : ?>
-                                                            <ul class="lg-azienda__list">
-                                                                <?php foreach ($item['value_ideas'] as $entry) : ?>
-                                                                    <li><?php echo esc_html($entry); ?></li>
-                                                                <?php endforeach; ?>
-                                                            </ul>
-                                                        <?php else : ?>
-                                                            <p class="lg-azienda__muted"><?php esc_html_e('Nessuna idea registrata.', 'lead-generator'); ?></p>
-                                                        <?php endif; ?>
-                                                    </div>
-                                                </details>
-                                            </article>
-                                        <?php endforeach; ?>
-                                    </div>
-                                </div>
-                            <?php endif; ?>
-                        </section>
-
-                        <section id="contatti" class="lg-azienda__box">
-                            <h2 class="lg-azienda__section-title">Contatti &amp; processi</h2>
-                            <div class="lg-azienda__contacts">
-                                <div>
-                                    <h3 class="lg-azienda__subtitle">Indirizzo</h3>
-                                    <p><?php echo $address !== '' ? esc_html($address) : '—'; ?></p>
-                                </div>
-                                <div>
-                                    <h3 class="lg-azienda__subtitle">Partita IVA</h3>
-                                    <p><?php echo $partita_iva !== '' ? esc_html($partita_iva) : '—'; ?></p>
-                                </div>
-                                <div>
-                                    <h3 class="lg-azienda__subtitle">Telefono</h3>
-                                    <?php if ($phone !== '') : ?>
-                                        <?php $phone_href = preg_replace('/[^0-9+]/', '', $phone); ?>
-                                        <p><a href="<?php echo esc_url('tel:' . $phone_href); ?>"><?php echo esc_html($phone); ?></a></p>
-                                    <?php else : ?>
-                                        <p>—</p>
-                                    <?php endif; ?>
-                                </div>
-                                <div>
-                                    <h3 class="lg-azienda__subtitle">Email</h3>
-                                    <?php if ($email !== '' && is_email($email)) : ?>
-                                        <p><a href="<?php echo esc_url('mailto:' . sanitize_email($email)); ?>"><?php echo esc_html($email); ?></a></p>
-                                    <?php else : ?>
-                                        <p>—</p>
-                                    <?php endif; ?>
-                                </div>
-                                <div>
-                                    <h3 class="lg-azienda__subtitle">LinkedIn</h3>
-                                    <?php if ($linkedin_url !== '') : ?>
-                                        <p><a href="<?php echo lg_normalize_domain($linkedin_url); ?>" target="_blank" rel="nofollow noopener">Profilo LinkedIn</a></p>
-                                    <?php else : ?>
-                                        <p>—</p>
-                                    <?php endif; ?>
-                                </div>
-                                <div>
-                                    <h3 class="lg-azienda__subtitle">Website</h3>
-                                    <?php if ($domain_url !== '') : ?>
-                                        <p><a href="<?php echo $domain_url; ?>" target="_blank" rel="nofollow noopener"><?php echo esc_html($domain_display !== '' ? $domain_display : $domain_url); ?></a></p>
-                                    <?php else : ?>
-                                        <p>—</p>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-
-                            <div class="lg-azienda__log">
-                                <h3 class="lg-azienda__subtitle">Log enrichment</h3>
-                                <ul class="lg-azienda__log-list">
-                                    <li><strong>Ultimo enrichment:</strong> <?php echo $enrichment_display !== '' ? esc_html($enrichment_display) : '—'; ?></li>
-                                    <li><strong>Status code:</strong> <?php echo $enrichment_status !== '' ? esc_html($enrichment_status) : '—'; ?></li>
-                                    <li><strong>Messaggio:</strong> <?php echo $enrichment_message !== '' ? esc_html($enrichment_message) : '—'; ?></li>
-                                </ul>
-                            </div>
-                        </section>
-                    </div>
+                <div class="quick-actions-bar">
+                    <button type="button" class="btn-primary"><?php esc_html_e('Genera outreach email', 'lead-generator'); ?></button>
+                    <button type="button" class="btn-secondary"><?php esc_html_e('Prepara LinkedIn', 'lead-generator'); ?></button>
+                    <button type="button" class="btn-secondary"><?php esc_html_e('Full report PDF', 'lead-generator'); ?></button>
+                    <button type="button" class="btn-secondary"><?php esc_html_e('Riavvia analisi', 'lead-generator'); ?></button>
                 </div>
-            </section>
+            </div>
         </article>
 
         <?php
