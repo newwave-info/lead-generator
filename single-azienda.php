@@ -420,47 +420,58 @@ if (have_posts()) :
                         <?php endif; ?>
 
                         <div class="anagrafica-section">
-                            <div class="reason-box">
-                                <h4><?php esc_html_e('Sede', 'lead-generator'); ?></h4>
-                                <p>
-                                    <?php
-                                    $sede_parts = array_filter([
-                                        $address !== '' ? $address : null,
-                                        $city !== '' ? $city : null,
-                                        $province !== '' ? $province : null,
-                                    ]);
-                                    if (!empty($sede_parts)) {
-                                        echo esc_html(implode(', ', $sede_parts));
-                                    } else {
-                                        esc_html_e('Non disponibile', 'lead-generator');
-                                    }
-                                    ?>
-                                </p>
+                            <h3 class="section-title"><?php esc_html_e('Sede', 'lead-generator'); ?></h3>
+                            <div class="metrics-grid-auto">
+                                <?php if ($address !== '') : ?>
+                                <div class="metric-card">
+                                    <h4><?php esc_html_e('Indirizzo', 'lead-generator'); ?></h4>
+                                    <p class="metric-value"><?php echo esc_html($address); ?></p>
+                                </div>
+                                <?php endif; ?>
+                                <?php if ($city !== '') : ?>
+                                <div class="metric-card">
+                                    <h4><?php esc_html_e('Città', 'lead-generator'); ?></h4>
+                                    <p class="metric-value"><?php echo esc_html($city); ?></p>
+                                </div>
+                                <?php endif; ?>
+                                <?php if ($province !== '') : ?>
+                                <div class="metric-card">
+                                    <h4><?php esc_html_e('Provincia', 'lead-generator'); ?></h4>
+                                    <p class="metric-value"><?php echo esc_html($province); ?></p>
+                                </div>
+                                <?php endif; ?>
                             </div>
                         </div>
 
                         <div class="anagrafica-section">
-                            <div class="reason-box">
-                                <h4><?php esc_html_e('Contatti', 'lead-generator'); ?></h4>
-                                <ul class="bullet-list">
-                                    <?php if ($phone !== '') : ?>
-                                        <li><?php printf(esc_html__('Tel: %s', 'lead-generator'), $phone); ?></li>
-                                    <?php endif; ?>
-                                    <?php if ($email !== '') : ?>
-                                        <li>
-                                            <a href="mailto:<?php echo esc_attr($email); ?>" style="color: var(--color-primary); text-decoration: none;">
-                                                <?php echo esc_html($email); ?>
-                                            </a>
-                                        </li>
-                                    <?php endif; ?>
-                                    <?php if ($linkedin_url !== '') : ?>
-                                        <li>
-                                            <a href="<?php echo esc_url($linkedin_url); ?>" target="_blank" rel="noreferrer noopener" style="color: var(--color-primary); text-decoration: none;">
-                                                LinkedIn
-                                            </a>
-                                        </li>
-                                    <?php endif; ?>
-                                </ul>
+                            <h3 class="section-title"><?php esc_html_e('Contatti', 'lead-generator'); ?></h3>
+                            <div class="metrics-grid-auto">
+                                <?php if ($phone !== '') : ?>
+                                <div class="metric-card">
+                                    <h4><?php esc_html_e('Telefono', 'lead-generator'); ?></h4>
+                                    <p class="metric-value"><?php echo esc_html($phone); ?></p>
+                                </div>
+                                <?php endif; ?>
+                                <?php if ($email !== '') : ?>
+                                <div class="metric-card">
+                                    <h4><?php esc_html_e('Email', 'lead-generator'); ?></h4>
+                                    <p class="metric-value">
+                                        <a href="mailto:<?php echo esc_attr($email); ?>" style="color: var(--color-primary); text-decoration: none;">
+                                            <?php echo esc_html($email); ?>
+                                        </a>
+                                    </p>
+                                </div>
+                                <?php endif; ?>
+                                <?php if ($linkedin_url !== '') : ?>
+                                <div class="metric-card">
+                                    <h4><?php esc_html_e('LinkedIn', 'lead-generator'); ?></h4>
+                                    <p class="metric-value">
+                                        <a href="<?php echo esc_url($linkedin_url); ?>" target="_blank" rel="noreferrer noopener" style="color: var(--color-primary); text-decoration: none;">
+                                            <?php esc_html_e('Profilo aziendale', 'lead-generator'); ?>
+                                        </a>
+                                    </p>
+                                </div>
+                                <?php endif; ?>
                             </div>
                         </div>
                     </section>
@@ -478,28 +489,25 @@ if (have_posts()) :
                     </section>
 
                     <section id="tab-qualifica" class="ap-tab-panel" data-ap-panel role="tabpanel" hidden>
-                        <div class="anagrafica-section">
-                            <div class="reason-box">
-                                <h4><?php esc_html_e('Motivo della qualifica', 'lead-generator'); ?></h4>
-                                <p><?php echo esc_html(lg_format_display($qualification_reason)); ?></p>
-                            </div>
-                        </div>
+                        <div class="analysis-overview">
+                            <h2><?php esc_html_e('Valutazione', 'lead-generator'); ?></h2>
+                            <div class="overview-card">
+                                <p class="summary-text"><?php echo esc_html(lg_format_display($qualification_reason, 'Nessuna motivazione inserita.')); ?></p>
 
-                        <?php
-                        $service_fit_list = lg_parse_list($service_fit);
-                        if (!empty($service_fit_list)) :
-                        ?>
-                        <div class="anagrafica-section">
-                            <h3 class="section-title"><?php esc_html_e('Service Fit', 'lead-generator'); ?></h3>
-                            <div class="metrics-grid-auto">
-                                <?php foreach ($service_fit_list as $service) : ?>
-                                    <div class="metric-card">
-                                        <p class="metric-value"><?php echo esc_html($service); ?></p>
-                                    </div>
-                                <?php endforeach; ?>
+                                <?php
+                                $service_fit_list = lg_parse_list($service_fit);
+                                if (!empty($service_fit_list)) :
+                                ?>
+                                <div class="overview-meta">
+                                    <?php foreach ($service_fit_list as $service) : ?>
+                                        <div class="meta-badge">
+                                            <div class="meta-badge-value"><?php echo esc_html(trim($service)); ?></div>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                                <?php endif; ?>
                             </div>
                         </div>
-                        <?php endif; ?>
 
                         <div class="anagrafica-section">
                             <h3 class="section-title">
