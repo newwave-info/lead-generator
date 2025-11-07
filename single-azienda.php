@@ -317,13 +317,11 @@ if (have_posts()) :
             <div class="ap-shell">
                 <header class="ap-main-header">
                     <div class="ap-header-brand">
-                        <img src="<?php echo esc_url($logo_url); ?>" alt="<?php esc_attr_e('Logo azienda', 'lead-generator'); ?>">
+                        <img src="<?php echo esc_url($theme_uri . '/common/img/logo.svg'); ?>" alt="<?php esc_attr_e('Logo Perspect', 'lead-generator'); ?>">
                         <span><?php echo esc_html(get_bloginfo('name')); ?></span>
                     </div>
                     <nav class="ap-header-nav">
                         <a href="<?php echo esc_url(home_url('/')); ?>"><?php esc_html_e('Aziende', 'lead-generator'); ?></a>
-                        <a href="#"><?php esc_html_e('Impostazioni', 'lead-generator'); ?></a>
-                        <a href="#"><?php esc_html_e('Aiuto', 'lead-generator'); ?></a>
                     </nav>
                 </header>
 
